@@ -1,0 +1,74 @@
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: "/auth/login",
+    LOGOUT: "/auth/logout",
+    REFRESH: "/auth/refresh",
+    ME: "/auth/me",
+  },
+  RESUME: {
+    LIST: "/resumes",
+    GET: (id: string) => `/resumes/${id}`,
+    CREATE: "/resumes",
+    UPDATE: (id: string) => `/resumes/${id}`,
+    DELETE: (id: string) => `/resumes/${id}`,
+    UPLOAD: "/upload/resume",
+    PARSE: (id: string) => `/resumes/${id}/parse`,
+  },
+  ATS: {
+    ANALYZE: "/ats/analyze",
+  },
+  JOBS: {
+    LIST: "/jobs",
+    SEARCH: "/jobs/search",
+    PERSONALIZED: "/jobs/personalized",
+    GET: (id: string) => `/jobs/${id}`,
+    SAVE: "/jobs/save",
+    UNSAVE: (id: string) => `/jobs/${id}/unsave`,
+    SAVED: "/jobs/saved",
+    MATCH: "/jobs/match",
+  },
+  RECOMMENDATIONS: {
+    USER: "/recommendations",
+    RESUME: (resumeId: string) => `/recommendations/resume/${resumeId}`,
+    VIEWED: (id: string) => `/recommendations/${id}/viewed`,
+    APPLIED: (id: string) => `/recommendations/${id}/applied`,
+  },
+  APPLICATIONS: {
+    LIST: "/applications",
+    GET: (id: string) => `/applications/${id}`,
+    CREATE: "/applications",
+    UPDATE: (id: string) => `/applications/${id}`,
+    DELETE: (id: string) => `/applications/${id}`,
+    STATS: "/applications/stats",
+  },
+  DASHBOARD: {
+    STATS: "/dashboard/stats",
+    ACTIVITY: "/dashboard/activity",
+    WEEKLY_PROGRESS: "/dashboard/weekly-progress",
+  },
+  NOTIFICATIONS: {
+    LIST: "/notifications",
+    UNREAD: "/notifications/unread",
+    MARK_READ: "/notifications/read",
+    MARK_ALL_READ: "/notifications/read-all",
+    DELETE: (id: string) => `/notifications/${id}`,
+    PREFERENCES: "/notification-preferences",
+  },
+  COPILOT: {
+    SEND_MESSAGE: "/copilot/message",
+    SESSION: (id: string) => `/copilot/sessions/${id}`,
+    SESSIONS: "/copilot/sessions",
+    DELETE_SESSION: (id: string) => `/copilot/sessions/${id}`,
+  },
+} as const;
+
+export const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  NO_CONTENT: 204,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+} as const;

@@ -1,0 +1,142 @@
+import { supabase } from "../lib/supabase";
+
+/**
+ * HTTP Interceptor for authentication
+ *
+ * Attaches Supabase session token to API requests and handles 401 responses
+ * by automatically refreshing the session.
+ */
+
+let refreshPromise: Promise<string | null> | null = null;
+
+/**
+ * Attach Supabase session access token to request headers
+ * @param headers - Existing headers object
+ * @returns Headers with authorization token
+ */
+export async function attachAuthToken(headers: HeadersInit = {}): Promise<HeadersInit> {
+  const { data } = await supabase.auth.getSession();
+
+  if (!data.session?.access_token) {
+    return headers;
+  }
+
+  return {
+    ...headers,
+    Authorization: `Bearer ${data.session.access_token}`,
+  };
+}
+
+/**
+ * Handle 401 Unauthorized response
+ * Attempts to refresh the Supabase session and retry the request
+ * @param originalRequest - The original request that failed
+ * @returns Retried request response or null if refresh failed
+ */
+export async function handleUnauthorized(
+  originalRequest: () => Promise<Response>
+): Promise<Response | null> {
+  // Prevent multiple concurrent refresh requests
+  if (refreshPromise) {
+    const token = await refreshPromise;
+    if (token) {
+      return originalRequest();
+    }
+    return null;
+  }
+
+  try {
+    refreshPromise = refreshAccessToken();
+    const token = await refreshPromise;
+
+    if (!token) {
+      handleSessionExpired();
+      return null;
+    }
+
+    // Retry original request with fresh token
+    return originalRequest();
+  } catch (error) {
+    handleSessionExpired();
+    return null;
+  } finally {
+    refreshPromise = null;
+  }
+}
+
+/**
+ * Refresh Supabase session
+ * @returns New access token or null if refresh failed
+ */
+async function refreshAccessToken(): Promise<string | null> {
+  const { data, error } = await supabase.auth.refreshSession();
+
+  if (error || !data.session) {
+    console.error("Token refresh failed:", error?.message);
+    return null;
+  }
+
+  return data.session.access_token;
+}
+
+/**
+ * Handle session expired - redirect to login
+ */
+function handleSessionExpired(): void {
+  // Clear all auth data
+  supabase.auth.signOut().catch(() => {});
+  window.location.href = "/login";
+}
+
+/**
+ * Retry failed request with exponential backoff
+ * @param request - Request function to retry
+ * @param maxRetries - Maximum number of retries
+ * @param retryDelay - Initial delay in ms
+ * @returns Response or throws error
+ */
+export async function retryRequest<T>(
+  request: () => Promise<T>,
+  maxRetries: number = 3,
+  retryDelay: number = 1000
+): Promise<T> {
+  let lastError: Error;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await request();
+    } catch (error) {
+      lastError = error as Error;
+
+      // Don't retry on client errors (4xx)
+      if (error instanceof Error && "statusCode" in error) {
+        const statusCode = (error as any).statusCode;
+        if (statusCode >= 400 && statusCode < 500) {
+          throw error;
+        }
+      }
+
+      // Wait before retrying (exponential backoff)
+      if (attempt < maxRetries - 1) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+      }
+    }
+  }
+
+  throw lastError!;
+}
+
+/**
+ * Check if token is about to expire by examining the Supabase session
+ * @returns True if session expires within buffer time
+ */
+export async function isSessionExpiringSoon(): Promise<boolean> {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session?.expires_at) return true;
+
+  const buffer = 5 * 60 * 1000; // 5 minutes
+  const expirationTime = data.session.expires_at * 1000;
+  const currentTime = Date.now();
+
+  return expirationTime - currentTime < buffer;
+}
