@@ -12,4 +12,14 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    server: {
+      // Pin the dev server to port 8080 explicitly so the CORS allowlist in the
+      // backend (which includes localhost:8080 / 127.0.0.1:8080) stays in sync.
+      // Without this, Vite's sandbox detection can auto-increment to a different
+      // free port and silently break CORS again.
+      port: 8080,
+      strictPort: true,
+    },
+  },
 });

@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { request } from "@/utils/request";
+import { API_ENDPOINTS } from "@/constants/api";
 
 export const Route = createFileRoute("/_app/copilot")({
   head: () => ({
@@ -72,18 +74,12 @@ function CopilotPage() {
     setIsLoading(true);
 
     try {
-      // Call the copilot API
-      const response = await fetch("/api/copilot/message", {
+      // Call the copilot API via the configured API client
+      const data = await request<{ response: string; message: string }>({
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageText }),
+        path: API_ENDPOINTS.COPILOT.SEND_MESSAGE,
+        body: { message: messageText },
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to get response");
-      }
-
-      const data = await response.json();
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

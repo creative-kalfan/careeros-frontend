@@ -14,7 +14,7 @@ const getEnv = (key: string, defaultValue?: string): string => {
 };
 
 export const env = {
-  VITE_API_BASE_URL: getEnv("VITE_API_BASE_URL", "http://localhost:3000/api"),
+  VITE_API_BASE_URL: getEnv("VITE_API_BASE_URL", "http://localhost:8000"),
   VITE_SUPABASE_URL: getEnv("VITE_SUPABASE_URL"),
   VITE_SUPABASE_ANON_KEY: getEnv("VITE_SUPABASE_ANON_KEY"),
 } as const;

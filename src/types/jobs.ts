@@ -6,8 +6,8 @@ export type ApplicationStatus =
   | "offer"
   | "rejected";
 
-export type EmploymentType = "Full-time" | "Part-time" | "Contract" | "Internship";
-export type WorkMode = "Remote" | "Hybrid" | "On-site";
+export type EmploymentType = "Full-time" | "Part-time" | "Contract" | "Internship" | "Not specified";
+export type WorkMode = "Remote" | "Hybrid" | "On-site" | "Unknown";
 
 // Rich UI-facing job shape consumed by the Jobs module components.
 // It is produced by adapting the backend NormalizedJob DTO (see src/lib/jobs.ts).
@@ -26,7 +26,7 @@ export type Job = {
   salaryMax: number; // in thousands
   salaryCurrency: string;
   aiMatch: number;
-  atsMatch: number;
+  atsMatch?: number;
   postedAt: string; // human label
   postedDaysAgo: number;
   quickApply: boolean;
@@ -64,10 +64,12 @@ export type Job = {
   // New classification fields (migration 011)
   roleCategory?: string | null;
   applicationDeadline?: string | null;
+  // Direct apply URL (mapped from backend NormalizedJob.applyUrl)
+  applyUrl?: string | null;
 };
 
 // ---------------------------------------------------------------------------
-// Backend DTOs (mirror of careeros-backend/types/job.ts)
+// Backend DTOs (mirror of careeros-backend-py/app/models/job.py)
 // ---------------------------------------------------------------------------
 
 export type NormalizedJob = {

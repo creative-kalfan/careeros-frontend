@@ -3,19 +3,10 @@ import {
   SlidersHorizontal,
   MapPin,
   Briefcase,
-  DollarSign,
-  Clock,
-  Sparkles,
-  Building2,
-  Wrench,
-  Bookmark,
   RotateCcw,
   ChevronDown,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +15,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { filterOptions, savedSearchesMock } from "@/lib/jobs";
-import { useJobs } from "@/hooks/api/useJobs";
+import { filterOptions } from "@/lib/jobs";
 
 function Group({
   icon: Icon,
@@ -91,11 +81,14 @@ function Chip({
 }
 
 export function FiltersPane({ onApply }: { onApply?: (filters: Record<string, string[]>) => void } = {}) {
-  const [salary, setSalary] = useState<number[]>([180, 300]);
   const [selected, setSelected] = useState<Record<string, Set<string>>>({});
+  const [roleQuery, setRoleQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
 
   const applyFilters = () => {
     const payload: Record<string, string[]> = {};
+    if (roleQuery.trim()) payload.role = [roleQuery.trim()];
+    if (locationQuery.trim()) payload.location = [locationQuery.trim()];
     Object.entries(selected).forEach(([key, set]) => {
       if (set.size > 0) payload[key] = Array.from(set);
     });
@@ -116,7 +109,7 @@ export function FiltersPane({ onApply }: { onApply?: (filters: Record<string, st
     return selected[group]?.has(val) ?? false;
   }
 
-  const activeCount = Object.values(selected).reduce((n, s) => n + s.size, 0);
+  const activeCount = Object.values(selected).reduce((n, s) => n + s.size, 0) + (roleQuery.trim() ? 1 : 0) + (locationQuery.trim() ? 1 : 0);
 
   return (
     <div className="flex h-full flex-col">
@@ -153,6 +146,8 @@ export function FiltersPane({ onApply }: { onApply?: (filters: Record<string, st
         <div className="space-y-2 p-3">
           <Group icon={Briefcase} title="Role">
             <Input
+              value={roleQuery}
+              onChange={(e) => setRoleQuery(e.target.value)}
               placeholder="e.g. Staff Frontend Engineer"
               className="h-8 rounded-lg bg-surface-elevated/40 text-xs"
             />
@@ -160,6 +155,8 @@ export function FiltersPane({ onApply }: { onApply?: (filters: Record<string, st
 
           <Group icon={MapPin} title="Location">
             <Input
+              value={locationQuery}
+              onChange={(e) => setLocationQuery(e.target.value)}
               placeholder="City, region or 'Remote'"
               className="h-8 rounded-lg bg-surface-elevated/40 text-xs"
             />
@@ -176,113 +173,15 @@ export function FiltersPane({ onApply }: { onApply?: (filters: Record<string, st
             </div>
           </Group>
 
-          <Group icon={Sparkles} title="Experience">
-            <div className="flex flex-wrap gap-1.5">
-              {filterOptions.experience.map((e) => (
-                <Chip
-                  key={e}
-                  active={isOn("experience", e)}
-                  onClick={() => toggle("experience", e)}
-                >
-                  {e}
-                </Chip>
-              ))}
+          <div className="rounded-xl border border-border/50 bg-surface-elevated/30 p-3">
+            <div className="text-[11px] font-semibold text-muted-foreground">
+              Additional filters
             </div>
-          </Group>
-
-          <Group icon={DollarSign} title="Salary">
-            <div className="px-1">
-              <Slider
-                value={salary}
-                min={60}
-                max={500}
-                step={10}
-                onValueChange={setSalary}
-                className="mt-2"
-              />
-              <div className="mt-3 flex items-center justify-between font-mono text-[11px] text-muted-foreground">
-                <span>${salary[0]}k</span>
-                <span>${salary[1]}k</span>
-              </div>
-            </div>
-          </Group>
-
-          <Group icon={Wrench} title="Skills" defaultOpen={false}>
-            <div className="flex flex-wrap gap-1.5">
-              {filterOptions.skills.map((s) => (
-                <Chip key={s} active={isOn("skills", s)} onClick={() => toggle("skills", s)}>
-                  {s}
-                </Chip>
-              ))}
-            </div>
-          </Group>
-
-          <Group icon={Building2} title="Companies" defaultOpen={false}>
-            <div className="space-y-1.5">
-              {filterOptions.companies.map((c) => (
-                <label
-                  key={c}
-                  className="flex cursor-pointer items-center gap-2 rounded-md px-1 py-1 hover:bg-surface-elevated/50"
-                >
-                  <Checkbox
-                    checked={isOn("companies", c)}
-                    onCheckedChange={() => toggle("companies", c)}
-                  />
-                  <Label className="cursor-pointer text-xs font-normal">{c}</Label>
-                </label>
-              ))}
-            </div>
-          </Group>
-
-          <Group icon={Briefcase} title="Employment Type" defaultOpen={false}>
-            <div className="flex flex-wrap gap-1.5">
-              {filterOptions.employmentType.map((e) => (
-                <Chip
-                  key={e}
-                  active={isOn("employmentType", e)}
-                  onClick={() => toggle("employmentType", e)}
-                >
-                  {e}
-                </Chip>
-              ))}
-            </div>
-          </Group>
-
-          <Group icon={Clock} title="Posted Date" defaultOpen={false}>
-            <div className="flex flex-wrap gap-1.5">
-              {filterOptions.postedDate.map((p) => (
-                <Chip
-                  key={p}
-                  active={isOn("postedDate", p)}
-                  onClick={() => toggle("postedDate", p)}
-                >
-                  {p}
-                </Chip>
-              ))}
-            </div>
-          </Group>
-
-          <div className="pt-4">
-            <div className="mb-2 flex items-center gap-2 px-1">
-              <Bookmark className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Saved Searches
-              </span>
-            </div>
-            <div className="space-y-1.5">
-              {savedSearchesMock.map((s) => (
-                <button
-                  key={s.id}
-                  className="group flex w-full items-center justify-between rounded-lg border border-border/50 bg-surface-elevated/40 px-2.5 py-2 text-left transition hover:border-primary/40 hover:bg-surface-elevated"
-                >
-                  <span className="truncate text-[12px] text-foreground/90">{s.label}</span>
-                  <span className="ml-2 shrink-0 rounded-full bg-background/50 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                    {s.count}
-                  </span>
-                </button>
-              ))}
+            <div className="mt-1 text-[10.5px] text-muted-foreground/70">
+              Experience, salary, skills, company, employment type, and posted date filters are not yet supported by the backend.
             </div>
           </div>
+
         </div>
       </ScrollArea>
     </div>

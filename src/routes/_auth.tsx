@@ -15,27 +15,14 @@ function AuthLayout() {
   useEffect(() => {
     if (!isInitialized || isLoading) return;
 
-    if (isAuthenticated) {
-      // Fetch profile to check onboarding status
-      if (!profile && !isProfileLoading) {
-        fetchProfile();
-      }
-    }
-  }, [isInitialized, isLoading, isAuthenticated, fetchProfile, profile, isProfileLoading]);
-
-  // Handle redirect after profile is loaded
-  useEffect(() => {
-    if (isAuthenticated && profile && !isProfileLoading) {
-      console.log("Navigation", {
-        destination: profile.onboardingCompleted ? "/dashboard" : "/onboarding",
-      });
-      if (profile.onboardingCompleted) {
+    if (isAuthenticated && !isProfileLoading) {
+      if (profile?.onboardingCompleted) {
         navigate({ to: "/dashboard", replace: true });
       } else {
         navigate({ to: "/onboarding", replace: true });
       }
     }
-  }, [isAuthenticated, profile, isProfileLoading, navigate]);
+  }, [isInitialized, isLoading, isAuthenticated, fetchProfile, profile, isProfileLoading, navigate]);
 
   // Show loading while initializing
   if (!isInitialized || isLoading || (isAuthenticated && isProfileLoading)) {

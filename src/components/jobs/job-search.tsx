@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Search, X, Clock, Sparkles, Building2, MapPin, Wrench } from "lucide-react";
+import { Search, X, Sparkles, Building2, MapPin, Wrench } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { recentSearchesMock, searchSuggestionsMock } from "@/lib/jobs";
 
 const iconFor = (t: string) =>
   t === "role" ? Sparkles : t === "company" ? Building2 : t === "skill" ? Wrench : MapPin;
@@ -29,11 +28,7 @@ export function JobSearch({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const filtered = value
-    ? searchSuggestionsMock.filter((s) =>
-        s.label.toLowerCase().includes(value.toLowerCase()),
-      )
-    : [];
+  const filtered: { type: string; label: string }[] = [];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -97,24 +92,6 @@ export function JobSearch({
             })}
           </div>
         )}
-        <div>
-          <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Recent
-          </div>
-          {recentSearchesMock.map((r) => (
-            <button
-              key={r}
-              onClick={() => {
-                onChange(r);
-                setOpen(false);
-              }}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs hover:bg-surface-elevated/70"
-            >
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="flex-1 truncate">{r}</span>
-            </button>
-          ))}
-        </div>
       </PopoverContent>
     </Popover>
   );

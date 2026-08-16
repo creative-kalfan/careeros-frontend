@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import { request } from "../utils/request";
 import type {
   User,
   Session,
@@ -233,75 +234,63 @@ export const authService = {
     onboardingCompleted: boolean;
     onboardingStep: number;
   } | null> => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    try {
+      const res = await request<{ success: boolean; data: any }>({
+        method: "GET",
+        path: "/api/profile/me",
+      });
+      if (!res?.success || !res?.data) {
+        return null;
+      }
+      return {
+        onboardingCompleted: res.data.onboarding_completed ?? false,
+        onboardingStep: res.data.onboarding_step ?? 0,
+      };
+    } catch (err) {
+      console.error("Failed to fetch profile from python backend:", err);
       return null;
     }
-
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("onboarding_completed, onboarding_step")
-      .eq("id", user.id)
-      .single();
-
-    if (error || !profile) {
-      return null;
-    }
-
-    return {
-      onboardingCompleted: profile.onboarding_completed ?? false,
-      onboardingStep: profile.onboarding_step ?? 0,
-    };
   },
 
   // Update profile onboarding step
   updateOnboardingStep: async (step: number): Promise<void> => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error("No authenticated user");
-    }
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({
+    await request<any>({
+      method: "PATCH",
+      path: "/api/profile/me",
+      body: {
         onboarding_step: step,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
+      },
+    });
+  },
 
-    if (error) {
-      throw new Error(error.message);
-    }
+  // Update profile fields (used by onboarding wizard)
+  updateProfile: async (data: {
+    current_role?: string;
+    desired_role?: string;
+    skills?: string[];
+    location?: string;
+    preferred_companies?: string[];
+    salary_expectation_min?: number;
+    salary_expectation_max?: number;
+    experience?: string;
+  }): Promise<void> => {
+    await request<any>({
+      method: "PATCH",
+      path: "/api/profile/me",
+      body: data,
+    });
   },
 
   // Complete onboarding
   completeOnboarding: async (): Promise<void> => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error("No authenticated user");
-    }
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({
+    await request<any>({
+      method: "PATCH",
+      path: "/api/profile/me",
+      body: {
         onboarding_completed: true,
         onboarding_step: 10,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
-
-    if (error) {
-      throw new Error(error.message);
-    }
+      },
+    });
   },
 };
 

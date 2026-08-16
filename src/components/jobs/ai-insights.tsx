@@ -227,12 +227,20 @@ export function AIInsights({
           ) : (
             <Card className="glass rounded-2xl border-border/60 p-4">
               <div className="flex items-center gap-4">
-                <DualRing ai={job.aiMatch} ats={job.atsMatch} />
+                {job.atsScore != null ? (
+                  <DualRing ai={job.match?.overall ?? 0} ats={job.atsScore} />
+                ) : (
+                  <div className="grid place-items-center text-center leading-none" style={{ width: 128, height: 128 }}>
+                    <div className="text-[22px] font-semibold tracking-tight">{job.match?.overall ?? 0}%</div>
+                    <div className="mt-0.5 text-[9px] uppercase tracking-[0.14em] text-muted-foreground">AI match</div>
+                    <div className="mt-1 text-[10px] text-muted-foreground">ATS N/A</div>
+                  </div>
+                )}
                 <div className="min-w-0 flex-1 space-y-2">
-                  <Row label="Skills" value={82} />
-                  <Row label="Experience" value={74} />
-                  <Row label="Domain" value={68} />
-                  <Row label="Seniority" value={90} />
+                  {job.match?.skillMatch != null && <Row label="Skill match" value={job.match.skillMatch} />}
+                  {job.match?.experienceMatch != null && <Row label="Experience" value={job.match.experienceMatch} />}
+                  {job.match?.locationMatch != null && <Row label="Location" value={job.match.locationMatch} />}
+                  {job.match?.salaryMatch != null && <Row label="Salary" value={job.match.salaryMatch} />}
                 </div>
               </div>
             </Card>
@@ -243,14 +251,20 @@ export function AIInsights({
           <Card className="glass rounded-2xl border-border/60 p-3.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Format & keywords</span>
-              <span className="font-mono font-semibold">{job.atsMatch}%</span>
+              {job.atsScore != null ? (
+                <span className="font-mono font-semibold">{job.atsScore}%</span>
+              ) : (
+                <span className="font-mono font-semibold text-muted-foreground">N/A</span>
+              )}
             </div>
-            <Progress value={job.atsMatch} className="mt-2 h-1.5" />
+            {job.atsScore != null && (
+              <Progress value={job.atsScore} className="mt-2 h-1.5" />
+            )}
             <div className="mt-3 grid grid-cols-3 gap-2">
               {[
-                { l: "Format", v: 92 },
-                { l: "Density", v: 78 },
-                { l: "Parser", v: 88 },
+                { l: "Skill", v: job.atsSkillMatch ?? 0 },
+                { l: "Keyword", v: job.atsKeywordMatch ?? 0 },
+                { l: "Overall", v: job.atsScore ?? 0 },
               ].map((c) => (
                 <div key={c.l} className="rounded-lg border border-border/60 bg-background/40 p-2 text-center">
                   <div className="font-mono text-sm">{c.v}</div>
@@ -261,59 +275,67 @@ export function AIInsights({
           </Card>
         </Section>
 
-        <Section icon={Target} title="Skills">
-          <Card className="glass rounded-2xl border-border/60 p-3.5">
-            <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-success">
-              <Check className="h-3 w-3" /> Matched
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {job.matchedSkills.map((s) => (
-                <span
-                  key={s}
-                  className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[11px] text-foreground/90"
-                >
-                  <Check className="h-3 w-3 text-success" />
-                  {s}
-                </span>
-              ))}
-            </div>
-            {job.missingSkills.length > 0 && (
-              <>
-                <div className="mb-1.5 mt-3 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-destructive">
-                  <X className="h-3 w-3" /> Missing
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {job.missingSkills.map((s) => (
-                    <span
-                      key={s}
-                      className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-1 text-[11px] text-foreground/90"
-                    >
-                      <X className="h-3 w-3 text-destructive" />
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
-          </Card>
-        </Section>
+        {(job.matchedSkills.length > 0 || job.missingSkills.length > 0) && (
+          <Section icon={Target} title="Skills">
+            <Card className="glass rounded-2xl border-border/60 p-3.5">
+              {job.matchedSkills.length > 0 && (
+                <>
+                  <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-success">
+                    <Check className="h-3 w-3" /> Matched
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {job.matchedSkills.map((s) => (
+                      <span
+                        key={s}
+                        className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[11px] text-foreground/90"
+                      >
+                        <Check className="h-3 w-3 text-success" />
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+              {job.missingSkills.length > 0 && (
+                <>
+                  <div className="mb-1.5 mt-3 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-destructive">
+                    <X className="h-3 w-3" /> Missing
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {job.missingSkills.map((s) => (
+                      <span
+                        key={s}
+                        className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-1 text-[11px] text-foreground/90"
+                      >
+                        <X className="h-3 w-3 text-destructive" />
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+            </Card>
+          </Section>
+        )}
 
-        <Section icon={FileText} title="Keyword Comparison">
-          <Card className="glass rounded-2xl border-border/60 p-3.5">
-            <div className="space-y-1.5">
-              {job.keywordCompare.map((k) => (
-                <div
-                  key={k.keyword}
-                  className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-lg border border-border/40 bg-background/30 px-2.5 py-1.5"
-                >
-                  <span className="truncate text-xs">{k.keyword}</span>
-                  <PillMark ok={k.inResume} label="Resume" />
-                  <PillMark ok={k.inJob} label="Job" />
-                </div>
-              ))}
-            </div>
-          </Card>
-        </Section>
+        {job.keywordCompare.length > 0 && (
+          <Section icon={FileText} title="Keyword Comparison">
+            <Card className="glass rounded-2xl border-border/60 p-3.5">
+              <div className="space-y-1.5">
+                {job.keywordCompare.map((k) => (
+                  <div
+                    key={k.keyword}
+                    className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-lg border border-border/40 bg-background/30 px-2.5 py-1.5"
+                  >
+                    <span className="truncate text-xs">{k.keyword}</span>
+                    <PillMark ok={k.inResume} label="Resume" />
+                    <PillMark ok={k.inJob} label="Job" />
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </Section>
+        )}
 
         <div className="grid grid-cols-2 gap-2">
           <Section icon={TrendingUp} title="Career Fit">

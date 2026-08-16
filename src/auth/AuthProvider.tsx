@@ -341,6 +341,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateProfile = useCallback(async (data: {
+    current_role?: string;
+    desired_role?: string;
+    skills?: string[];
+    location?: string;
+    preferred_companies?: string[];
+    salary_expectation_min?: number;
+    salary_expectation_max?: number;
+    experience?: string;
+  }) => {
+    try {
+      await authService.updateProfile(data);
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      throw err;
+    }
+  }, []);
+
   const completeOnboarding = useCallback(async () => {
     try {
       await authService.completeOnboarding();
@@ -373,8 +391,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearError,
     fetchProfile,
     updateOnboardingStep,
+    updateProfile,
     completeOnboarding,
-  }), [user, session, tokens, status, error, isInitialized, profile, isProfileLoading, login, logout, register, forgotPassword, resetPassword, verifyEmail, refreshToken, clearError, fetchProfile, updateOnboardingStep, completeOnboarding]);
+  }), [user, session, tokens, status, error, isInitialized, profile, isProfileLoading, login, logout, register, forgotPassword, resetPassword, verifyEmail, refreshToken, clearError, fetchProfile, updateOnboardingStep, updateProfile, completeOnboarding]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

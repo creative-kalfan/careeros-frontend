@@ -80,7 +80,7 @@ export function AppSidebar() {
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+    <Sidebar collapsible="icon" className="glass-sidebar border-r border-sidebar-border">
       <SidebarHeader className="px-3 pt-4 pb-2">
         <Link to="/dashboard" className="flex items-center gap-2.5 px-2">
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary to-accent shadow-[var(--shadow-glow)]">

@@ -2,7 +2,6 @@ import { Bookmark, MapPin, Zap, Sparkles, Gauge } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { Job } from "@/types/jobs";
 import { formatSalary, statusMeta } from "@/lib/jobs";
 
@@ -13,7 +12,6 @@ export function JobList({
   loading,
   onToggleBookmark,
   query,
-  onQueryHint,
 }: {
   jobs: Job[];
   selectedId: string | null;
@@ -21,7 +19,6 @@ export function JobList({
   loading?: boolean;
   onToggleBookmark: (id: string) => void;
   query?: string;
-  onQueryHint?: () => void;
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -31,18 +28,8 @@ export function JobList({
             {jobs.length.toLocaleString()} roles
           </div>
           <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-            {query ? `for "${query}"` : "Sorted by AI match"}
+            {query ? `for "${query}"` : "Sorted by match score"}
           </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 rounded-md px-2 text-[11px] text-muted-foreground"
-            onClick={onQueryHint}
-          >
-            Sort
-          </Button>
         </div>
       </div>
 
@@ -104,8 +91,8 @@ function JobCard({
   onToggleBookmark: () => void;
 }) {
   const status = statusMeta(job.status);
-  const matchScore = job.match?.overall ?? job.aiMatch;
-  const atsScore = job.atsScore ?? job.atsMatch;
+  const matchScore = job.match?.overall;
+  const atsScore = job.atsScore;
   const missingSkills = job.atsMissingSkills?.length ? job.atsMissingSkills : job.missingSkills;
 
   return (
@@ -169,6 +156,8 @@ function JobCard({
                   ? "border-success/30 bg-success/10 text-success"
                   : job.workMode === "Hybrid"
                   ? "border-info/30 bg-info/10 text-info"
+                  : job.workMode === "Unknown"
+                  ? "border-border/60 bg-surface-elevated/50 text-muted-foreground"
                   : "border-border/60 bg-surface-elevated/50"
               }`}
             >
@@ -180,8 +169,16 @@ function JobCard({
           </div>
 
           <div className="mt-3 flex items-center gap-1.5">
-            <MatchPill icon={Sparkles} label="Match" value={matchScore} tone="primary" />
-            <MatchPill icon={Gauge} label="ATS" value={atsScore} tone="accent" />
+            {matchScore != null && (
+              <MatchPill icon={Sparkles} label="Match" value={matchScore} tone="primary" />
+            )}
+            {atsScore != null && atsScore > 0 ? (
+              <MatchPill icon={Gauge} label="ATS" value={atsScore} tone="accent" />
+            ) : (
+              <span className="rounded-full border border-border/60 bg-surface-elevated/50 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                ATS N/A
+              </span>
+            )}
             <span className="ml-auto text-[10px] text-muted-foreground">{job.postedAt}</span>
           </div>
 
@@ -246,6 +243,7 @@ function MatchPill({
   value: number;
   tone: "primary" | "accent";
 }) {
+  if (value == null) return null;
   const color =
     tone === "primary"
       ? "from-primary/25 to-primary/5 text-foreground ring-primary/25"

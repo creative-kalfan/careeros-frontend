@@ -8,7 +8,7 @@ import { JobDetails, JobDetailsEmpty } from "@/components/jobs/job-details";
 import { AIInsights } from "@/components/jobs/ai-insights";
 import { JobSearch } from "@/components/jobs/job-search";
 import { Button } from "@/components/ui/button";
-import { usePersonalizedJobs, useJob, jobsQueryKeys } from "@/hooks/api/useJobs";
+import { usePersonalizedJobs, jobsQueryKeys } from "@/hooks/api/useJobs";
 import { useSaveJob } from "@/hooks/api/useSaveJob";
 import { useMatchJobs } from "@/hooks/api/useMatchJobs";
 import { buildSearchFilters } from "@/lib/jobs";
@@ -47,19 +47,45 @@ function JobsPage() {
   const queryClient = useQueryClient();
 
   const [query, setQuery] = useState("");
+  const [location, setLocation] = useState("");
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState<JobSearchFilters["sort"]>("best-match");
+  // The personalized endpoint always sorts by match score — no sort param is supported.
+  const sort: JobSearchFilters["sort"] = "best-match";
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(true);
   const [showInsights, setShowInsights] = useState(true);
   const [mobileTab, setMobileTab] = useState<"list" | "details" | "insights">("list");
 
+  // Debounce search input to avoid a network request per keystroke.
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function handleQueryChange(v: string) {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setQuery(v);
+      setPage(1);
+      setSelectedId(null);
+    }, 300);
+  }
+  function handleLocationChange(v: string) {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setLocation(v);
+      setPage(1);
+      setSelectedId(null);
+    }, 300);
+  }
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
+
   const isXL = useMediaQuery("(min-width: 1280px)");
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const filters: JobSearchFilters = useMemo(
-    () => buildSearchFilters({ query, sort, page, pageSize: PAGE_SIZE }),
-    [query, sort, page],
+    () => buildSearchFilters({ query, location, sort, page, pageSize: PAGE_SIZE }),
+    [query, location, sort, page],
   );
 
   const {
@@ -68,7 +94,6 @@ function JobsPage() {
     isError,
     error,
     isFetching,
-    isPlaceholderData,
   } = usePersonalizedJobs({ ...filters, includeAts: true });
 
   const jobs = data?.jobs ?? [];
@@ -136,18 +161,10 @@ function JobsPage() {
     if (!isDesktop) setMobileTab("details");
   }
 
-  function handleQueryChange(v: string) {
-    setQuery(v);
-    setPage(1);
-    setSelectedId(null);
-  }
 
-  function handleSort() {
-    const order: JobSearchFilters["sort"][] = ["best-match", "newest", "oldest"];
-    const next = order[(order.indexOf(sort) + 1) % order.length];
-    setSort(next);
-    setPage(1);
-  }
+  // Sorting is not supported by the personalized endpoint — it always returns
+  // jobs sorted by match score. The sort button is removed to avoid pretending
+  // that "newest"/"oldest" sorting works.
 
   const gridCols = isXL
     ? `${showFilters ? "260px" : "0px"} minmax(340px, 400px) minmax(0, 1fr) ${
@@ -156,7 +173,6 @@ function JobsPage() {
     : `minmax(320px, 380px) minmax(0, 1fr)`;
 
   const loading = isLoading;
-  const showEmpty = !loading && !isError && jobs.length === 0;
   const showError = isError;
 
   return (
@@ -213,8 +229,10 @@ function JobsPage() {
           {isDesktop && isXL && showFilters && (
             <div className="min-h-0 animate-fade-in border-r border-border/60 bg-sidebar/40">
               <FiltersPane onApply={(filters) => {
-                const next = filters.role?.[0] ?? filters.location?.[0] ?? "";
-                if (next) handleQueryChange(next);
+                const nextRole = filters.role?.[0] ?? "";
+                const nextLocation = filters.location?.[0] ?? "";
+                if (nextRole) handleQueryChange(nextRole);
+                if (nextLocation) handleLocationChange(nextLocation);
               }} />
             </div>
           )}
@@ -228,7 +246,6 @@ function JobsPage() {
               loading={loading}
               onToggleBookmark={toggleBookmark}
               query={query}
-              onQueryHint={handleSort}
             />
             {!loading && totalPages > 1 && (
               <Pagination
@@ -279,7 +296,6 @@ function JobsPage() {
                 loading={loading}
                 onToggleBookmark={toggleBookmark}
                 query={query}
-                onQueryHint={handleSort}
               />
             )}
             {mobileTab === "details" && selected && (

@@ -26,10 +26,12 @@ import { Route as AppNotificationsRouteImport } from './routes/_app.notification
 import { Route as AppJobsRouteImport } from './routes/_app.jobs'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCopilotRouteImport } from './routes/_app.copilot'
+import { Route as AppAtsHistoryRouteImport } from './routes/_app.ats-history'
 import { Route as AppAtsRouteImport } from './routes/_app.ats'
 import { Route as AppApplicationsRouteImport } from './routes/_app.applications'
 import { Route as AppResumesIndexRouteImport } from './routes/_app.resumes.index'
 import { Route as AppResumesIdRouteImport } from './routes/_app.resumes.$id'
+import { Route as AppOptimizerResumeIdRouteImport } from './routes/_app.optimizer.$resumeId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -114,6 +116,11 @@ const AppCopilotRoute = AppCopilotRouteImport.update({
   path: '/copilot',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAtsHistoryRoute = AppAtsHistoryRouteImport.update({
+  id: '/ats-history',
+  path: '/ats-history',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAtsRoute = AppAtsRouteImport.update({
   id: '/ats',
   path: '/ats',
@@ -134,6 +141,11 @@ const AppResumesIdRoute = AppResumesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppResumesRoute,
 } as any)
+const AppOptimizerResumeIdRoute = AppOptimizerResumeIdRouteImport.update({
+  id: '/optimizer/$resumeId',
+  path: '/optimizer/$resumeId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -142,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/applications': typeof AppApplicationsRoute
   '/ats': typeof AppAtsRoute
+  '/ats-history': typeof AppAtsHistoryRoute
   '/copilot': typeof AppCopilotRoute
   '/dashboard': typeof AppDashboardRoute
   '/jobs': typeof AppJobsRoute
@@ -153,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/resumes/$id': typeof AppResumesIdRoute
   '/resumes/': typeof AppResumesIndexRoute
 }
@@ -163,6 +177,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/applications': typeof AppApplicationsRoute
   '/ats': typeof AppAtsRoute
+  '/ats-history': typeof AppAtsHistoryRoute
   '/copilot': typeof AppCopilotRoute
   '/dashboard': typeof AppDashboardRoute
   '/jobs': typeof AppJobsRoute
@@ -173,6 +188,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/resumes/$id': typeof AppResumesIdRoute
   '/resumes': typeof AppResumesIndexRoute
 }
@@ -186,6 +202,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_app/applications': typeof AppApplicationsRoute
   '/_app/ats': typeof AppAtsRoute
+  '/_app/ats-history': typeof AppAtsHistoryRoute
   '/_app/copilot': typeof AppCopilotRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/jobs': typeof AppJobsRoute
@@ -197,6 +214,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
+  '/_app/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/_app/resumes/$id': typeof AppResumesIdRoute
   '/_app/resumes/': typeof AppResumesIndexRoute
 }
@@ -209,6 +227,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/applications'
     | '/ats'
+    | '/ats-history'
     | '/copilot'
     | '/dashboard'
     | '/jobs'
@@ -220,6 +239,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/signup'
+    | '/optimizer/$resumeId'
     | '/resumes/$id'
     | '/resumes/'
   fileRoutesByTo: FileRoutesByTo
@@ -230,6 +250,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/applications'
     | '/ats'
+    | '/ats-history'
     | '/copilot'
     | '/dashboard'
     | '/jobs'
@@ -240,6 +261,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/signup'
+    | '/optimizer/$resumeId'
     | '/resumes/$id'
     | '/resumes'
   id:
@@ -252,6 +274,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_app/applications'
     | '/_app/ats'
+    | '/_app/ats-history'
     | '/_app/copilot'
     | '/_app/dashboard'
     | '/_app/jobs'
@@ -263,6 +286,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_auth/login'
     | '/_auth/signup'
+    | '/_app/optimizer/$resumeId'
     | '/_app/resumes/$id'
     | '/_app/resumes/'
   fileRoutesById: FileRoutesById
@@ -397,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCopilotRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/ats-history': {
+      id: '/_app/ats-history'
+      path: '/ats-history'
+      fullPath: '/ats-history'
+      preLoaderRoute: typeof AppAtsHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/ats': {
       id: '/_app/ats'
       path: '/ats'
@@ -425,6 +456,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppResumesIdRouteImport
       parentRoute: typeof AppResumesRoute
     }
+    '/_app/optimizer/$resumeId': {
+      id: '/_app/optimizer/$resumeId'
+      path: '/optimizer/$resumeId'
+      fullPath: '/optimizer/$resumeId'
+      preLoaderRoute: typeof AppOptimizerResumeIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -445,6 +483,7 @@ const AppResumesRouteWithChildren = AppResumesRoute._addFileChildren(
 interface AppRouteChildren {
   AppApplicationsRoute: typeof AppApplicationsRoute
   AppAtsRoute: typeof AppAtsRoute
+  AppAtsHistoryRoute: typeof AppAtsHistoryRoute
   AppCopilotRoute: typeof AppCopilotRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppJobsRoute: typeof AppJobsRoute
@@ -454,11 +493,13 @@ interface AppRouteChildren {
   AppRecommendationsRoute: typeof AppRecommendationsRoute
   AppResumesRoute: typeof AppResumesRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
+  AppOptimizerResumeIdRoute: typeof AppOptimizerResumeIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppApplicationsRoute: AppApplicationsRoute,
   AppAtsRoute: AppAtsRoute,
+  AppAtsHistoryRoute: AppAtsHistoryRoute,
   AppCopilotRoute: AppCopilotRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppJobsRoute: AppJobsRoute,
@@ -468,6 +509,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRecommendationsRoute: AppRecommendationsRoute,
   AppResumesRoute: AppResumesRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
+  AppOptimizerResumeIdRoute: AppOptimizerResumeIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

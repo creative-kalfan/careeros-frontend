@@ -187,15 +187,22 @@
 }
 
 @utility glass-topbar {
-  background: color-mix(in oklab, var(--background) 70%, transparent);
-  backdrop-filter: blur(20px) saturate(160%);
+  background: color-mix(in oklab, var(--background) 72%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
   border-bottom: 1px solid var(--border);
+}
+
+@utility glass-sidebar {
+  background: color-mix(in oklab, var(--sidebar) 78%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-right: 1px solid var(--sidebar-border);
 }
 
 @utility bg-app {
   background:
-    radial-gradient(1200px 600px at 10% -10%, oklch(0.62 0.22 260 / 0.12), transparent 60%),
-    radial-gradient(1000px 500px at 100% 0%, oklch(0.68 0.20 305 / 0.10), transparent 55%),
+    radial-gradient(1400px 700px at 5% -5%, oklch(0.62 0.22 260 / 0.14), transparent 55%),
+    radial-gradient(1200px 600px at 95% -5%, oklch(0.68 0.20 305 / 0.10), transparent 50%),
+    radial-gradient(800px 400px at 50% 110%, oklch(0.62 0.22 260 / 0.06), transparent 60%),
     var(--background);
 }
 

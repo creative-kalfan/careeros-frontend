@@ -132,5 +132,15 @@ export type AuthContextValue = {
   clearError: () => void;
   fetchProfile: () => Promise<void>;
   updateOnboardingStep: (step: number) => Promise<void>;
+  updateProfile: (data: {
+    current_role?: string;
+    desired_role?: string;
+    skills?: string[];
+    location?: string;
+    preferred_companies?: string[];
+    salary_expectation_min?: number;
+    salary_expectation_max?: number;
+    experience?: string;
+  }) => Promise<void>;
   completeOnboarding: () => Promise<void>;
 };

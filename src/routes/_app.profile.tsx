@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "../auth/useAuth";
-import { supabase } from "../lib/supabase";
+import { request } from "../utils/request";
 
 type Profile = {
   id: string;
@@ -38,36 +38,13 @@ function ProfilePage() {
     const loadProfile = async () => {
       if (!user?.email) return;
       try {
-        // First, ensure a profile row exists (auto-create)
-        const { data: existingProfile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (existingProfile) {
-          setProfile(existingProfile);
-          setFullName(existingProfile.full_name || "");
-        } else {
-          // Auto-create profile if missing (first login)
-          const newProfile = {
-            id: user.id,
-            email: user.email,
-            full_name: user.name || null,
-            avatar_url: user.avatar || null,
-            role: "user",
-          };
-
-          const { data: createdProfile } = await supabase
-            .from("profiles")
-            .upsert(newProfile)
-            .select()
-            .single();
-
-          if (createdProfile) {
-            setProfile(createdProfile);
-            setFullName(createdProfile.full_name || "");
-          }
+        const res = await request<{ success: boolean; data: Profile }>({
+          method: "GET",
+          path: "/api/profile/me",
+        });
+        if (res?.success && res?.data) {
+          setProfile(res.data);
+          setFullName(res.data.full_name || "");
         }
       } catch (err) {
         console.error("Failed to load profile:", err);
@@ -86,16 +63,15 @@ function ProfilePage() {
     setSaveMessage("");
 
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id,
-          email: user.email,
+      const res = await request<{ success: boolean; data: Profile }>({
+        method: "PATCH",
+        path: "/api/profile/me",
+        body: {
           full_name: fullName,
-          role: "user",
-        });
+        },
+      });
 
-      if (error) throw error;
+      if (!res?.success) throw new Error("Failed to update profile");
       setSaveMessage("Profile updated successfully");
     } catch (err: any) {
       setSaveMessage(err?.message || "Failed to update profile");

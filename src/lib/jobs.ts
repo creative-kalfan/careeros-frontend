@@ -70,81 +70,216 @@ function toWorkMode(remote?: boolean | null, location?: string | null): WorkMode
   const loc = (location ?? "").toLowerCase();
   if (remote === true || loc.includes("remote")) return "Remote";
   if (loc.includes("hybrid")) return "Hybrid";
+  if (!loc) {
+    if (remote === false) return "On-site";
+    return "Unknown";
+  }
   return "On-site";
 }
 
 function toEmploymentType(value?: string | null): EmploymentType {
   const v = (value ?? "").toLowerCase();
+  if (!v) return "Not specified";
   if (v.includes("part")) return "Part-time";
   if (v.includes("contract")) return "Contract";
   if (v.includes("intern")) return "Internship";
   return "Full-time";
 }
 
-// Deterministic pseudo-match derived from backend signals so the UI keeps
-// showing AI/ATS pills. The backend does not yet return a per-job match score.
-function deriveMatchScore(job: NormalizedJob): number {
-  const skills = job.skills?.length ?? 0;
-  const hasDescription = job.description ? 1 : 0;
-  const hasRequirements = job.requirements?.length ? 1 : 0;
-  const base = 60 + Math.min(30, skills * 3) + hasDescription * 5 + hasRequirements * 5;
-  return Math.min(98, base);
+// The backend JobOut schema returns snake_case fields (company_name,
+// apply_url, posted_date, etc.) while older clients may use camelCase
+// (companyName, applyUrl). These helpers normalize both so adaptJob works
+// regardless of which casing the backend currently emits.
+type Raw = Record<string, unknown>;
+
+function pick(raw: Raw, snake: string, camel: string): unknown {
+  const v = raw[snake] ?? raw[camel];
+  return v;
+}
+
+function pickStr(raw: Raw, snake: string, camel: string): string | undefined {
+  const v = pick(raw, snake, camel);
+  return typeof v === "string" ? v : undefined;
+}
+
+// Strip HTML tags from backend description fields (e.g. "<h2><strong>Who we
+// are</strong></h2>") so the UI shows clean plain text, not raw tags.
+function stripHtml(value?: string | null): string {
+  if (!value) return "";
+  const lt = String.fromCharCode(38) + "lt;";
+  const gt = String.fromCharCode(38) + "gt;";
+  const amp = String.fromCharCode(38) + "amp;";
+  const quot = String.fromCharCode(38) + "quot;";
+  const ap = String.fromCharCode(38) + "#39;";
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .split(lt).join("<")
+    .split(gt).join(">")
+    .split(amp).join("&")
+    .split(quot).join(String.fromCharCode(34))
+    .split(ap).join(String.fromCharCode(39))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Raw jobs from the personalized endpoint include optional match/ATS score
+// fields that are not part of the base NormalizedJob DTO. This type widens
+// NormalizedJob with those optional fields so adaptJob can preserve them.
+type RawJobWithScores = NormalizedJob &
+  Partial<
+    Pick<
+      Job,
+      | "match"
+      | "atsScore"
+      | "atsSkillMatch"
+      | "atsKeywordMatch"
+      | "atsMissingSkills"
+      | "atsMissingKeywords"
+      | "atsRecommendations"
+    >
+  >;
+
+// Derives the list of skills the user has that are present in the job.
+// The backend personalized endpoint returns match.missingSkills/skills
+// (whichever casing). We treat any job skill that is NOT in the missing
+// list as a matched skill. When no match data is available we return an
+// empty array rather than fabricating data.
+function deriveMatchedSkills(raw: RawJobWithScores): string[] {
+  const r = raw as unknown as Raw;
+  const jobSkills = (r.skills as string[]) ?? [];
+  const matchMissing = pick(r, "missingSkills" as never, "missingSkills") as
+    | string[]
+    | undefined;
+  const missing = (raw.atsMissingSkills ?? matchMissing ?? []) as string[];
+  if (jobSkills.length === 0 || missing.length === 0) return [];
+  const missingLower = new Set(missing.map((s) => s.toLowerCase()));
+  return jobSkills.filter((s) => !missingLower.has(s.toLowerCase()));
 }
 
 export function adaptJob(
-  raw: NormalizedJob,
+  raw: RawJobWithScores,
   overrides: Partial<Job> = {},
 ): Job {
-  const id = raw.id ?? raw.externalJobId ?? crypto.randomUUID();
-  const company = raw.companyName || "Unknown";
+  const r = raw as unknown as Raw;
+  const company =
+    pickStr(r, "company_name", "companyName") ||
+    pickStr(r, "company", "company") ||
+    "Unknown";
   const brand = BRAND_GRADIENTS[hashString(company) % BRAND_GRADIENTS.length];
-  const salary = parseSalary(raw.salary);
-  const postedDaysAgo = daysAgoFromDate(raw.postedDate ?? raw.createdAt);
-  const aiMatch = deriveMatchScore(raw);
-  const atsMatch = Math.max(40, Math.round(aiMatch * 0.9));
+  const salary = parseSalary(pickStr(r, "salary", "salary"));
+  const postedRaw =
+    pickStr(r, "posted_date", "postedDate") ||
+    pickStr(r, "created_at", "createdAt");
+  const postedDaysAgo = daysAgoFromDate(postedRaw);
+  // Match/ATS scores come from the backend (personalized endpoint returns
+  // match.overall (or match_overall) and ats_score). Default to 0.
+  const matchObj =
+    (r.match as Raw | undefined) ??
+    (r.matchScore as Raw | undefined) ??
+    undefined;
+  const matchOverall =
+    (matchObj && Number(pick(matchObj, "overall", "overall"))) || 0;
+  const atsMatchRaw = pick(r, "ats_score", "atsScore");
+  const atsMatch = atsMatchRaw != null && atsMatchRaw !== 0 ? Number(atsMatchRaw) : undefined;
+  const description = stripHtml(pickStr(r, "description", "description"));
+  const expLevel = pickStr(r, "experience_level", "experienceLevel");
+  const roleCat = pickStr(r, "role_category", "roleCategory");
+  const appDeadline = pickStr(r, "application_deadline", "applicationDeadline");
+  const applyUrl =
+    pickStr(r, "apply_url", "applyUrl") ||
+    pickStr(r, "url", "url") ||
+    null;
+  const location = pickStr(r, "location", "location") ?? "Unknown";
+  const remote =
+    r.remote === true ? true : r.remote === false ? false : null;
+  const emplType = pickStr(r, "employment_type", "employmentType");
+  const postedLabel = humanPostedDate(postedRaw);
+
+  // Match breakdown from snake_case or camelCase.
+  const skillMatch =
+    (matchObj && Number(pick(matchObj, "skill_match", "skillMatch"))) || 0;
+  const resumeMatch =
+    (matchObj && Number(pick(matchObj, "resume_match", "resumeMatch"))) || 0;
+  const experienceMatch =
+    (matchObj && Number(pick(matchObj, "experience_match", "experienceMatch"))) || 0;
+  const locationMatch =
+    (matchObj && Number(pick(matchObj, "location_match", "locationMatch"))) || 0;
+  const salaryMatch =
+    (matchObj && Number(pick(matchObj, "salary_match", "salaryMatch"))) || 0;
+  const companyPreference =
+    (matchObj && Number(pick(matchObj, "company_preference", "companyPreference"))) || 0;
+  const freshness =
+    (matchObj && Number(pick(matchObj, "freshness", "freshness"))) || 0;
+  const missingSkills = (
+    (matchObj && pick(matchObj, "missing_skills", "missingSkills")) ||
+    []
+  ) as string[];
+
+  const overall = matchOverall;
 
   return {
-    id,
-    role: raw.title || "Untitled Role",
+    id: (pickStr(r, "id", "id") as string) ?? crypto.randomUUID(),
+    role: pickStr(r, "title", "title") || "Untitled Role",
     company,
     companyLogo: company.charAt(0).toUpperCase(),
     companyBrand: brand,
-    location: raw.location ?? "Unknown",
-    workMode: toWorkMode(raw.remote, raw.location),
-    employmentType: toEmploymentType(raw.employmentType),
-    experience: raw.experienceLevel ?? "Not specified",
+    location,
+    workMode: toWorkMode(remote, location),
+    employmentType: toEmploymentType(emplType),
+    experience: expLevel ?? "Not specified",
     education: undefined,
     salaryMin: salary.min,
     salaryMax: salary.max,
     salaryCurrency: salary.currency,
-    aiMatch,
+    aiMatch: overall,
     atsMatch,
-    postedAt: humanPostedDate(raw.postedDate ?? raw.createdAt),
+    postedAt: postedLabel,
     postedDaysAgo,
     quickApply: false,
     bookmarked: false,
     status: "not_applied",
-    techStack: raw.skills ?? [],
-    overview: raw.description ?? "",
-    responsibilities: raw.responsibilities ?? [],
-    requirements: raw.requirements ?? [],
+    techStack: (r.skills as string[]) ?? [],
+    overview: description,
+    responsibilities: (r.responsibilities as string[]) ?? [],
+    requirements: (r.requirements as string[]) ?? [],
     benefits: [],
     recruiterNote: undefined,
-    matchedSkills: [],
-    missingSkills: [],
-    seniority: raw.experienceLevel ?? "Not specified",
-    interviewProbability: Math.round(aiMatch * 0.7),
+    matchedSkills: deriveMatchedSkills(raw),
+    missingSkills:
+      (raw.atsMissingSkills as string[]) ??
+      missingSkills,
+    seniority: expLevel ?? "Not specified",
+    interviewProbability: Math.round(overall * 0.7),
     keywordCompare: [],
     marketSalary: { min: salary.min, median: salary.max, max: salary.max },
-    // New classification fields (migration 011)
-    roleCategory: raw.roleCategory ?? null,
-    applicationDeadline: raw.applicationDeadline ?? null,
+    roleCategory: roleCat ?? null,
+    applicationDeadline: appDeadline ?? null,
+    applyUrl,
+    match: matchObj
+      ? {
+          overall,
+          skillMatch,
+          resumeMatch,
+          experienceMatch,
+          locationMatch,
+          salaryMatch,
+          companyPreference,
+          freshness,
+          missingSkills,
+        }
+      : undefined,
+    atsScore: atsMatch,
+    atsSkillMatch: Number(pick(r, "ats_skill_match", "atsSkillMatch") ?? 0) || undefined,
+    atsKeywordMatch: Number(pick(r, "ats_keyword_match", "atsKeywordMatch") ?? 0) || undefined,
+    atsMissingSkills: (pick(r, "ats_missing_skills", "atsMissingSkills") as string[]) ?? undefined,
+    atsMissingKeywords: (pick(r, "ats_missing_keywords", "atsMissingKeywords") as string[]) ?? undefined,
+    atsRecommendations: (pick(r, "ats_recommendations", "atsRecommendations") as string[]) ?? undefined,
     ...overrides,
   };
 }
 
 // ---------------------------------------------------------------------------
-// UI helpers (previously in jobs-data.ts mock file)
+// UI helpers
 // ---------------------------------------------------------------------------
 
 export function statusMeta(s: ApplicationStatus): { label: string; tone: string } {
@@ -165,6 +300,7 @@ export function statusMeta(s: ApplicationStatus): { label: string; tone: string 
 }
 
 export function formatSalary(min: number, max: number, cur = "USD") {
+  if (min === 0 && max === 0) return "Not disclosed";
   const s = cur === "USD" ? "$" : cur + " ";
   return `${s}${min}k – ${s}${max}k`;
 }
@@ -188,34 +324,11 @@ export const filterOptions = {
   companies: [] as string[],
 };
 
-// Static UI affordances that do not require backend data.
-export const savedSearchesMock = [
-  { id: "s1", label: "Staff FE · Remote · $220k+", count: 34 },
-  { id: "s2", label: "AI product · SF/NY", count: 18 },
-  { id: "s3", label: "Design engineer · Hybrid", count: 12 },
-];
-
-export const recentSearchesMock = [
-  "Staff frontend engineer",
-  "Design engineer remote",
-  "AI product engineer",
-  "TypeScript React startup",
-];
-
-export const searchSuggestionsMock = [
-  { type: "role", label: "Staff Frontend Engineer" },
-  { type: "role", label: "Design Engineer" },
-  { type: "role", label: "AI Product Engineer" },
-  { type: "company", label: "Linear" },
-  { type: "company", label: "Vercel" },
-  { type: "skill", label: "TypeScript" },
-  { type: "skill", label: "Next.js" },
-  { type: "location", label: "Remote · US" },
-];
-
 // Maps the UI filter pane selections to backend JobSearchFilters.
 export function buildSearchFilters(filters: {
   query?: string;
+  role?: string;
+  location?: string;
   workMode?: string[];
   employmentType?: string[];
   experience?: string[];
@@ -232,10 +345,9 @@ export function buildSearchFilters(filters: {
         ? false
         : undefined;
 
-  // Send the query as role only — the backend searches title with ilike.
-  // Sending it as both role AND location would over-restrict results.
   return {
-    role: filters.query || undefined,
+    role: filters.role || filters.query || undefined,
+    location: filters.location || undefined,
     company: filters.companies?.[0],
     employmentType: filters.employmentType?.[0],
     experience: filters.experience?.[0],

@@ -32,7 +32,8 @@ function AppLayout() {
   // Check if current route is the onboarding route
   const isOnboardingRoute = location.pathname === "/onboarding";
 
-  // Fetch profile on mount when authenticated
+  // Fetch profile on mount when authenticated (and refetch if it's null so
+  // the onboarding gate never renders protected content on a failed fetch).
   useEffect(() => {
     if (isAuthenticated && !profile && !isProfileLoading) {
       fetchProfile();
@@ -67,6 +68,14 @@ function AppLayout() {
     return <AuthLoadingSpinner />;
   }
 
+  // STRICT ONBOARDING GATE (root layout level):
+  // While authenticated, if we don't yet have a confirmed profile we must NOT
+  // render any protected content — show the spinner and let the refetch above
+  // resolve it. This prevents bypassing the gate when the profile fetch fails.
+  if (isAuthenticated && !profile) {
+    return <AuthLoadingSpinner />;
+  }
+
   // If profile exists and onboarding not completed, allow rendering onboarding route
   // Only show loading spinner if we're NOT on the onboarding route yet
   if (profile && !profile.onboardingCompleted && !isOnboardingRoute) {
@@ -86,7 +95,7 @@ function AppLayout() {
         <div className="bg-app flex min-h-dvh w-full">
           <AppSidebar />
           <SidebarInset className="flex min-w-0 flex-1 flex-col">
-            <AppTopbar onOpenCommand={() => setCmdOpen(true)} onLogout={logout} />
+            <AppTopbar onOpenCommand={() => setCmdOpen(true)} />
             <main className="flex-1">
               <PageTransition>
                 <Outlet />

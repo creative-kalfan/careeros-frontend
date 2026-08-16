@@ -17,7 +17,7 @@ import type {
 export type JobsApi = {
   getJobs: (params?: JobSearchFilters) => Promise<JobSearchResponse>;
   searchJobs: (params?: JobSearchFilters) => Promise<JobSearchResponse>;
-  getPersonalizedJobs: (params?: JobSearchFilters & { includeAts?: boolean }) => Promise<JobSearchResponse & { jobs: Array<Job & { match?: { overall: number; skillMatch: number; resumeMatch: number; experienceMatch: number; locationMatch: number; salaryMatch: number; companyPreference: number; freshness: number; missingSkills: string[] }; atsScore?: number; atsSkillMatch?: number; atsKeywordMatch?: number; atsMissingSkills?: string[]; atsMissingKeywords?: string[]; atsRecommendations?: string[] }> }>;
+  getPersonalizedJobs: (params?: JobSearchFilters & { includeAts?: boolean }) => Promise<JobSearchResponse>;
   getJob: (id: string) => Promise<Job>;
   saveJob: (jobId: string) => Promise<{ savedJob: SavedJobRecord }>;
   unsaveJob: (jobId: string) => Promise<void>;
@@ -147,58 +147,13 @@ export const jobsApi: JobsApi = {
     if (params?.pageSize) sp.set("pageSize", String(params.pageSize));
     if (params?.includeAts) sp.set("includeAts", "true");
     const qs = sp.toString();
-    // The personalized endpoint returns a raw JobSearchResult object {jobs, total, page, pageSize, hasMore}
-    // NOT the standard {success, data, meta} envelope — handle directly.
-    const raw = await request<{
-      jobs: Array<NormalizedJob & {
-        match?: { overall: number; skillMatch: number; resumeMatch: number; experienceMatch: number; locationMatch: number; salaryMatch: number; companyPreference: number; freshness: number; missingSkills: string[] };
-        atsScore?: number; atsSkillMatch?: number; atsKeywordMatch?: number;
-        atsMissingSkills?: string[]; atsMissingKeywords?: string[]; atsRecommendations?: string[];
-      }>;
-      total: number;
-      page: number;
-      pageSize: number;
-      hasMore: boolean;
-    }>({
+    // The personalized endpoint now returns the standard { success, data, meta }
+    // envelope — same as getJobs() and searchJobs(). adaptJob() preserves the
+    // optional match/ATS score fields from the raw job objects.
+    const res = await request<BackendResponse<NormalizedJob[]>>({
       method: "GET",
       path: `${API_ENDPOINTS.JOBS.PERSONALIZED}${qs ? `?${qs}` : ""}`,
     });
-
-    const totalPages = Math.ceil(raw.total / raw.pageSize);
-    const meta = {
-      page: raw.page,
-      pageSize: raw.pageSize,
-      total: raw.total,
-      totalPages,
-      hasNext: raw.hasMore,
-      hasPrevious: raw.page > 1,
-    };
-
-    return {
-      ...mapSearchResult(raw.jobs, meta),
-      jobs: raw.jobs.map((job) => {
-        const adapted = adaptJob(job);
-        return {
-          ...adapted,
-          match: job.match ? {
-            overall: job.match.overall,
-            skillMatch: job.match.skillMatch,
-            resumeMatch: job.match.resumeMatch,
-            experienceMatch: job.match.experienceMatch,
-            locationMatch: job.match.locationMatch,
-            salaryMatch: job.match.salaryMatch,
-            companyPreference: job.match.companyPreference,
-            freshness: job.match.freshness,
-            missingSkills: job.match.missingSkills ?? [],
-          } : undefined,
-          atsScore: job.atsScore,
-          atsSkillMatch: job.atsSkillMatch,
-          atsKeywordMatch: job.atsKeywordMatch,
-          atsMissingSkills: job.atsMissingSkills ?? [],
-          atsMissingKeywords: job.atsMissingKeywords ?? [],
-          atsRecommendations: job.atsRecommendations ?? [],
-        } as Job & { match?: { overall: number; skillMatch: number; resumeMatch: number; experienceMatch: number; locationMatch: number; salaryMatch: number; companyPreference: number; freshness: number; missingSkills: string[] }; atsScore?: number; atsSkillMatch?: number; atsKeywordMatch?: number; atsMissingSkills?: string[]; atsMissingKeywords?: string[]; atsRecommendations?: string[] };
-      }),
-    };
+    return mapSearchResult(res.data, res.meta);
   },
 };

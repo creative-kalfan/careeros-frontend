@@ -33,9 +33,19 @@ const ONBOARDING_STEPS = [
 
 function OnboardingPage() {
   const navigate = useNavigate();
-  const { profile, isProfileLoading, updateOnboardingStep, completeOnboarding } = useAuth();
+  const { profile, isProfileLoading, updateOnboardingStep, updateProfile, completeOnboarding } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form state for all onboarding fields
+  const [formData, setFormData] = useState({
+    currentRole: "",
+    targetRole: "",
+    skills: "",
+    companies: "",
+    salaryMin: "",
+    noticePeriod: "",
+  });
 
   // Clamp step to valid range 1-10, handle NaN/null/undefined
   const clampStep = (step: number) => {
@@ -47,47 +57,43 @@ function OnboardingPage() {
   // Load profile and set current step
   useEffect(() => {
     if (profile && !isProfileLoading) {
-      // Clamp to valid range in case database has invalid value
       const rawStep = profile.onboardingStep + 1;
       const clamped = clampStep(rawStep);
-      console.log({
-        currentStep: clamped,
-        onboardingStep: profile?.onboardingStep,
-        index: clamped - 1,
-        step: ONBOARDING_STEPS[clamped - 1]
-      });
       setCurrentStep(clamped);
     }
   }, [profile, isProfileLoading]);
 
   const handleNext = async () => {
-    const nextStep = clampStep(currentStep + 1);
-    if (nextStep !== currentStep) {
-      setIsSubmitting(true);
-      try {
+    // Save form data for the current step before advancing
+    setIsSubmitting(true);
+    try {
+      const profileData: Record<string, unknown> = {};
+      if (currentStep === 2 && formData.currentRole) profileData.current_role = formData.currentRole;
+      if (currentStep === 3 && formData.targetRole) profileData.desired_role = formData.targetRole;
+      if (currentStep === 4 && formData.skills) profileData.skills = formData.skills.split(",").map((s) => s.trim()).filter(Boolean);
+      if (currentStep === 7 && formData.companies) profileData.preferred_companies = formData.companies.split(",").map((s) => s.trim()).filter(Boolean);
+      if (currentStep === 8 && formData.salaryMin) profileData.salary_expectation_min = Number(formData.salaryMin);
+
+      if (Object.keys(profileData).length > 0) {
+        await updateProfile(profileData as any);
+      }
+
+      const nextStep = clampStep(currentStep + 1);
+      if (nextStep !== currentStep) {
         await updateOnboardingStep(nextStep);
         setCurrentStep(nextStep);
-      } catch (err) {
-        console.error("Failed to update step:", err);
-      } finally {
-        setIsSubmitting(false);
-      }
-    } else if (currentStep === 10) {
-      // Complete onboarding
-      setIsSubmitting(true);
-      try {
+      } else if (currentStep === 10) {
         await completeOnboarding();
         navigate({ to: "/dashboard", replace: true });
-      } catch (err) {
-        console.error("Failed to complete onboarding:", err);
-      } finally {
-        setIsSubmitting(false);
       }
+    } catch (err) {
+      console.error("Failed to save step:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSkip = async () => {
-    // Skip to complete onboarding
     setIsSubmitting(true);
     try {
       await completeOnboarding();
@@ -117,7 +123,7 @@ function OnboardingPage() {
           <Progress value={progress} className="mt-2" />
         </CardHeader>
         <CardContent>
-          <OnboardingStep step={currentStep} />
+          <OnboardingStep step={currentStep} formData={formData} setFormData={setFormData} />
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="ghost" onClick={handleSkip} disabled={isSubmitting}>
@@ -132,7 +138,9 @@ function OnboardingPage() {
   );
 }
 
-function OnboardingStep({ step }: { step: number }) {
+function OnboardingStep({ step, formData, setFormData }: { step: number; formData: { currentRole: string; targetRole: string; skills: string; companies: string; salaryMin: string; noticePeriod: string }; setFormData: React.Dispatch<React.SetStateAction<{ currentRole: string; targetRole: string; skills: string; companies: string; salaryMin: string; noticePeriod: string }>> }) {
+  const update = (field: string, value: string) => setFormData((prev) => ({ ...prev, [field]: value }));
+
   switch (step) {
     case 1:
       return (
@@ -148,7 +156,7 @@ function OnboardingStep({ step }: { step: number }) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="current-role">Current Role</Label>
-            <Input id="current-role" placeholder="e.g., Software Engineer" />
+            <Input id="current-role" value={formData.currentRole} onChange={(e) => update("currentRole", e.target.value)} placeholder="e.g., Software Engineer" />
           </div>
         </div>
       );
@@ -157,7 +165,7 @@ function OnboardingStep({ step }: { step: number }) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="target-role">Target Role</Label>
-            <Input id="target-role" placeholder="e.g., Senior Product Manager" />
+            <Input id="target-role" value={formData.targetRole} onChange={(e) => update("targetRole", e.target.value)} placeholder="e.g., Senior Product Manager" />
           </div>
         </div>
       );
@@ -166,7 +174,7 @@ function OnboardingStep({ step }: { step: number }) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="skills">Skills (comma separated)</Label>
-            <Input id="skills" placeholder="e.g., React, TypeScript, Node.js" />
+            <Input id="skills" value={formData.skills} onChange={(e) => update("skills", e.target.value)} placeholder="e.g., React, TypeScript, Node.js" />
           </div>
         </div>
       );
@@ -191,7 +199,7 @@ function OnboardingStep({ step }: { step: number }) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="companies">Preferred Companies (comma separated)</Label>
-            <Input id="companies" placeholder="e.g., Google, Microsoft, Apple" />
+            <Input id="companies" value={formData.companies} onChange={(e) => update("companies", e.target.value)} placeholder="e.g., Google, Microsoft, Apple" />
           </div>
         </div>
       );
@@ -200,7 +208,7 @@ function OnboardingStep({ step }: { step: number }) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="salary-min">Minimum Salary</Label>
-            <Input id="salary-min" type="number" placeholder="e.g., 80000" />
+            <Input id="salary-min" type="number" value={formData.salaryMin} onChange={(e) => update("salaryMin", e.target.value)} placeholder="e.g., 80000" />
           </div>
         </div>
       );
@@ -209,7 +217,7 @@ function OnboardingStep({ step }: { step: number }) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="notice-period">Notice Period (days)</Label>
-            <Input id="notice-period" type="number" placeholder="e.g., 30" />
+            <Input id="notice-period" type="number" value={formData.noticePeriod} onChange={(e) => update("noticePeriod", e.target.value)} placeholder="e.g., 30" />
           </div>
         </div>
       );

@@ -27,6 +27,7 @@ export function useAuth() {
     clearError: context.clearError,
     fetchProfile: context.fetchProfile,
     updateOnboardingStep: context.updateOnboardingStep,
+    updateProfile: context.updateProfile,
     completeOnboarding: context.completeOnboarding,
   };
 }

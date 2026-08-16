@@ -16,6 +16,8 @@ export const API_ENDPOINTS = {
   },
   ATS: {
     ANALYZE: "/ats/analyze",
+    HISTORY: (resumeId: string) => `/resumes/${resumeId}/ats-history`,
+    REPORT: (id: string) => `/ats/reports/${id}`,
   },
   JOBS: {
     LIST: "/jobs",

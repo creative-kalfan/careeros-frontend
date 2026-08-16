@@ -81,12 +81,20 @@ export function JobDetails({
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <span className="rounded-md bg-gradient-to-br from-primary/25 to-primary/5 px-2 py-1 font-mono text-[11px] font-semibold text-foreground ring-1 ring-primary/25">
-            Match {job.match?.overall ?? job.aiMatch}%
-          </span>
-          <span className="rounded-md bg-gradient-to-br from-accent/25 to-accent/5 px-2 py-1 font-mono text-[11px] font-semibold text-foreground ring-1 ring-accent/25">
-            ATS {job.atsScore ?? job.atsMatch}%
-          </span>
+          {job.match?.overall != null && (
+            <span className="rounded-md bg-gradient-to-br from-primary/25 to-primary/5 px-2 py-1 font-mono text-[11px] font-semibold text-foreground ring-1 ring-primary/25">
+              Match {job.match.overall}%
+            </span>
+          )}
+          {(job.atsScore != null && job.atsScore > 0) ? (
+            <span className="rounded-md bg-gradient-to-br from-accent/25 to-accent/5 px-2 py-1 font-mono text-[11px] font-semibold text-foreground ring-1 ring-accent/25">
+              ATS {job.atsScore}%
+            </span>
+          ) : (
+            <span className="rounded-md bg-gradient-to-br from-muted/25 to-muted/5 px-2 py-1 font-mono text-[11px] font-semibold text-muted-foreground ring-1 ring-border/60">
+              ATS N/A
+            </span>
+          )}
           <Badge variant="outline" className="rounded-full border-border/60 text-[10.5px]">
             {job.workMode}
           </Badge>
@@ -99,9 +107,18 @@ export function JobDetails({
         </div>
 
         <div className="mt-3 flex items-center gap-1.5">
-          <Button size="sm" className="h-8 flex-1 rounded-lg text-xs shadow-[var(--shadow-glow)]">
+          <Button
+            size="sm"
+            className="h-8 flex-1 rounded-lg text-xs shadow-[var(--shadow-glow)]"
+            disabled={!job.applyUrl}
+            onClick={() => {
+              if (job.applyUrl) {
+                window.open(job.applyUrl, "_blank", "noopener,noreferrer");
+              }
+            }}
+          >
             <Send className="mr-1.5 h-3.5 w-3.5" />
-            Direct Apply
+            {job.applyUrl ? "Direct Apply" : "No Apply Link"}
           </Button>
           <Button
             variant="outline"
@@ -206,18 +223,20 @@ export function JobDetails({
             </div>
           </Section>
 
-          <Section icon={Sparkles} title="Benefits">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {job.benefits.map((b) => (
-                <div
-                  key={b}
-                  className="rounded-xl border border-border/50 bg-surface-elevated/40 px-3 py-2 text-[12.5px] text-foreground/85"
-                >
-                  {b}
-                </div>
-              ))}
-            </div>
-          </Section>
+          {job.benefits.length > 0 && (
+            <Section icon={Sparkles} title="Benefits">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {job.benefits.map((b) => (
+                  <div
+                    key={b}
+                    className="rounded-xl border border-border/50 bg-surface-elevated/40 px-3 py-2 text-[12.5px] text-foreground/85"
+                  >
+                    {b}
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
 
           {job.recruiterNote && (
             <>

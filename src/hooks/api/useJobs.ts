@@ -22,8 +22,8 @@ export function useJobs(filters: JobSearchFilters = {}) {
 
 export function usePersonalizedJobs(filters: JobSearchFilters & { includeAts?: boolean } = {}) {
   const { isAuthenticated, isInitialized } = useAuth();
-  
-  return useQuery<JobSearchResponse & { jobs: Array<Job & { match?: { overall: number; skillMatch: number; resumeMatch: number; experienceMatch: number; locationMatch: number; salaryMatch: number; companyPreference: number; freshness: number; missingSkills: string[] }; atsScore?: number; atsSkillMatch?: number; atsKeywordMatch?: number; atsMissingSkills?: string[]; atsMissingKeywords?: string[]; atsRecommendations?: string[] }> }>({
+
+  return useQuery<JobSearchResponse>({
     queryKey: jobsQueryKeys.personalized(filters),
     queryFn: () => jobsApi.getPersonalizedJobs(filters),
     placeholderData: keepPreviousData,
