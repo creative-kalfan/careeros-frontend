@@ -1,7 +1,14 @@
 const getEnv = (key: string, defaultValue?: string): string => {
-  const value = import.meta.env[key];
-  if (value !== undefined && value !== "") {
-    return value;
+  const processValue =
+    typeof process !== "undefined" && process.env ? process.env[key] : undefined;
+  if (processValue !== undefined && processValue !== "") {
+    return processValue;
+  }
+
+  const metaValue =
+    typeof import.meta !== "undefined" && import.meta.env ? import.meta.env[key] : undefined;
+  if (metaValue !== undefined && metaValue !== "") {
+    return metaValue;
   }
   if (defaultValue !== undefined) {
     return defaultValue;
