@@ -17,15 +17,14 @@ import type {
 export type JobsApi = {
   getJobs: (params?: JobSearchFilters) => Promise<JobSearchResponse>;
   searchJobs: (params?: JobSearchFilters) => Promise<JobSearchResponse>;
-  getPersonalizedJobs: (params?: JobSearchFilters & { includeAts?: boolean }) => Promise<JobSearchResponse>;
+  getPersonalizedJobs: (
+    params?: JobSearchFilters & { includeAts?: boolean },
+  ) => Promise<JobSearchResponse>;
   getJob: (id: string) => Promise<Job>;
   saveJob: (jobId: string) => Promise<{ savedJob: SavedJobRecord }>;
   unsaveJob: (jobId: string) => Promise<void>;
   getSavedJobs: () => Promise<Job[]>;
-  matchJobs: (params: {
-    resumeText: string;
-    job: NormalizedJob;
-  }) => Promise<JobMatchResponse>;
+  matchJobs: (params: { resumeText: string; job: NormalizedJob }) => Promise<JobMatchResponse>;
 };
 
 // Backend response envelope: { success, data, meta? }
@@ -140,19 +139,16 @@ export const jobsApi: JobsApi = {
   },
 
   getPersonalizedJobs: async (params?: JobSearchFilters & { includeAts?: boolean }) => {
-    const sp = new URLSearchParams();
-    if (params?.role) sp.set("role", params.role);
-    if (params?.location) sp.set("location", params.location);
-    if (params?.page) sp.set("page", String(params.page));
-    if (params?.pageSize) sp.set("pageSize", String(params.pageSize));
+    const qs = toQueryString(params ?? {});
+    const sp = new URLSearchParams(qs.replace(/^\?/, ""));
     if (params?.includeAts) sp.set("includeAts", "true");
-    const qs = sp.toString();
+    const finalQs = sp.toString();
     // The personalized endpoint now returns the standard { success, data, meta }
     // envelope — same as getJobs() and searchJobs(). adaptJob() preserves the
     // optional match/ATS score fields from the raw job objects.
     const res = await request<BackendResponse<NormalizedJob[]>>({
       method: "GET",
-      path: `${API_ENDPOINTS.JOBS.PERSONALIZED}${qs ? `?${qs}` : ""}`,
+      path: `${API_ENDPOINTS.JOBS.PERSONALIZED}${finalQs ? `?${finalQs}` : ""}`,
     });
     return mapSearchResult(res.data, res.meta);
   },

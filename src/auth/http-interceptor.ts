@@ -34,7 +34,7 @@ export async function attachAuthToken(headers: HeadersInit = {}): Promise<Header
  * @returns Retried request response or null if refresh failed
  */
 export async function handleUnauthorized(
-  originalRequest: () => Promise<Response>
+  originalRequest: () => Promise<Response>,
 ): Promise<Response | null> {
   // Prevent multiple concurrent refresh requests
   if (refreshPromise) {
@@ -98,7 +98,7 @@ function handleSessionExpired(): void {
 export async function retryRequest<T>(
   request: () => Promise<T>,
   maxRetries: number = 3,
-  retryDelay: number = 1000
+  retryDelay: number = 1000,
 ): Promise<T> {
   let lastError: Error;
 

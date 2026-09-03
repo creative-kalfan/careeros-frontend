@@ -22,6 +22,42 @@ const BRAND_GRADIENTS = [
   "linear-gradient(135deg,#F59E0B,#EA580C)",
 ];
 
+// Curated map of well-known tech companies to their logo image URLs.
+// When a company name matches a known entry, the logo URL is used as the
+// companyLogo display value. When unknown, initials fallback is used.
+//
+// Values must be actual image URLs (e.g. from Supabase Storage or public CDNs).
+// These are NOT company names — they are image sources. Initials are fallback only.
+//
+// Keep this list minimal. Add entries only when a real logo URL is available.
+// Real company logo image URLs for well-known companies (Simple Icons CDN
+// serves genuine brand logo assets; these are NOT names or initials).
+// When a job's company matches an entry, the frontend renders the actual
+// logo via <img>. Any company not listed here falls back to initials, and a
+// broken/unavailable logo URL also falls back to initials at render time.
+const KNOWN_COMPANY_LOGOS: Record<string, string> = {
+  Google: "https://cdn.simpleicons.org/google/5f6368",
+  Apple: "https://cdn.simpleicons.org/apple/000000",
+  Microsoft: "https://cdn.simpleicons.org/microsoft/5e5e5e",
+  Amazon: "https://cdn.simpleicons.org/amazon/ff9900",
+  Meta: "https://cdn.simpleicons.org/meta/0468d7",
+  Netflix: "https://cdn.simpleicons.org/netflix/e50914",
+  Spotify: "https://cdn.simpleicons.org/spotify/1db954",
+  Notion: "https://cdn.simpleicons.org/notion/000000",
+  Stripe: "https://cdn.simpleicons.org/stripe/635bff",
+  GitHub: "https://cdn.simpleicons.org/github/181717",
+  Slack: "https://cdn.simpleicons.org/slack/4a154b",
+  Dropbox: "https://cdn.simpleicons.org/dropbox/0061ff",
+  Shopify: "https://cdn.simpleicons.org/shopify/7ab55c",
+  Zoom: "https://cdn.simpleicons.org/zoom/2d8cff",
+  Salesforce: "https://cdn.simpleicons.org/salesforce/00a1e0",
+  Atlassian: "https://cdn.simpleicons.org/atlassian/2684ff",
+  Figma: "https://cdn.simpleicons.org/figma/f24e1e",
+  Airbnb: "https://cdn.simpleicons.org/airbnb/ff5a5f",
+  Uber: "https://cdn.simpleicons.org/uber/100000",
+  Medium: "https://cdn.simpleicons.org/medium/000000",
+};
+
 function hashString(value: string): number {
   let hash = 0;
   for (let i = 0; i < value.length; i++) {
@@ -50,16 +86,17 @@ function parseSalary(salary?: string | null): {
 }
 
 function daysAgoFromDate(date?: string | null): number {
-  if (!date) return 0;
+  if (!date) return -1;
   const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return 0;
+  if (Number.isNaN(parsed.getTime())) return -1;
   const diff = Date.now() - parsed.getTime();
   return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
 }
 
 function humanPostedDate(date?: string | null): string {
   const days = daysAgoFromDate(date);
-  if (days <= 0) return "Today";
+  if (days < 0) return "Date unavailable";
+  if (days === 0) return "Today";
   if (days === 1) return "1d ago";
   if (days < 7) return `${days}d ago`;
   if (days < 30) return `${Math.floor(days / 7)}w ago`;
@@ -102,9 +139,8 @@ function pickStr(raw: Raw, snake: string, camel: string): string | undefined {
   return typeof v === "string" ? v : undefined;
 }
 
-// Strip HTML tags from backend description fields (e.g. "<h2><strong>Who we
-// are</strong></h2>") so the UI shows clean plain text, not raw tags.
-function stripHtml(value?: string | null): string {
+// Strip HTML tags when a plain text representation is required (e.g. text summaries)
+export function stripHtml(value?: string | null): string {
   if (!value) return "";
   const lt = String.fromCharCode(38) + "lt;";
   const gt = String.fromCharCode(38) + "gt;";
@@ -113,13 +149,114 @@ function stripHtml(value?: string | null): string {
   const ap = String.fromCharCode(38) + "#39;";
   return value
     .replace(/<[^>]*>/g, " ")
-    .split(lt).join("<")
-    .split(gt).join(">")
-    .split(amp).join("&")
-    .split(quot).join(String.fromCharCode(34))
-    .split(ap).join(String.fromCharCode(39))
+    .split(lt)
+    .join("<")
+    .split(gt)
+    .join(">")
+    .split(amp)
+    .join("&")
+    .split(quot)
+    .join(String.fromCharCode(34))
+    .split(ap)
+    .join(String.fromCharCode(39))
+    .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// Clean and decode job description HTML/text without stripping structural tags
+export function sanitizeDescription(value?: string | null): string {
+  if (!value) return "";
+  let clean = value
+    .replace(/&amp;lt;/gi, "<")
+    .replace(/&amp;gt;/gi, ">")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;quot;/gi, '"')
+    .replace(/&quot;/gi, '"')
+    .replace(/&amp;#39;/gi, "'")
+    .replace(/&#39;/gi, "'")
+    .replace(/&amp;amp;/gi, "&")
+    .replace(/&amp;nbsp;/gi, " ")
+    .replace(/&nbsp;/gi, " ");
+  clean = clean.replace(/<(script|iframe|object|embed|style)[\s\S]*?<\/\1>/gi, "");
+  clean = clean.replace(/on\w+="[^"]*"/gi, "");
+  clean = clean.replace(/on\w+='[^']*'/gi, "");
+  return clean.trim();
+}
+
+// Resolve user-friendly provenance from backend source_platform or applyUrl
+export function resolveSourceProvenance(
+  sourcePlatform?: string | null,
+  applyUrl?: string | null
+): {
+  label: string;
+  verified: boolean;
+  type: "career_site" | "yc" | "direct" | "aggregator" | "general";
+} {
+  const p = (sourcePlatform ?? "").toLowerCase();
+  const url = (applyUrl ?? "").toLowerCase();
+
+  if (p.includes("firecrawl") || p.includes("career_page") || p.includes("careers") || p.includes("ashby") || p.includes("greenhouse") || p.includes("lever")) {
+    return { label: "Official Career Site", verified: true, type: "career_site" };
+  }
+  if (p.includes("yc") || p.includes("ycombinator") || url.includes("ycombinator.com")) {
+    return { label: "YC Opportunity", verified: true, type: "yc" };
+  }
+  if (p.includes("direct") || p.includes("company")) {
+    return { label: "Direct Posting", verified: true, type: "direct" };
+  }
+  if (p.includes("adzuna") || p.includes("aggregator")) {
+    return { label: "Aggregated Source", verified: false, type: "aggregator" };
+  }
+  if (url.includes("careers.") || url.includes("/careers/") || url.includes("/jobs/")) {
+    return { label: "Official Career Site", verified: true, type: "career_site" };
+  }
+  return { label: "Verified Source", verified: true, type: "general" };
+}
+
+// Semantic match tier classification for restrained, non-glowing badges
+export function getMatchTier(score: number): {
+  tier: "strong" | "good" | "moderate" | "growth";
+  label: string;
+  badgeClass: string;
+  textClass: string;
+  barColor: string;
+} {
+  if (score >= 85) {
+    return {
+      tier: "strong",
+      label: "Strong match",
+      badgeClass: "border-success/30 bg-success/10 text-success",
+      textClass: "text-success",
+      barColor: "bg-success",
+    };
+  }
+  if (score >= 70) {
+    return {
+      tier: "good",
+      label: "Good match",
+      badgeClass: "border-primary/30 bg-primary/10 text-primary",
+      textClass: "text-primary",
+      barColor: "bg-primary",
+    };
+  }
+  if (score >= 50) {
+    return {
+      tier: "moderate",
+      label: "Moderate fit",
+      badgeClass: "border-warning/30 bg-warning/10 text-warning",
+      textClass: "text-warning",
+      barColor: "bg-warning",
+    };
+  }
+  return {
+    tier: "growth",
+    label: "Growth role",
+    badgeClass: "border-border/60 bg-muted/40 text-muted-foreground",
+    textClass: "text-muted-foreground",
+    barColor: "bg-muted-foreground",
+  };
 }
 
 // Raw jobs from the personalized endpoint include optional match/ATS score
@@ -140,88 +277,100 @@ type RawJobWithScores = NormalizedJob &
   >;
 
 // Derives the list of skills the user has that are present in the job.
-// The backend personalized endpoint returns match.missingSkills/skills
-// (whichever casing). We treat any job skill that is NOT in the missing
-// list as a matched skill. When no match data is available we return an
-// empty array rather than fabricating data.
+// The backend personalized endpoint returns match.missingSkills/skills.
+// We treat any job skill that is NOT in the missing list as a matched skill.
 function deriveMatchedSkills(raw: RawJobWithScores): string[] {
   const r = raw as unknown as Raw;
   const jobSkills = (r.skills as string[]) ?? [];
-  const matchMissing = pick(r, "missingSkills" as never, "missingSkills") as
-    | string[]
-    | undefined;
-  const missing = (raw.atsMissingSkills ?? matchMissing ?? []) as string[];
-  if (jobSkills.length === 0 || missing.length === 0) return [];
+  const matchObj = (r.match as Raw | undefined) ?? (r.matchScore as Raw | undefined) ?? undefined;
+  const matchMissing = matchObj
+    ? (pick(matchObj, "missing_skills", "missingSkills") as string[] | undefined)
+    : undefined;
+  const missing = (raw.atsMissingSkills ??
+    matchMissing ??
+    (pick(r, "missing_skills", "missingSkills") as string[] | undefined) ??
+    []) as string[];
+
+  if (jobSkills.length === 0) return [];
+  if (missing.length === 0) return jobSkills;
   const missingLower = new Set(missing.map((s) => s.toLowerCase()));
   return jobSkills.filter((s) => !missingLower.has(s.toLowerCase()));
 }
 
-export function adaptJob(
-  raw: RawJobWithScores,
-  overrides: Partial<Job> = {},
-): Job {
+export function adaptJob(raw: RawJobWithScores, overrides: Partial<Job> = {}): Job {
   const r = raw as unknown as Raw;
   const company =
-    pickStr(r, "company_name", "companyName") ||
-    pickStr(r, "company", "company") ||
-    "Unknown";
+    pickStr(r, "company_name", "companyName") || pickStr(r, "company", "company") || "Unknown";
   const brand = BRAND_GRADIENTS[hashString(company) % BRAND_GRADIENTS.length];
   const salary = parseSalary(pickStr(r, "salary", "salary"));
-  const postedRaw =
-    pickStr(r, "posted_date", "postedDate") ||
-    pickStr(r, "created_at", "createdAt");
+  const postedRaw = pickStr(r, "posted_date", "postedDate");
   const postedDaysAgo = daysAgoFromDate(postedRaw);
   // Match/ATS scores come from the backend (personalized endpoint returns
   // match.overall (or match_overall) and ats_score). Default to 0.
-  const matchObj =
-    (r.match as Raw | undefined) ??
-    (r.matchScore as Raw | undefined) ??
-    undefined;
-  const matchOverall =
-    (matchObj && Number(pick(matchObj, "overall", "overall"))) || 0;
+  const matchObj = (r.match as Raw | undefined) ?? (r.matchScore as Raw | undefined) ?? undefined;
+  const matchOverall = (matchObj && Number(pick(matchObj, "overall", "overall"))) || 0;
   const atsMatchRaw = pick(r, "ats_score", "atsScore");
   const atsMatch = atsMatchRaw != null && atsMatchRaw !== 0 ? Number(atsMatchRaw) : undefined;
-  const description = stripHtml(pickStr(r, "description", "description"));
+  const rawDesc = pickStr(r, "description", "description");
+  const description = sanitizeDescription(rawDesc);
   const expLevel = pickStr(r, "experience_level", "experienceLevel");
   const roleCat = pickStr(r, "role_category", "roleCategory");
   const appDeadline = pickStr(r, "application_deadline", "applicationDeadline");
-  const applyUrl =
-    pickStr(r, "apply_url", "applyUrl") ||
-    pickStr(r, "url", "url") ||
-    null;
+  const applyUrl = pickStr(r, "apply_url", "applyUrl") || pickStr(r, "url", "url") || null;
+  const sourcePlatform =
+    pickStr(r, "source_platform", "sourcePlatform") || pickStr(r, "source", "source") || null;
+  const sourceProvenance = resolveSourceProvenance(sourcePlatform, applyUrl);
   const location = pickStr(r, "location", "location") ?? "Unknown";
-  const remote =
-    r.remote === true ? true : r.remote === false ? false : null;
+  const remote = r.remote === true ? true : r.remote === false ? false : null;
   const emplType = pickStr(r, "employment_type", "employmentType");
   const postedLabel = humanPostedDate(postedRaw);
 
   // Match breakdown from snake_case or camelCase.
-  const skillMatch =
-    (matchObj && Number(pick(matchObj, "skill_match", "skillMatch"))) || 0;
-  const resumeMatch =
-    (matchObj && Number(pick(matchObj, "resume_match", "resumeMatch"))) || 0;
+  const skillMatch = (matchObj && Number(pick(matchObj, "skill_match", "skillMatch"))) || 0;
+  const resumeMatch = (matchObj && Number(pick(matchObj, "resume_match", "resumeMatch"))) || 0;
   const experienceMatch =
     (matchObj && Number(pick(matchObj, "experience_match", "experienceMatch"))) || 0;
   const locationMatch =
     (matchObj && Number(pick(matchObj, "location_match", "locationMatch"))) || 0;
-  const salaryMatch =
-    (matchObj && Number(pick(matchObj, "salary_match", "salaryMatch"))) || 0;
+  const salaryMatch = (matchObj && Number(pick(matchObj, "salary_match", "salaryMatch"))) || 0;
   const companyPreference =
     (matchObj && Number(pick(matchObj, "company_preference", "companyPreference"))) || 0;
-  const freshness =
-    (matchObj && Number(pick(matchObj, "freshness", "freshness"))) || 0;
-  const missingSkills = (
-    (matchObj && pick(matchObj, "missing_skills", "missingSkills")) ||
-    []
-  ) as string[];
+  const freshness = (matchObj && Number(pick(matchObj, "freshness", "freshness"))) || 0;
+  const missingSkills = ((matchObj && pick(matchObj, "missing_skills", "missingSkills")) ||
+    []) as string[];
 
   const overall = matchOverall;
+
+  // Company logo: a real logo image URL for known companies; initials are
+  // only the fallback. The UI renders companyLogoUrl via <img> when present
+  // (with broken-image fallback to initials) and never shows initials when
+  // a genuine logo is available.
+  let companyLogo: string;
+  const knownLogo = KNOWN_COMPANY_LOGOS[company];
+  let companyLogoUrl: string | undefined;
+  if (knownLogo) {
+    companyLogoUrl = knownLogo;
+    companyLogo = company
+      .split(" ")
+      .slice(0, 2)
+      .map((c) => c.charAt(0).toUpperCase())
+      .join("");
+  } else {
+    companyLogo = company
+      .split(" ")
+      .slice(0, 2)
+      .map((c) => c.charAt(0).toUpperCase())
+      .join("");
+  }
+
+  // Company brand (background gradient) continues to use the deterministic hash.
 
   return {
     id: (pickStr(r, "id", "id") as string) ?? crypto.randomUUID(),
     role: pickStr(r, "title", "title") || "Untitled Role",
     company,
-    companyLogo: company.charAt(0).toUpperCase(),
+    companyLogo,
+    companyLogoUrl,
     companyBrand: brand,
     location,
     workMode: toWorkMode(remote, location),
@@ -245,9 +394,7 @@ export function adaptJob(
     benefits: [],
     recruiterNote: undefined,
     matchedSkills: deriveMatchedSkills(raw),
-    missingSkills:
-      (raw.atsMissingSkills as string[]) ??
-      missingSkills,
+    missingSkills: (raw.atsMissingSkills as string[]) ?? missingSkills,
     seniority: expLevel ?? "Not specified",
     interviewProbability: Math.round(overall * 0.7),
     keywordCompare: [],
@@ -255,6 +402,8 @@ export function adaptJob(
     roleCategory: roleCat ?? null,
     applicationDeadline: appDeadline ?? null,
     applyUrl,
+    sourcePlatform,
+    sourceProvenance,
     match: matchObj
       ? {
           overall,
@@ -272,8 +421,10 @@ export function adaptJob(
     atsSkillMatch: Number(pick(r, "ats_skill_match", "atsSkillMatch") ?? 0) || undefined,
     atsKeywordMatch: Number(pick(r, "ats_keyword_match", "atsKeywordMatch") ?? 0) || undefined,
     atsMissingSkills: (pick(r, "ats_missing_skills", "atsMissingSkills") as string[]) ?? undefined,
-    atsMissingKeywords: (pick(r, "ats_missing_keywords", "atsMissingKeywords") as string[]) ?? undefined,
-    atsRecommendations: (pick(r, "ats_recommendations", "atsRecommendations") as string[]) ?? undefined,
+    atsMissingKeywords:
+      (pick(r, "ats_missing_keywords", "atsMissingKeywords") as string[]) ?? undefined,
+    atsRecommendations:
+      (pick(r, "ats_recommendations", "atsRecommendations") as string[]) ?? undefined,
     ...overrides,
   };
 }
@@ -295,7 +446,10 @@ export function statusMeta(s: ApplicationStatus): { label: string; tone: string 
     case "saved":
       return { label: "Saved", tone: "bg-warning/15 text-warning border-warning/30" };
     default:
-      return { label: "New", tone: "bg-surface-elevated/60 text-muted-foreground border-border/60" };
+      return {
+        label: "New",
+        tone: "bg-surface-elevated/60 text-muted-foreground border-border/60",
+      };
   }
 }
 
@@ -316,10 +470,20 @@ export const filterOptions = {
     "Next.js",
     "Node",
     "Python",
-    "Rust",
-    "GraphQL",
+    "FastAPI",
     "Postgres",
     "Kubernetes",
+    "Docker",
+    "AWS",
+    "Rust",
+    "GraphQL",
+    "Go",
+  ],
+  sort: [
+    { value: "best-match" as const, label: "Best match" },
+    { value: "newest" as const, label: "Newest" },
+    { value: "salary" as const, label: "Highest salary" },
+    { value: "oldest" as const, label: "Oldest" },
   ],
   companies: [] as string[],
 };
@@ -329,6 +493,7 @@ export function buildSearchFilters(filters: {
   query?: string;
   role?: string;
   location?: string;
+  company?: string;
   workMode?: string[];
   employmentType?: string[];
   experience?: string[];
@@ -348,10 +513,10 @@ export function buildSearchFilters(filters: {
   return {
     role: filters.role || filters.query || undefined,
     location: filters.location || undefined,
-    company: filters.companies?.[0],
-    employmentType: filters.employmentType?.[0],
-    experience: filters.experience?.[0],
-    skills: filters.skills,
+    company: filters.company || filters.companies?.[0] || undefined,
+    employmentType: filters.employmentType?.[0] || undefined,
+    experience: filters.experience?.[0] || undefined,
+    skills: filters.skills?.length ? filters.skills : undefined,
     remote,
     sort: filters.sort,
     page: filters.page,

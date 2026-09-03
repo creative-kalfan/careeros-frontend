@@ -161,9 +161,7 @@ function KeywordHeatmap() {
                 <TooltipTrigger asChild>
                   <div
                     className={`group cursor-help rounded-lg border p-2 text-[11px] transition ${
-                      k.present
-                        ? "border-primary/30"
-                        : "border-dashed border-destructive/40"
+                      k.present ? "border-primary/30" : "border-dashed border-destructive/40"
                     }`}
                     style={{
                       background: k.present
@@ -317,10 +315,7 @@ function OptimizationTimelineBlock() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="truncate text-[13px] font-medium">{e.title}</span>
-                  <Badge
-                    variant="secondary"
-                    className="rounded-full text-[9px] capitalize"
-                  >
+                  <Badge variant="secondary" className="rounded-full text-[9px] capitalize">
                     {e.kind}
                   </Badge>
                 </div>
@@ -357,7 +352,13 @@ function KeywordFrequencyBlock() {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ left: 8, right: 12 }}>
             <CartesianGrid stroke="var(--border)" horizontal={false} />
-            <XAxis type="number" stroke="var(--muted-foreground)" tickLine={false} axisLine={false} style={{ fontSize: 11 }} />
+            <XAxis
+              type="number"
+              stroke="var(--muted-foreground)"
+              tickLine={false}
+              axisLine={false}
+              style={{ fontSize: 11 }}
+            />
             <YAxis
               type="category"
               dataKey="name"
@@ -367,7 +368,10 @@ function KeywordFrequencyBlock() {
               axisLine={false}
               style={{ fontSize: 11 }}
             />
-            <Tooltip contentStyle={chartTooltipStyle()} cursor={{ fill: "var(--muted)", opacity: 0.15 }} />
+            <Tooltip
+              contentStyle={chartTooltipStyle()}
+              cursor={{ fill: "var(--muted)", opacity: 0.15 }}
+            />
             <Bar dataKey="count" fill="oklch(0.62 0.22 260)" radius={[0, 6, 6, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -434,7 +438,8 @@ function SkillsBlock() {
           ))}
         </div>
         <div className="mt-4 rounded-lg border border-dashed border-border/70 bg-background/30 p-3 text-[11.5px] text-muted-foreground">
-          Add these to unlock <span className="text-foreground">+11 ATS</span> across 6 target roles.
+          Add these to unlock <span className="text-foreground">+11 ATS</span> across 6 target
+          roles.
         </div>
       </Card>
     </div>
@@ -442,11 +447,31 @@ function SkillsBlock() {
 }
 
 function QualityScoresBlock() {
-  const items: Array<{ id: keyof typeof qualityScores; label: string; icon: React.ElementType; hint: string }> = [
+  const items: Array<{
+    id: keyof typeof qualityScores;
+    label: string;
+    icon: React.ElementType;
+    hint: string;
+  }> = [
     { id: "grammar", label: "Grammar", icon: Wand2, hint: "0 style issues in the last edit." },
-    { id: "formatting", label: "Formatting", icon: Layers, hint: "ATS-safe, single-column, no tables." },
-    { id: "readability", label: "Readability", icon: Activity, hint: "Grade 9. Recruiters skim in 6s." },
-    { id: "recruiter", label: "Recruiter", icon: ShieldCheck, hint: "Matches 84% of recruiter checklists." },
+    {
+      id: "formatting",
+      label: "Formatting",
+      icon: Layers,
+      hint: "ATS-safe, single-column, no tables.",
+    },
+    {
+      id: "readability",
+      label: "Readability",
+      icon: Activity,
+      hint: "Grade 9. Recruiters skim in 6s.",
+    },
+    {
+      id: "recruiter",
+      label: "Recruiter",
+      icon: ShieldCheck,
+      hint: "Matches 84% of recruiter checklists.",
+    },
   ];
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -530,10 +555,7 @@ export function CenterPane({ activeSection }: { activeSection: string }) {
             { label: "Keyword", value: 82, tone: "accent" },
             { label: "Semantic", value: 74, tone: "info" },
           ].map((s) => (
-            <Card
-              key={s.label}
-              className="glass rounded-2xl border-border/60 p-4"
-            >
+            <Card key={s.label} className="glass rounded-2xl border-border/60 p-4">
               <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                 {s.label} score
               </div>

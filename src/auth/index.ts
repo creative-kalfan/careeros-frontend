@@ -17,11 +17,7 @@ export type {
 } from "./auth.types";
 
 // Constants
-export {
-  AUTH_ROUTES,
-  AUTH_ERROR_MESSAGES,
-  TOKEN_REFRESH_BUFFER,
-} from "./auth.constants";
+export { AUTH_ROUTES, AUTH_ERROR_MESSAGES, TOKEN_REFRESH_BUFFER } from "./auth.constants";
 
 // Configuration
 export { authConfig, type AuthConfig } from "./auth.config";

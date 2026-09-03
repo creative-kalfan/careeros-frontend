@@ -1,6 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Sparkles, Loader2, MessageSquare } from "lucide-react";
+import {
+  Bot,
+  Send,
+  Sparkles,
+  Loader2,
+  MessageSquare,
+  Target,
+  FileText,
+  Users,
+  Mail,
+  KanbanSquare,
+  BarChart3,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,7 +27,8 @@ export const Route = createFileRoute("/_app/copilot")({
       { title: "AI Copilot · CareerOS" },
       {
         name: "description",
-        content: "Your personal AI career assistant for job search, resume optimization, and interview prep.",
+        content:
+          "Your personal AI career assistant for job search, resume optimization, and interview prep.",
       },
     ],
   }),
@@ -30,12 +43,36 @@ type Message = {
 };
 
 const SUGGESTED_PROMPTS = [
-  { icon: "💼", label: "Find jobs matching my profile", prompt: "Find jobs that match my profile and skills" },
-  { icon: "📊", label: "Improve my ATS score", prompt: "How can I improve my ATS score?" },
-  { icon: "📝", label: "Explain this job description", prompt: "Can you explain this job description?" },
-  { icon: "🎯", label: "Prepare for interview", prompt: "Help me prepare for an interview" },
-  { icon: "✉️", label: "Generate referral message", prompt: "Write a referral message" },
-  { icon: "📈", label: "Track my applications", prompt: "Show me my application status" },
+  {
+    icon: Target,
+    label: "Find matching jobs",
+    prompt: "Find jobs that match my profile and skills",
+  },
+  {
+    icon: BarChart3,
+    label: "Improve ATS score",
+    prompt: "How can I improve my ATS score?",
+  },
+  {
+    icon: FileText,
+    label: "Analyze job description",
+    prompt: "Can you explain this job description and key requirements?",
+  },
+  {
+    icon: Users,
+    label: "Interview prep",
+    prompt: "Help me prepare for an interview for my target role",
+  },
+  {
+    icon: Mail,
+    label: "Draft referral note",
+    prompt: "Write a professional referral request message",
+  },
+  {
+    icon: KanbanSquare,
+    label: "Pipeline status",
+    prompt: "Show me a summary of my application status",
+  },
 ];
 
 function CopilotPage() {
@@ -43,7 +80,8 @@ function CopilotPage() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hi! I'm your AI career assistant. I can help you with:\n\n• Finding jobs that match your profile\n• Improving your ATS score\n• Preparing for interviews\n• Tracking your applications\n• Generating referral messages\n\nWhat would you like help with today?",
+      content:
+        "Hi! I'm your AI career assistant. I can help you with:\n\n• Finding jobs that match your profile\n• Improving your ATS score\n• Preparing for interviews\n• Tracking your applications\n• Generating referral messages\n\nWhat would you like help with today?",
       timestamp: new Date(),
     },
   ]);
@@ -74,7 +112,6 @@ function CopilotPage() {
     setIsLoading(true);
 
     try {
-      // Call the copilot API via the configured API client
       const data = await request<{ response: string; message: string }>({
         method: "POST",
         path: API_ENDPOINTS.COPILOT.SEND_MESSAGE,
@@ -113,17 +150,17 @@ function CopilotPage() {
   return (
     <div className="mx-auto flex h-[calc(100dvh-56px)] max-w-4xl flex-col">
       {/* Header */}
-      <div className="border-b border-border/60 px-4 py-4 sm:px-6">
+      <div className="border-b border-border/70 px-4 py-3.5 sm:px-6">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent text-white">
-            <Bot className="h-5 w-5" />
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/10 text-primary">
+            <Bot className="h-4 w-4" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold">AI Copilot</h1>
-            <p className="text-xs text-muted-foreground">Your personal career assistant</p>
+            <h1 className="text-sm font-semibold tracking-tight text-foreground">AI Copilot</h1>
+            <p className="text-[11px] text-muted-foreground">Context-aware career assistant</p>
           </div>
-          <Badge variant="secondary" className="ml-auto">
-            <Sparkles className="mr-1 h-3 w-3" />
+          <Badge variant="outline" className="ml-auto rounded-md border-border/80 text-[10px]">
+            <Sparkles className="mr-1 h-3 w-3 text-primary" />
             Online
           </Badge>
         </div>
@@ -138,39 +175,42 @@ function CopilotPage() {
               className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {message.role === "assistant" && (
-                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-white">
-                  <Bot className="h-4 w-4" />
+                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                  <Bot className="h-3.5 w-3.5" />
                 </div>
               )}
               <Card
-                className={`max-w-[80%] ${
+                className={`max-w-[80%] rounded-xl shadow-xs ${
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-surface-elevated/40"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "glass border-border/80"
                 }`}
               >
                 <CardContent className="p-3">
-                  <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                  <p className="whitespace-pre-wrap text-xs leading-relaxed">{message.content}</p>
                   <p className="mt-1 text-[10px] opacity-60">
-                    {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </CardContent>
               </Card>
               {message.role === "user" && (
-                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-muted">
-                  <MessageSquare className="h-4 w-4" />
+                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-surface-elevated text-muted-foreground">
+                  <MessageSquare className="h-3.5 w-3.5" />
                 </div>
               )}
             </div>
           ))}
           {isLoading && (
             <div className="flex gap-3">
-              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-white">
-                <Bot className="h-4 w-4" />
+              <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                <Bot className="h-3.5 w-3.5" />
               </div>
-              <Card className="bg-surface-elevated/40">
+              <Card className="glass rounded-xl border-border/80">
                 <CardContent className="p-3">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 </CardContent>
               </Card>
             </div>
@@ -180,26 +220,35 @@ function CopilotPage() {
 
       {/* Suggested Prompts */}
       {messages.length === 1 && (
-        <div className="border-t border-border/60 p-4">
-          <p className="mb-3 text-xs font-medium text-muted-foreground">Suggested actions</p>
+        <div className="border-t border-border/70 p-4">
+          <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Suggested actions
+          </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {SUGGESTED_PROMPTS.map((suggestion) => (
-              <Button
-                key={suggestion.label}
-                variant="outline"
-                className="h-auto justify-start gap-2 p-3 text-left"
-                onClick={() => handleSend(suggestion.prompt)}
-              >
-                <span className="text-lg">{suggestion.icon}</span>
-                <span className="text-xs">{suggestion.label}</span>
-              </Button>
-            ))}
+            {SUGGESTED_PROMPTS.map((suggestion) => {
+              const Icon = suggestion.icon;
+              return (
+                <button
+                  key={suggestion.label}
+                  type="button"
+                  className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-surface p-2.5 text-left transition-colors hover:border-border hover:bg-surface-elevated"
+                  onClick={() => handleSend(suggestion.prompt)}
+                >
+                  <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="truncate text-xs font-medium text-foreground">
+                    {suggestion.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Input */}
-      <div className="border-t border-border/60 p-4">
+      <div className="border-t border-border/70 p-4">
         <div className="flex gap-2">
           <Input
             ref={inputRef}
@@ -207,14 +256,14 @@ function CopilotPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask me anything about your career..."
-            className="flex-1"
+            className="h-9 flex-1 rounded-lg border-border/80 bg-surface text-xs"
             disabled={isLoading}
           />
           <Button
             onClick={() => handleSend()}
             disabled={!input.trim() || isLoading}
-            size="icon"
-            className="shrink-0"
+            size="sm"
+            className="h-9 w-9 shrink-0 rounded-lg p-0 shadow-xs"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />

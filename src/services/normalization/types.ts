@@ -1,6 +1,6 @@
 /**
  * Normalization Engine Types
- * 
+ *
  * Core interfaces for the Job Normalization Engine.
  * These interfaces define the contract for normalizing job data from various sources.
  */
@@ -138,54 +138,26 @@ export interface NormalizationResult {
 /**
  * Employment type enumeration
  */
-export type EmploymentType = 
-  | "FULL_TIME" 
-  | "PART_TIME" 
-  | "CONTRACT" 
-  | "TEMPORARY" 
-  | "INTERNSHIP" 
-  | "FREELANCE" 
-  | "UNKNOWN";
+export type EmploymentType =
+  "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "FREELANCE" | "UNKNOWN";
 
 /**
  * Work mode enumeration
  */
-export type WorkMode = 
-  | "REMOTE" 
-  | "HYBRID" 
-  | "ONSITE" 
-  | "UNKNOWN";
+export type WorkMode = "REMOTE" | "HYBRID" | "ONSITE" | "UNKNOWN";
 
 /**
  * Experience level enumeration
  */
-export type ExperienceLevel = 
-  | "ENTRY" 
-  | "JUNIOR" 
-  | "MID" 
-  | "SENIOR" 
-  | "LEAD" 
-  | "EXECUTIVE" 
-  | "UNKNOWN";
+export type ExperienceLevel =
+  "ENTRY" | "JUNIOR" | "MID" | "SENIOR" | "LEAD" | "EXECUTIVE" | "UNKNOWN";
 
 /**
  * Salary period enumeration
  */
-export type SalaryPeriod = 
-  | "HOURLY" 
-  | "DAILY" 
-  | "WEEKLY" 
-  | "MONTHLY" 
-  | "YEARLY" 
-  | "UNKNOWN";
+export type SalaryPeriod = "HOURLY" | "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "UNKNOWN";
 
 /**
  * Company size enumeration
  */
-export type CompanySize = 
-  | "STARTUP" 
-  | "SMALL" 
-  | "MEDIUM" 
-  | "LARGE" 
-  | "ENTERPRISE" 
-  | "UNKNOWN";
+export type CompanySize = "STARTUP" | "SMALL" | "MEDIUM" | "LARGE" | "ENTERPRISE" | "UNKNOWN";

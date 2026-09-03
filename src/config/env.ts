@@ -9,7 +9,7 @@ const getEnv = (key: string, defaultValue?: string): string => {
   throw new Error(
     `Missing required environment variable: ${key}\n` +
       `Create a .env file in the project root with:\n` +
-      `${key}=your_value`
+      `${key}=your_value`,
   );
 };
 

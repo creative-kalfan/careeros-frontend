@@ -99,46 +99,66 @@ export function useDashboardData() {
     queries: [
       {
         queryKey: ["dashboard", "personalized-jobs"],
-        queryFn: () =>
-          request<BackendResponse<any[]>>({
-            method: "GET",
-            path: API_ENDPOINTS.JOBS.PERSONALIZED,
-          }),
+        queryFn: async () => {
+          try {
+            return await request<BackendResponse<any[]>>({
+              method: "GET",
+              path: API_ENDPOINTS.JOBS.PERSONALIZED,
+            });
+          } catch {
+            return { success: true, data: [] };
+          }
+        },
         staleTime: 60_000,
       },
       {
         queryKey: ["dashboard", "applications-stats"],
-        queryFn: () =>
-          request<BackendResponse<{ total: number; byStatus: Record<string, number> }>>({
-            method: "GET",
-            path: API_ENDPOINTS.APPLICATIONS.STATS,
-          }),
+        queryFn: async () => {
+          try {
+            return await request<BackendResponse<{ total: number; byStatus: Record<string, number> }>>({
+              method: "GET",
+              path: API_ENDPOINTS.APPLICATIONS.STATS,
+            });
+          } catch {
+            return { success: true, data: { total: 0, byStatus: {} } };
+          }
+        },
         staleTime: 60_000,
       },
       {
         queryKey: ["dashboard", "recommendations"],
-        queryFn: () =>
-          request<BackendResponse<{ recommendations: any[] }>>({
-            method: "GET",
-            path: API_ENDPOINTS.RECOMMENDATIONS.USER,
-          }),
+        queryFn: async () => {
+          try {
+            return await request<BackendResponse<{ recommendations: any[] }>>({
+              method: "GET",
+              path: API_ENDPOINTS.RECOMMENDATIONS.USER,
+            });
+          } catch {
+            return { success: true, data: { recommendations: [] } };
+          }
+        },
         staleTime: 60_000,
       },
       {
         queryKey: ["dashboard", "notifications"],
-        queryFn: () =>
-          request<BackendResponse<{ notifications: any[] }>>({
-            method: "GET",
-            path: API_ENDPOINTS.NOTIFICATIONS.LIST,
-          }),
+        queryFn: async () => {
+          try {
+            return await request<BackendResponse<{ notifications: any[] }>>({
+              method: "GET",
+              path: API_ENDPOINTS.NOTIFICATIONS.LIST,
+            });
+          } catch {
+            return { success: true, data: { notifications: [] } };
+          }
+        },
         staleTime: 60_000,
       },
     ],
   });
 
   const [jobsQuery, appsQuery, recsQuery, notifsQuery] = queries;
-  const isLoading = queries.some((q) => q.isLoading);
-  const isError = queries.some((q) => q.isError);
+  const isLoading = queries.some((q) => q.isLoading && !q.data);
+  const isError = queries.every((q) => q.isError);
 
   // Derive dashboard data from all query results
   const data: DashboardData | null = isLoading
@@ -271,5 +291,5 @@ function calculateOverallScore(appsData: any, recsData: any): number {
   const recScore = recsData?.recommendations?.length
     ? Math.min(100, recsData.recommendations.length * 20)
     : 0;
-  return Math.round((appScore * 0.4 + recScore * 0.6));
+  return Math.round(appScore * 0.4 + recScore * 0.6);
 }

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SentryTestRouteImport } from './routes/sentry-test'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -30,9 +31,16 @@ import { Route as AppAtsHistoryRouteImport } from './routes/_app.ats-history'
 import { Route as AppAtsRouteImport } from './routes/_app.ats'
 import { Route as AppApplicationsRouteImport } from './routes/_app.applications'
 import { Route as AppResumesIndexRouteImport } from './routes/_app.resumes.index'
+import { Route as AppResumesTemplatesRouteImport } from './routes/_app.resumes.templates'
+import { Route as AppResumesSetupRouteImport } from './routes/_app.resumes.setup'
 import { Route as AppResumesIdRouteImport } from './routes/_app.resumes.$id'
 import { Route as AppOptimizerResumeIdRouteImport } from './routes/_app.optimizer.$resumeId'
 
+const SentryTestRoute = SentryTestRouteImport.update({
+  id: '/sentry-test',
+  path: '/sentry-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -136,6 +144,16 @@ const AppResumesIndexRoute = AppResumesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppResumesRoute,
 } as any)
+const AppResumesTemplatesRoute = AppResumesTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AppResumesRoute,
+} as any)
+const AppResumesSetupRoute = AppResumesSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => AppResumesRoute,
+} as any)
 const AppResumesIdRoute = AppResumesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -152,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sentry-test': typeof SentryTestRoute
   '/applications': typeof AppApplicationsRoute
   '/ats': typeof AppAtsRoute
   '/ats-history': typeof AppAtsHistoryRoute
@@ -168,6 +187,8 @@ export interface FileRoutesByFullPath {
   '/signup': typeof AuthSignupRoute
   '/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/resumes/$id': typeof AppResumesIdRoute
+  '/resumes/setup': typeof AppResumesSetupRoute
+  '/resumes/templates': typeof AppResumesTemplatesRoute
   '/resumes/': typeof AppResumesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -175,6 +196,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sentry-test': typeof SentryTestRoute
   '/applications': typeof AppApplicationsRoute
   '/ats': typeof AppAtsRoute
   '/ats-history': typeof AppAtsHistoryRoute
@@ -190,6 +212,8 @@ export interface FileRoutesByTo {
   '/signup': typeof AuthSignupRoute
   '/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/resumes/$id': typeof AppResumesIdRoute
+  '/resumes/setup': typeof AppResumesSetupRoute
+  '/resumes/templates': typeof AppResumesTemplatesRoute
   '/resumes': typeof AppResumesIndexRoute
 }
 export interface FileRoutesById {
@@ -200,6 +224,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sentry-test': typeof SentryTestRoute
   '/_app/applications': typeof AppApplicationsRoute
   '/_app/ats': typeof AppAtsRoute
   '/_app/ats-history': typeof AppAtsHistoryRoute
@@ -216,6 +241,8 @@ export interface FileRoutesById {
   '/_auth/signup': typeof AuthSignupRoute
   '/_app/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/_app/resumes/$id': typeof AppResumesIdRoute
+  '/_app/resumes/setup': typeof AppResumesSetupRoute
+  '/_app/resumes/templates': typeof AppResumesTemplatesRoute
   '/_app/resumes/': typeof AppResumesIndexRoute
 }
 export interface FileRouteTypes {
@@ -225,6 +252,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/forgot-password'
     | '/reset-password'
+    | '/sentry-test'
     | '/applications'
     | '/ats'
     | '/ats-history'
@@ -241,6 +269,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/optimizer/$resumeId'
     | '/resumes/$id'
+    | '/resumes/setup'
+    | '/resumes/templates'
     | '/resumes/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -248,6 +278,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/forgot-password'
     | '/reset-password'
+    | '/sentry-test'
     | '/applications'
     | '/ats'
     | '/ats-history'
@@ -263,6 +294,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/optimizer/$resumeId'
     | '/resumes/$id'
+    | '/resumes/setup'
+    | '/resumes/templates'
     | '/resumes'
   id:
     | '__root__'
@@ -272,6 +305,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/forgot-password'
     | '/reset-password'
+    | '/sentry-test'
     | '/_app/applications'
     | '/_app/ats'
     | '/_app/ats-history'
@@ -288,6 +322,8 @@ export interface FileRouteTypes {
     | '/_auth/signup'
     | '/_app/optimizer/$resumeId'
     | '/_app/resumes/$id'
+    | '/_app/resumes/setup'
+    | '/_app/resumes/templates'
     | '/_app/resumes/'
   fileRoutesById: FileRoutesById
 }
@@ -298,10 +334,18 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SentryTestRoute: typeof SentryTestRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sentry-test': {
+      id: '/sentry-test'
+      path: '/sentry-test'
+      fullPath: '/sentry-test'
+      preLoaderRoute: typeof SentryTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -449,6 +493,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppResumesIndexRouteImport
       parentRoute: typeof AppResumesRoute
     }
+    '/_app/resumes/templates': {
+      id: '/_app/resumes/templates'
+      path: '/templates'
+      fullPath: '/resumes/templates'
+      preLoaderRoute: typeof AppResumesTemplatesRouteImport
+      parentRoute: typeof AppResumesRoute
+    }
+    '/_app/resumes/setup': {
+      id: '/_app/resumes/setup'
+      path: '/setup'
+      fullPath: '/resumes/setup'
+      preLoaderRoute: typeof AppResumesSetupRouteImport
+      parentRoute: typeof AppResumesRoute
+    }
     '/_app/resumes/$id': {
       id: '/_app/resumes/$id'
       path: '/$id'
@@ -468,11 +526,15 @@ declare module '@tanstack/react-router' {
 
 interface AppResumesRouteChildren {
   AppResumesIdRoute: typeof AppResumesIdRoute
+  AppResumesSetupRoute: typeof AppResumesSetupRoute
+  AppResumesTemplatesRoute: typeof AppResumesTemplatesRoute
   AppResumesIndexRoute: typeof AppResumesIndexRoute
 }
 
 const AppResumesRouteChildren: AppResumesRouteChildren = {
   AppResumesIdRoute: AppResumesIdRoute,
+  AppResumesSetupRoute: AppResumesSetupRoute,
+  AppResumesTemplatesRoute: AppResumesTemplatesRoute,
   AppResumesIndexRoute: AppResumesIndexRoute,
 }
 
@@ -533,6 +595,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SentryTestRoute: SentryTestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

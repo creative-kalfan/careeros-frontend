@@ -62,7 +62,9 @@ export function ResponseCardView({ card }: { card: ResponseCard }) {
               >
                 {it.done && <Check className="h-3 w-3" />}
               </span>
-              <span className={it.done ? "text-muted-foreground line-through" : ""}>{it.label}</span>
+              <span className={it.done ? "text-muted-foreground line-through" : ""}>
+                {it.label}
+              </span>
             </li>
           ))}
         </ul>

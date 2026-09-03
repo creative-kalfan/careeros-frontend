@@ -1,6 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { BarChart3, Users, Briefcase, FileText, Bell, Settings, Activity, Shield } from "lucide-react";
+import {
+  BarChart3,
+  Users,
+  Briefcase,
+  FileText,
+  Bell,
+  Settings,
+  Activity,
+  Shield,
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -109,7 +118,9 @@ function AdminPortal() {
                   <CardContent>
                     <div className="text-2xl font-bold">{stat.value}</div>
                     {stat.change && (
-                      <p className={`text-xs ${stat.trend === "up" ? "text-success" : "text-destructive"}`}>
+                      <p
+                        className={`text-xs ${stat.trend === "up" ? "text-success" : "text-destructive"}`}
+                      >
                         {stat.change} from last month
                       </p>
                     )}
@@ -130,11 +141,22 @@ function AdminPortal() {
                 {[
                   { event: "New user signup", user: "john@example.com", time: "2 minutes ago" },
                   { event: "Resume uploaded", user: "jane@example.com", time: "5 minutes ago" },
-                  { event: "ATS analysis completed", user: "bob@example.com", time: "10 minutes ago" },
-                  { event: "Application created", user: "alice@example.com", time: "15 minutes ago" },
+                  {
+                    event: "ATS analysis completed",
+                    user: "bob@example.com",
+                    time: "10 minutes ago",
+                  },
+                  {
+                    event: "Application created",
+                    user: "alice@example.com",
+                    time: "15 minutes ago",
+                  },
                   { event: "Job crawled", user: "Google", time: "20 minutes ago" },
                 ].map((activity, idx) => (
-                  <div key={idx} className="flex items-center justify-between border-b border-border/60 pb-3 last:border-0">
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between border-b border-border/60 pb-3 last:border-0"
+                  >
                     <div>
                       <p className="text-sm font-medium">{activity.event}</p>
                       <p className="text-xs text-muted-foreground">{activity.user}</p>

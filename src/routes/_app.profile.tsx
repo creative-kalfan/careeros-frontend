@@ -3,6 +3,12 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../auth/useAuth";
 import { request } from "../utils/request";
 
+import { PageHeader } from "@/components/app/page-header";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
 type Profile = {
   id: string;
   email: string;
@@ -85,74 +91,80 @@ function ProfilePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage your personal information and preferences.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Personal"
+        title="Profile"
+        description="Manage your personal information and preferences."
+      />
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
-      ) : (
-        <form onSubmit={handleSave} className="space-y-6">
-          {saveMessage && (
-            <div
-              className={`rounded-lg border px-4 py-3 text-sm ${
-                saveMessage.includes("success")
-                  ? "border-primary/50 bg-primary/10 text-primary"
-                  : "border-destructive/50 bg-destructive/10 text-destructive"
-              }`}
-            >
-              {saveMessage}
+      <Card className="glass rounded-xl border border-border/80 p-5 sm:p-6 shadow-xs">
+        {loading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
+        ) : (
+          <form onSubmit={handleSave} className="space-y-4">
+            {saveMessage && (
+              <div
+                className={`rounded-lg border px-3.5 py-2.5 text-xs ${
+                  saveMessage.includes("success")
+                    ? "border-success/30 bg-success/10 text-success"
+                    : "border-destructive/30 bg-destructive/10 text-destructive"
+                }`}
+              >
+                {saveMessage}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Email</label>
+              <Input
+                type="email"
+                value={user?.email || ""}
+                disabled
+                className="h-9 rounded-lg border-border/60 bg-muted text-xs text-muted-foreground"
+              />
             </div>
-          )}
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Email</label>
-            <input
-              type="email"
-              value={user?.email || ""}
-              disabled
-              className="flex h-10 w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
-            />
-          </div>
+            <div className="space-y-1.5">
+              <label htmlFor="fullName" className="text-xs font-medium text-foreground">
+                Full name
+              </label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your full name"
+                className="h-9 rounded-lg border-border/80 bg-surface-elevated text-xs"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <label htmlFor="fullName" className="text-sm font-medium">
-              Full name
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your full name"
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Role</label>
+              <Input
+                type="text"
+                value={profile?.role || "user"}
+                disabled
+                className="h-9 rounded-lg border-border/60 bg-muted text-xs text-muted-foreground"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Role</label>
-            <input
-              type="text"
-              value={profile?.role || "user"}
-              disabled
-              className="flex h-10 w-full rounded-lg border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-          >
-            {saving ? "Saving..." : "Save changes"}
-          </button>
-        </form>
-      )}
+            <div className="pt-2">
+              <Button
+                type="submit"
+                disabled={saving}
+                size="sm"
+                className="rounded-lg text-xs font-medium shadow-xs"
+              >
+                {saving ? "Saving..." : "Save changes"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Card>
     </div>
   );
 }

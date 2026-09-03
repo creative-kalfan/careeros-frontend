@@ -20,6 +20,9 @@ export default defineConfig({
       // free port and silently break CORS again.
       port: 8080,
       strictPort: true,
+      // Dev-only: allow the containerized test browser to reach the dev server
+      // via host.docker.internal. No effect on production builds.
+      allowedHosts: ["host.docker.internal"],
     },
   },
 });

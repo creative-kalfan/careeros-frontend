@@ -28,7 +28,9 @@ export type SendMessageRequest = {
 export type CopilotApi = {
   sendMessage: (data: SendMessageRequest) => Promise<ApiResponse<CopilotMessage>>;
   getSession: (id: string) => Promise<ApiResponse<CopilotSession>>;
-  getSessions: (params?: PaginationParams) => Promise<ApiResponse<PaginatedResponse<CopilotSession>>>;
+  getSessions: (
+    params?: PaginationParams,
+  ) => Promise<ApiResponse<PaginatedResponse<CopilotSession>>>;
   deleteSession: (id: string) => Promise<ApiResponse<void>>;
 };
 

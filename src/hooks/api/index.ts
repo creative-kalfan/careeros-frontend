@@ -4,6 +4,7 @@ export { useSearchJobs } from "./useSearchJobs";
 export { useSaveJob } from "./useSaveJob";
 export { useMatchJobs } from "./useMatchJobs";
 export { useSavedJobs } from "./useSavedJobs";
+
 export {
   useResumes,
   useResume,
@@ -15,13 +16,17 @@ export {
   resumeQueryKeys,
 } from "./useResumes";
 
+export { useAnalyzeResume, atsQueryKeys } from "./useATS";
+
 export {
-  useAnalyzeResume,
-  useOptimizationSuggestions,
-  useRecalculateATS,
+  useGenerateOptimization,
   useAcceptSuggestion,
-  atsQueryKeys,
-} from "./useATS";
+  useRejectSuggestion,
+  useReanalyze,
+  useOptimizationSessions,
+  useOptimizationHistory,
+  optimizationQueryKeys,
+} from "./useOptimization";
 
 export {
   useApplications,
@@ -45,3 +50,14 @@ export {
   NOTIFICATIONS_UNREAD_KEY,
   NOTIFICATIONS_PREFERENCES_KEY,
 } from "./useNotifications";
+
+export {
+  useBatchedImprovements,
+  useRequirementImprovement,
+  useProposalDecisions,
+  useApprovedChangeSet,
+  useSetProposalDecision,
+  useBulkProposalDecision,
+  useApplyApprovedImprovements,
+  improvementQueryKeys,
+} from "./useImprovement";

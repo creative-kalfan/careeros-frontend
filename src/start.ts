@@ -1,6 +1,10 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
+import { initSentry } from "./lib/sentry";
+
+// Initialize Sentry
+initSentry();
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {

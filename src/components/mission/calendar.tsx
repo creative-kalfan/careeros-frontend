@@ -8,12 +8,18 @@ const kindTone: Record<CalendarEventUI["kind"], string> = {
   assessment: "bg-accent/15 text-accent ring-accent/25",
 };
 
-const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export function MonthCalendar({
-  year, month, events, activeDay,
+  year,
+  month,
+  events,
+  activeDay,
 }: {
-  year: number; month: number; events: CalendarEventUI[]; activeDay?: number;
+  year: number;
+  month: number;
+  events: CalendarEventUI[];
+  activeDay?: number;
 }) {
   // Build a month grid (Mon-first)
   const first = new Date(year, month, 1);
@@ -25,11 +31,13 @@ export function MonthCalendar({
   while (cells.length % 7 !== 0) cells.push(null);
 
   const byDay = new Map<number, CalendarEventUI[]>();
-  events.filter((e) => e.year === year && e.month === month).forEach((e) => {
-    const arr = byDay.get(e.day) ?? [];
-    arr.push(e);
-    byDay.set(e.day, arr);
-  });
+  events
+    .filter((e) => e.year === year && e.month === month)
+    .forEach((e) => {
+      const arr = byDay.get(e.day) ?? [];
+      arr.push(e);
+      byDay.set(e.day, arr);
+    });
 
   const monthLabel = first.toLocaleString(undefined, { month: "long", year: "numeric" });
 
@@ -45,7 +53,11 @@ export function MonthCalendar({
         </div>
       </div>
       <div className="grid grid-cols-7 gap-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-        {DAYS.map((d) => <div key={d} className="px-2 py-1">{d}</div>)}
+        {DAYS.map((d) => (
+          <div key={d} className="px-2 py-1">
+            {d}
+          </div>
+        ))}
       </div>
       <div className="mt-1 grid grid-cols-7 gap-1">
         {cells.map((d, i) => (
@@ -54,7 +66,7 @@ export function MonthCalendar({
             className={cn(
               "relative min-h-[92px] rounded-xl border border-border/50 bg-background/25 p-2 transition",
               d && "hover:bg-background/40",
-              d === activeDay && "ring-1 ring-primary/40 border-primary/40"
+              d === activeDay && "ring-1 ring-primary/40 border-primary/40",
             )}
           >
             {d && (
@@ -64,15 +76,22 @@ export function MonthCalendar({
                   {(byDay.get(d) ?? []).slice(0, 3).map((e) => (
                     <div
                       key={e.id}
-                      className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1", kindTone[e.kind])}
+                      className={cn(
+                        "truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1",
+                        kindTone[e.kind],
+                      )}
                       title={`${e.title} · ${e.company}`}
                     >
-                      {e.hour !== undefined && <span className="mr-1 font-mono">{String(e.hour).padStart(2,"0")}:00</span>}
+                      {e.hour !== undefined && (
+                        <span className="mr-1 font-mono">{String(e.hour).padStart(2, "0")}:00</span>
+                      )}
                       {e.title}
                     </div>
                   ))}
                   {(byDay.get(d)?.length ?? 0) > 3 && (
-                    <div className="text-[10px] text-muted-foreground">+{(byDay.get(d)?.length ?? 0) - 3} more</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      +{(byDay.get(d)?.length ?? 0) - 3} more
+                    </div>
                   )}
                 </div>
               </>
@@ -84,9 +103,18 @@ export function MonthCalendar({
   );
 }
 
-function Legend({ tone, label }: { tone: "warning" | "destructive" | "primary" | "accent"; label: string }) {
+function Legend({
+  tone,
+  label,
+}: {
+  tone: "warning" | "destructive" | "primary" | "accent";
+  label: string;
+}) {
   const cls = {
-    warning: "bg-warning", destructive: "bg-destructive", primary: "bg-primary", accent: "bg-accent",
+    warning: "bg-warning",
+    destructive: "bg-destructive",
+    primary: "bg-primary",
+    accent: "bg-accent",
   }[tone];
   return (
     <span className="inline-flex items-center gap-1.5">

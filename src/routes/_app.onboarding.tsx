@@ -5,7 +5,14 @@ import { AuthLoadingSpinner } from "../auth/components/AuthLoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_app/onboarding")({
@@ -33,7 +40,8 @@ const ONBOARDING_STEPS = [
 
 function OnboardingPage() {
   const navigate = useNavigate();
-  const { profile, isProfileLoading, updateOnboardingStep, updateProfile, completeOnboarding } = useAuth();
+  const { profile, isProfileLoading, updateOnboardingStep, updateProfile, completeOnboarding } =
+    useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,11 +76,21 @@ function OnboardingPage() {
     setIsSubmitting(true);
     try {
       const profileData: Record<string, unknown> = {};
-      if (currentStep === 2 && formData.currentRole) profileData.current_role = formData.currentRole;
+      if (currentStep === 2 && formData.currentRole)
+        profileData.current_role = formData.currentRole;
       if (currentStep === 3 && formData.targetRole) profileData.desired_role = formData.targetRole;
-      if (currentStep === 4 && formData.skills) profileData.skills = formData.skills.split(",").map((s) => s.trim()).filter(Boolean);
-      if (currentStep === 7 && formData.companies) profileData.preferred_companies = formData.companies.split(",").map((s) => s.trim()).filter(Boolean);
-      if (currentStep === 8 && formData.salaryMin) profileData.salary_expectation_min = Number(formData.salaryMin);
+      if (currentStep === 4 && formData.skills)
+        profileData.skills = formData.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      if (currentStep === 7 && formData.companies)
+        profileData.preferred_companies = formData.companies
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      if (currentStep === 8 && formData.salaryMin)
+        profileData.salary_expectation_min = Number(formData.salaryMin);
 
       if (Object.keys(profileData).length > 0) {
         await updateProfile(profileData as any);
@@ -118,7 +136,9 @@ function OnboardingPage() {
     <div className="flex min-h-dvh items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Step {currentStep} of 10: {step.title}</CardTitle>
+          <CardTitle>
+            Step {currentStep} of 10: {step.title}
+          </CardTitle>
           <CardDescription>{step.description}</CardDescription>
           <Progress value={progress} className="mt-2" />
         </CardHeader>
@@ -138,16 +158,41 @@ function OnboardingPage() {
   );
 }
 
-function OnboardingStep({ step, formData, setFormData }: { step: number; formData: { currentRole: string; targetRole: string; skills: string; companies: string; salaryMin: string; noticePeriod: string }; setFormData: React.Dispatch<React.SetStateAction<{ currentRole: string; targetRole: string; skills: string; companies: string; salaryMin: string; noticePeriod: string }>> }) {
-  const update = (field: string, value: string) => setFormData((prev) => ({ ...prev, [field]: value }));
+function OnboardingStep({
+  step,
+  formData,
+  setFormData,
+}: {
+  step: number;
+  formData: {
+    currentRole: string;
+    targetRole: string;
+    skills: string;
+    companies: string;
+    salaryMin: string;
+    noticePeriod: string;
+  };
+  setFormData: React.Dispatch<
+    React.SetStateAction<{
+      currentRole: string;
+      targetRole: string;
+      skills: string;
+      companies: string;
+      salaryMin: string;
+      noticePeriod: string;
+    }>
+  >;
+}) {
+  const update = (field: string, value: string) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
   switch (step) {
     case 1:
       return (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Welcome to CareerOS! We'll help you set up your profile in just a few steps.
-            This will help us provide personalized job recommendations and optimize your resume.
+            Welcome to CareerOS! We'll help you set up your profile in just a few steps. This will
+            help us provide personalized job recommendations and optimize your resume.
           </p>
         </div>
       );
@@ -156,7 +201,12 @@ function OnboardingStep({ step, formData, setFormData }: { step: number; formDat
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="current-role">Current Role</Label>
-            <Input id="current-role" value={formData.currentRole} onChange={(e) => update("currentRole", e.target.value)} placeholder="e.g., Software Engineer" />
+            <Input
+              id="current-role"
+              value={formData.currentRole}
+              onChange={(e) => update("currentRole", e.target.value)}
+              placeholder="e.g., Software Engineer"
+            />
           </div>
         </div>
       );
@@ -165,7 +215,12 @@ function OnboardingStep({ step, formData, setFormData }: { step: number; formDat
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="target-role">Target Role</Label>
-            <Input id="target-role" value={formData.targetRole} onChange={(e) => update("targetRole", e.target.value)} placeholder="e.g., Senior Product Manager" />
+            <Input
+              id="target-role"
+              value={formData.targetRole}
+              onChange={(e) => update("targetRole", e.target.value)}
+              placeholder="e.g., Senior Product Manager"
+            />
           </div>
         </div>
       );
@@ -174,7 +229,12 @@ function OnboardingStep({ step, formData, setFormData }: { step: number; formDat
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="skills">Skills (comma separated)</Label>
-            <Input id="skills" value={formData.skills} onChange={(e) => update("skills", e.target.value)} placeholder="e.g., React, TypeScript, Node.js" />
+            <Input
+              id="skills"
+              value={formData.skills}
+              onChange={(e) => update("skills", e.target.value)}
+              placeholder="e.g., React, TypeScript, Node.js"
+            />
           </div>
         </div>
       );
@@ -199,7 +259,12 @@ function OnboardingStep({ step, formData, setFormData }: { step: number; formDat
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="companies">Preferred Companies (comma separated)</Label>
-            <Input id="companies" value={formData.companies} onChange={(e) => update("companies", e.target.value)} placeholder="e.g., Google, Microsoft, Apple" />
+            <Input
+              id="companies"
+              value={formData.companies}
+              onChange={(e) => update("companies", e.target.value)}
+              placeholder="e.g., Google, Microsoft, Apple"
+            />
           </div>
         </div>
       );
@@ -208,7 +273,13 @@ function OnboardingStep({ step, formData, setFormData }: { step: number; formDat
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="salary-min">Minimum Salary</Label>
-            <Input id="salary-min" type="number" value={formData.salaryMin} onChange={(e) => update("salaryMin", e.target.value)} placeholder="e.g., 80000" />
+            <Input
+              id="salary-min"
+              type="number"
+              value={formData.salaryMin}
+              onChange={(e) => update("salaryMin", e.target.value)}
+              placeholder="e.g., 80000"
+            />
           </div>
         </div>
       );
@@ -217,7 +288,13 @@ function OnboardingStep({ step, formData, setFormData }: { step: number; formDat
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="notice-period">Notice Period (days)</Label>
-            <Input id="notice-period" type="number" value={formData.noticePeriod} onChange={(e) => update("noticePeriod", e.target.value)} placeholder="e.g., 30" />
+            <Input
+              id="notice-period"
+              type="number"
+              value={formData.noticePeriod}
+              onChange={(e) => update("noticePeriod", e.target.value)}
+              placeholder="e.g., 30"
+            />
           </div>
         </div>
       );

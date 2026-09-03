@@ -108,12 +108,54 @@ export const resumeHealthMetrics: AtsHealthMetric[] = [
 ];
 
 export const sectionScores: AtsSectionScore[] = [
-  { id: "summary", label: "Summary", score: 78, weight: 15, status: "ok", hint: "Cut to 40 words, add north-star metric." },
-  { id: "experience", label: "Experience", score: 88, weight: 40, status: "strong", hint: "Quantify 2 more bullets to reach 95." },
-  { id: "skills", label: "Skills", score: 72, weight: 15, status: "ok", hint: "Missing: system design, OKRs, SQL dashboards." },
-  { id: "projects", label: "Projects", score: 81, weight: 10, status: "strong", hint: "Great signal — add adoption metric." },
-  { id: "education", label: "Education", score: 94, weight: 10, status: "strong", hint: "All required fields present." },
-  { id: "format", label: "Formatting", score: 91, weight: 10, status: "strong", hint: "ATS-safe layout, no tables or images." },
+  {
+    id: "summary",
+    label: "Summary",
+    score: 78,
+    weight: 15,
+    status: "ok",
+    hint: "Cut to 40 words, add north-star metric.",
+  },
+  {
+    id: "experience",
+    label: "Experience",
+    score: 88,
+    weight: 40,
+    status: "strong",
+    hint: "Quantify 2 more bullets to reach 95.",
+  },
+  {
+    id: "skills",
+    label: "Skills",
+    score: 72,
+    weight: 15,
+    status: "ok",
+    hint: "Missing: system design, OKRs, SQL dashboards.",
+  },
+  {
+    id: "projects",
+    label: "Projects",
+    score: 81,
+    weight: 10,
+    status: "strong",
+    hint: "Great signal — add adoption metric.",
+  },
+  {
+    id: "education",
+    label: "Education",
+    score: 94,
+    weight: 10,
+    status: "strong",
+    hint: "All required fields present.",
+  },
+  {
+    id: "format",
+    label: "Formatting",
+    score: 91,
+    weight: 10,
+    status: "strong",
+    hint: "ATS-safe layout, no tables or images.",
+  },
 ];
 
 export const keywordHeatmap: AtsKeywordCell[] = [
@@ -155,11 +197,46 @@ export const scoreTimeline: AtsTimelinePoint[] = [
 ];
 
 export const optimizationTimeline: AtsOptimizationEvent[] = [
-  { id: "op-1", time: "2m ago", title: "Rewrote summary", detail: "Added north-star metric and tightened to 42 words.", delta: 6, kind: "clarity" },
-  { id: "op-2", time: "18m ago", title: "Added 'A/B testing'", detail: "Boosted keyword match on 4 target roles.", delta: 3, kind: "keyword" },
-  { id: "op-3", time: "1h ago", title: "Quantified API bullet", detail: "Replaced 'launched API' with '99.98% uptime, 60k weekly devs'.", delta: 4, kind: "impact" },
-  { id: "op-4", time: "Yesterday", title: "Removed 2-column layout", detail: "Switched to single-column ATS-safe template.", delta: 8, kind: "format" },
-  { id: "op-5", time: "2 days ago", title: "Added Projects section", detail: "Surfaced open-source signal for AI-platform roles.", delta: 5, kind: "impact" },
+  {
+    id: "op-1",
+    time: "2m ago",
+    title: "Rewrote summary",
+    detail: "Added north-star metric and tightened to 42 words.",
+    delta: 6,
+    kind: "clarity",
+  },
+  {
+    id: "op-2",
+    time: "18m ago",
+    title: "Added 'A/B testing'",
+    detail: "Boosted keyword match on 4 target roles.",
+    delta: 3,
+    kind: "keyword",
+  },
+  {
+    id: "op-3",
+    time: "1h ago",
+    title: "Quantified API bullet",
+    detail: "Replaced 'launched API' with '99.98% uptime, 60k weekly devs'.",
+    delta: 4,
+    kind: "impact",
+  },
+  {
+    id: "op-4",
+    time: "Yesterday",
+    title: "Removed 2-column layout",
+    detail: "Switched to single-column ATS-safe template.",
+    delta: 8,
+    kind: "format",
+  },
+  {
+    id: "op-5",
+    time: "2 days ago",
+    title: "Added Projects section",
+    detail: "Surfaced open-source signal for AI-platform roles.",
+    delta: 5,
+    kind: "impact",
+  },
 ];
 
 export const detectedSkills: AtsSkill[] = [
@@ -250,10 +327,30 @@ export const warnings: AtsRecommendation[] = [
 ];
 
 export const quickFixes: AtsQuickFix[] = [
-  { id: "qf-1", title: "Add 'system design'", detail: "Insert into Skills and Summary.", impact: "+6" },
-  { id: "qf-2", title: "Tighten summary to 42 words", detail: "AI rewrite in your voice.", impact: "+3" },
-  { id: "qf-3", title: "Quantify Rivera bullet", detail: "Suggest '60k weekly devs, 99.98% uptime'.", impact: "+4" },
-  { id: "qf-4", title: "Standardize date format", detail: "Use 'Mon YYYY' across all sections.", impact: "+1" },
+  {
+    id: "qf-1",
+    title: "Add 'system design'",
+    detail: "Insert into Skills and Summary.",
+    impact: "+6",
+  },
+  {
+    id: "qf-2",
+    title: "Tighten summary to 42 words",
+    detail: "AI rewrite in your voice.",
+    impact: "+3",
+  },
+  {
+    id: "qf-3",
+    title: "Quantify Rivera bullet",
+    detail: "Suggest '60k weekly devs, 99.98% uptime'.",
+    impact: "+4",
+  },
+  {
+    id: "qf-4",
+    title: "Standardize date format",
+    detail: "Use 'Mon YYYY' across all sections.",
+    impact: "+1",
+  },
 ];
 
 export const missingKeywords = [
@@ -283,11 +380,46 @@ export const resumeVersions: AtsResumeVersion[] = [
 ];
 
 export const history: AtsHistoryEntry[] = [
-  { id: "h-1", label: "Auto rescore", timestamp: "just now", score: 84, delta: 2, note: "After summary rewrite" },
-  { id: "h-2", label: "Manual edit", timestamp: "18m ago", score: 82, delta: 4, note: "Added A/B testing" },
-  { id: "h-3", label: "AI quick fix", timestamp: "1h ago", score: 78, delta: 3, note: "Quantified API bullet" },
-  { id: "h-4", label: "Template swap", timestamp: "Yesterday", score: 75, delta: 8, note: "Single-column layout" },
-  { id: "h-5", label: "Import", timestamp: "1 week ago", score: 62, delta: 0, note: "Baseline resume" },
+  {
+    id: "h-1",
+    label: "Auto rescore",
+    timestamp: "just now",
+    score: 84,
+    delta: 2,
+    note: "After summary rewrite",
+  },
+  {
+    id: "h-2",
+    label: "Manual edit",
+    timestamp: "18m ago",
+    score: 82,
+    delta: 4,
+    note: "Added A/B testing",
+  },
+  {
+    id: "h-3",
+    label: "AI quick fix",
+    timestamp: "1h ago",
+    score: 78,
+    delta: 3,
+    note: "Quantified API bullet",
+  },
+  {
+    id: "h-4",
+    label: "Template swap",
+    timestamp: "Yesterday",
+    score: 75,
+    delta: 8,
+    note: "Single-column layout",
+  },
+  {
+    id: "h-5",
+    label: "Import",
+    timestamp: "1 week ago",
+    score: 62,
+    delta: 0,
+    note: "Baseline resume",
+  },
 ];
 
 export const sectionNav = [

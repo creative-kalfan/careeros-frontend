@@ -100,7 +100,7 @@ type User = {
 type Tokens = {
   accessToken: string;
   refreshToken: string;
-  expiresIn: number;        // Seconds until expiry
+  expiresIn: number; // Seconds until expiry
   refreshExpiresIn: number; // Seconds until refresh token expiry
 };
 ```
@@ -122,12 +122,12 @@ type Session = {
 ### Authentication Status
 
 ```typescript
-type AuthStatus = 
-  | "idle"           // Initial state
-  | "loading"        // Operation in progress
-  | "authenticated"  // User is logged in
+type AuthStatus =
+  | "idle" // Initial state
+  | "loading" // Operation in progress
+  | "authenticated" // User is logged in
   | "unauthenticated" // User is not logged in
-  | "error";         // Error occurred
+  | "error"; // Error occurred
 ```
 
 ## Token Lifecycle
@@ -204,6 +204,7 @@ Wraps routes that require authentication:
 ```
 
 **Behavior:**
+
 - Shows loading spinner while initializing
 - Redirects to login if not authenticated
 - Shows permission denied screen if lacking permissions
@@ -225,6 +226,7 @@ Wraps routes for unauthenticated users only:
 ```
 
 **Behavior:**
+
 - Shows loading spinner while initializing
 - Redirects to dashboard if already authenticated
 - Renders children if not authenticated
@@ -258,10 +260,7 @@ const response = await handleUnauthorized(async () => {
 ```typescript
 import { retryRequest } from "@/auth/http-interceptor";
 
-const data = await retryRequest(
-  () => fetchData(),
-  { maxRetries: 3, retryDelay: 1000 }
-);
+const data = await retryRequest(() => fetchData(), { maxRetries: 3, retryDelay: 1000 });
 // Exponential backoff: 1s, 2s, 4s
 ```
 
@@ -307,22 +306,22 @@ Modal dialog shown when session expires:
 import { authConfig } from "@/auth/auth.config";
 
 // Storage
-authConfig.storage.type // "localStorage" | "sessionStorage" | "memory"
+authConfig.storage.type; // "localStorage" | "sessionStorage" | "memory"
 
 // Tokens
-authConfig.tokens.refreshBuffer // 5 minutes
+authConfig.tokens.refreshBuffer; // 5 minutes
 
 // Session
-authConfig.session.inactivityTimeout // 30 minutes
+authConfig.session.inactivityTimeout; // 30 minutes
 
 // Routes
-authConfig.routes.login // "/login"
+authConfig.routes.login; // "/login"
 
 // Endpoints
-authConfig.endpoints.login // "/auth/login"
+authConfig.endpoints.login; // "/auth/login"
 
 // Features
-authConfig.features.enableEmailVerification // true
+authConfig.features.enableEmailVerification; // true
 ```
 
 ### Environment Variables
@@ -330,7 +329,7 @@ authConfig.features.enableEmailVerification // true
 ```typescript
 // src/config/env.ts
 export const env = {
-  VITE_API_BASE_URL: getEnv("VITE_API_BASE_URL", "http://localhost:3000/api"),
+  VITE_API_BASE_URL: getEnv("VITE_API_BASE_URL", "http://localhost:8000"),
 } as const;
 ```
 
@@ -392,13 +391,13 @@ import { useAuth } from "@/auth/useAuth";
 
 function AdminPanel() {
   const { user } = useAuth();
-  
+
   const hasAdminAccess = user?.permissions.includes("admin:access");
-  
+
   if (!hasAdminAccess) {
     return <PermissionDeniedScreen />;
   }
-  
+
   return <AdminDashboard />;
 }
 ```

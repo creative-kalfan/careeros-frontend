@@ -50,7 +50,9 @@ export function ConversationList({
               onClick={() => setFilter(id)}
               className={cn(
                 "flex flex-1 items-center justify-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-medium transition",
-                filter === id ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-surface-elevated/60",
+                filter === id
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-surface-elevated/60",
               )}
             >
               <Icon className="h-3 w-3" /> {label}
@@ -60,7 +62,9 @@ export function ConversationList({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
         {filtered.length === 0 ? (
-          <div className="px-2 py-6 text-center text-xs text-muted-foreground">No conversations</div>
+          <div className="px-2 py-6 text-center text-xs text-muted-foreground">
+            No conversations
+          </div>
         ) : (
           filtered.map((c) => (
             <button

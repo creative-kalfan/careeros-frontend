@@ -31,7 +31,7 @@ export function ProtectedRoute({
   // Check permissions if required
   if (requiredPermissions.length > 0) {
     const hasAllPermissions = requiredPermissions.every((permission) =>
-      user.permissions.includes(permission as any)
+      user.permissions.includes(permission as any),
     );
 
     if (!hasAllPermissions) {

@@ -13,13 +13,13 @@ import {
 
 /**
  * NormalizationEngine - Core normalization engine for job data
- * 
+ *
  * Performs basic normalization on job candidates:
  * - Trim whitespace
  * - Normalize URLs
  * - Normalize employment type
  * - Remove duplicate skills
- * 
+ *
  * Does NOT implement:
  * - Salary normalization
  * - Location normalization
@@ -48,17 +48,25 @@ export class NormalizationEngine {
     if (currency) return currency.toUpperCase();
     if (NormalizationEngine.INR_KEYWORDS_RE.test(raw)) return "INR";
     if (NormalizationEngine.KNOWN_CURRENCY_CODES_RE.test(raw)) {
-      return (raw.match(NormalizationEngine.KNOWN_CURRENCY_CODES_RE)?.[0] ?? "UNKNOWN").toUpperCase();
+      return (
+        raw.match(NormalizationEngine.KNOWN_CURRENCY_CODES_RE)?.[0] ?? "UNKNOWN"
+      ).toUpperCase();
     }
     if (NormalizationEngine.CURRENCY_SYMBOL_RE.test(raw)) {
       const sym = raw.match(NormalizationEngine.CURRENCY_SYMBOL_RE)?.[0];
       switch (sym) {
-        case "$":  return "USD";
-        case "\u20AC": return "EUR";
-        case "\u00A3": return "GBP";
-        case "\u00A5": return "JPY";
-        case "\u20B9": return "INR";
-        default:    return "UNKNOWN";
+        case "$":
+          return "USD";
+        case "\u20AC":
+          return "EUR";
+        case "\u00A3":
+          return "GBP";
+        case "\u00A5":
+          return "JPY";
+        case "\u20B9":
+          return "INR";
+        default:
+          return "UNKNOWN";
       }
     }
     return "UNKNOWN";
@@ -87,7 +95,7 @@ export class NormalizationEngine {
     salary: string | undefined | null,
     currency: string | undefined | null,
     warnings: string[],
-    appliedRules: string[]
+    appliedRules: string[],
   ): Salary | null {
     if (!salary && !currency) return null;
 
@@ -127,15 +135,19 @@ export class NormalizationEngine {
       companyId: candidate.id,
       companyName: candidate.company || undefined,
       sourceStrategy: candidate.sourceStrategy || "unknown",
-      crawlTimestamp: candidate.crawlTimestamp 
-        ? new Date(candidate.crawlTimestamp) 
-        : new Date(),
+      crawlTimestamp: candidate.crawlTimestamp ? new Date(candidate.crawlTimestamp) : new Date(),
       sourcePlatform: candidate.sourcePlatform || undefined,
       rawJson: candidate.rawData,
     };
 
     // Normalize the candidate
-    const normalizedJob = this.normalizeJob(candidate, context, warnings, appliedRules, fieldCoverage);
+    const normalizedJob = this.normalizeJob(
+      candidate,
+      context,
+      warnings,
+      appliedRules,
+      fieldCoverage,
+    );
 
     const normalizationDurationMs = Date.now() - startTime;
 
@@ -156,7 +168,7 @@ export class NormalizationEngine {
     context: NormalizationContext,
     warnings: string[],
     appliedRules: string[],
-    fieldCoverage: Record<string, boolean>
+    fieldCoverage: Record<string, boolean>,
   ): NormalizedJob {
     // Track field coverage
     const trackField = (field: string, value: unknown) => {
@@ -192,21 +204,27 @@ export class NormalizationEngine {
       if (!type) return null;
       const normalized = type.toUpperCase().replace(/[\s-]+/g, "_");
       const validTypes: EmploymentType[] = [
-        "FULL_TIME", "PART_TIME", "CONTRACT", "TEMPORARY", "INTERNSHIP", "FREELANCE", "UNKNOWN"
+        "FULL_TIME",
+        "PART_TIME",
+        "CONTRACT",
+        "TEMPORARY",
+        "INTERNSHIP",
+        "FREELANCE",
+        "UNKNOWN",
       ];
       if (validTypes.includes(normalized as EmploymentType)) {
         return normalized as EmploymentType;
       }
       // Try to map common variations
       const typeMap: Record<string, EmploymentType> = {
-        "FULLTIME": "FULL_TIME",
-        "PARTTIME": "PART_TIME",
-        "FULL_TIME": "FULL_TIME",
-        "PART_TIME": "PART_TIME",
-        "CONTRACTOR": "CONTRACT",
-        "TEMP": "TEMPORARY",
-        "INTERN": "INTERNSHIP",
-        "FREELANCER": "FREELANCE",
+        FULLTIME: "FULL_TIME",
+        PARTTIME: "PART_TIME",
+        FULL_TIME: "FULL_TIME",
+        PART_TIME: "PART_TIME",
+        CONTRACTOR: "CONTRACT",
+        TEMP: "TEMPORARY",
+        INTERN: "INTERNSHIP",
+        FREELANCER: "FREELANCE",
       };
       return typeMap[normalized] || "UNKNOWN";
     };
@@ -220,12 +238,12 @@ export class NormalizationEngine {
         return normalized as WorkMode;
       }
       const modeMap: Record<string, WorkMode> = {
-        "REMOTE": "REMOTE",
-        "WORKFROMHOME": "REMOTE",
-        "WFH": "REMOTE",
-        "HYBRID": "HYBRID",
-        "ONSITE": "ONSITE",
-        "OFFICE": "ONSITE",
+        REMOTE: "REMOTE",
+        WORKFROMHOME: "REMOTE",
+        WFH: "REMOTE",
+        HYBRID: "HYBRID",
+        ONSITE: "ONSITE",
+        OFFICE: "ONSITE",
       };
       return modeMap[normalized] || "UNKNOWN";
     };
@@ -234,22 +252,30 @@ export class NormalizationEngine {
     const normalizeExperienceLevel = (level: string | undefined | null): ExperienceLevel | null => {
       if (!level) return null;
       const normalized = level.toUpperCase().replace(/[\s-]+/g, "");
-      const validLevels: ExperienceLevel[] = ["ENTRY", "JUNIOR", "MID", "SENIOR", "LEAD", "EXECUTIVE", "UNKNOWN"];
+      const validLevels: ExperienceLevel[] = [
+        "ENTRY",
+        "JUNIOR",
+        "MID",
+        "SENIOR",
+        "LEAD",
+        "EXECUTIVE",
+        "UNKNOWN",
+      ];
       if (validLevels.includes(normalized as ExperienceLevel)) {
         return normalized as ExperienceLevel;
       }
       const levelMap: Record<string, ExperienceLevel> = {
-        "ENTRYLEVEL": "ENTRY",
-        "JUNIOR": "JUNIOR",
-        "MIDLEVEL": "MID",
-        "MID": "MID",
-        "SENIOR": "SENIOR",
-        "LEAD": "LEAD",
-        "PRINCIPAL": "LEAD",
-        "EXECUTIVE": "EXECUTIVE",
-        "DIRECTOR": "EXECUTIVE",
-        "VP": "EXECUTIVE",
-        "C_LEVEL": "EXECUTIVE",
+        ENTRYLEVEL: "ENTRY",
+        JUNIOR: "JUNIOR",
+        MIDLEVEL: "MID",
+        MID: "MID",
+        SENIOR: "SENIOR",
+        LEAD: "LEAD",
+        PRINCIPAL: "LEAD",
+        EXECUTIVE: "EXECUTIVE",
+        DIRECTOR: "EXECUTIVE",
+        VP: "EXECUTIVE",
+        C_LEVEL: "EXECUTIVE",
       };
       return levelMap[normalized] || "UNKNOWN";
     };
@@ -258,18 +284,25 @@ export class NormalizationEngine {
     const normalizeCompanySize = (size: string | undefined | null): CompanySize | null => {
       if (!size) return null;
       const normalized = size.toUpperCase().replace(/[\s-]+/g, "");
-      const validSizes: CompanySize[] = ["STARTUP", "SMALL", "MEDIUM", "LARGE", "ENTERPRISE", "UNKNOWN"];
+      const validSizes: CompanySize[] = [
+        "STARTUP",
+        "SMALL",
+        "MEDIUM",
+        "LARGE",
+        "ENTERPRISE",
+        "UNKNOWN",
+      ];
       if (validSizes.includes(normalized as CompanySize)) {
         return normalized as CompanySize;
       }
       const sizeMap: Record<string, CompanySize> = {
-        "STARTUP": "STARTUP",
-        "SMALL": "SMALL",
-        "MEDIUM": "MEDIUM",
-        "LARGE": "LARGE",
-        "ENTERPRISE": "ENTERPRISE",
-        "BIG": "LARGE",
-        "CORPORATE": "ENTERPRISE",
+        STARTUP: "STARTUP",
+        SMALL: "SMALL",
+        MEDIUM: "MEDIUM",
+        LARGE: "LARGE",
+        ENTERPRISE: "ENTERPRISE",
+        BIG: "LARGE",
+        CORPORATE: "ENTERPRISE",
       };
       return sizeMap[normalized] || "UNKNOWN";
     };
@@ -279,9 +312,9 @@ export class NormalizationEngine {
       if (!skills || skills.length === 0) return [];
       const seen = new Set<string>();
       return skills
-        .map(s => s.trim())
-        .filter(s => s.length > 0)
-        .filter(s => {
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+        .filter((s) => {
           const lower = s.toLowerCase();
           if (seen.has(lower)) return false;
           seen.add(lower);
@@ -333,7 +366,8 @@ export class NormalizationEngine {
       salary: this.normalizeSalary(candidate.salary, candidate.currency, warnings, appliedRules),
       description: trimString(candidate.description) || null,
       requirements: candidate.requirements?.map(trimString).filter(Boolean) as string[] | undefined,
-      responsibilities: candidate.responsibilities?.map(trimString).filter(Boolean) as string[] | undefined,
+      responsibilities: candidate.responsibilities?.map(trimString).filter(Boolean) as
+        string[] | undefined,
       skills: normalizedSkills,
       department: trimString(candidate.department) || null,
       remote: candidate.remote ?? null,
@@ -349,7 +383,8 @@ export class NormalizationEngine {
       visaSupport: candidate.visaSupport ?? null,
       relocation: candidate.relocation ?? null,
       education: trimString(candidate.education) || null,
-      certifications: candidate.certifications?.map(trimString).filter(Boolean) as string[] | undefined,
+      certifications: candidate.certifications?.map(trimString).filter(Boolean) as
+        string[] | undefined,
       travelRequirement: trimString(candidate.travelRequirement) || null,
       securityClearance: trimString(candidate.securityClearance) || null,
       companySize: normalizeCompanySize(candidate.companySize),

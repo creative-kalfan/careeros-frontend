@@ -11,7 +11,8 @@ export type DashboardStats = {
 
 export type ActivityItem = {
   id: string;
-  type: "resume_created" | "application_submitted" | "ats_analysis" | "job_saved" | "recommendation";
+  type:
+    "resume_created" | "application_submitted" | "ats_analysis" | "job_saved" | "recommendation";
   title: string;
   description: string;
   timestamp: string;
@@ -20,12 +21,16 @@ export type ActivityItem = {
 
 export type DashboardApi = {
   getStats: () => Promise<ApiResponse<DashboardStats>>;
-  getRecentActivity: (params?: PaginationParams) => Promise<ApiResponse<PaginatedResponse<ActivityItem>>>;
-  getWeeklyProgress: () => Promise<ApiResponse<{
-    applicationsSubmitted: number[];
-    atsScores: number[];
-    labels: string[];
-  }>>;
+  getRecentActivity: (
+    params?: PaginationParams,
+  ) => Promise<ApiResponse<PaginatedResponse<ActivityItem>>>;
+  getWeeklyProgress: () => Promise<
+    ApiResponse<{
+      applicationsSubmitted: number[];
+      atsScores: number[];
+      labels: string[];
+    }>
+  >;
 };
 
 export const dashboardApi: DashboardApi = {

@@ -6,18 +6,23 @@ export const API_ENDPOINTS = {
     ME: "/auth/me",
   },
   RESUME: {
-    LIST: "/resumes",
-    GET: (id: string) => `/resumes/${id}`,
-    CREATE: "/resumes",
-    UPDATE: (id: string) => `/resumes/${id}`,
-    DELETE: (id: string) => `/resumes/${id}`,
-    UPLOAD: "/upload/resume",
-    PARSE: (id: string) => `/resumes/${id}/parse`,
+    LIST: "/api/resumes",
+    GET: (id: string) => `/api/resumes/${id}`,
+    CREATE: "/api/resumes",
+    UPDATE: (id: string) => `/api/resumes/${id}`,
+    DELETE: (id: string) => `/api/resumes/${id}`,
+    REGISTER: "/api/resumes/register",
+    PARSE: (id: string) => `/api/resumes/${id}/parse`,
+    COMPLETENESS: (id: string) => `/api/resumes/${id}/completeness`,
+  },
+  TEMPLATES: {
+    LIST: "/api/templates",
+    GET: (id: string) => `/api/templates/${id}`,
   },
   ATS: {
-    ANALYZE: "/ats/analyze",
-    HISTORY: (resumeId: string) => `/resumes/${resumeId}/ats-history`,
-    REPORT: (id: string) => `/ats/reports/${id}`,
+    ANALYZE: "/api/ats/analyze",
+    HISTORY: (resumeId: string) => `/api/ats/resume/${resumeId}/history`,
+    REPORT: (id: string) => `/api/ats/reports/${id}`,
   },
   JOBS: {
     LIST: "/jobs",
@@ -28,6 +33,8 @@ export const API_ENDPOINTS = {
     UNSAVE: (id: string) => `/jobs/${id}/unsave`,
     SAVED: "/jobs/saved",
     MATCH: "/jobs/match",
+    INTELLIGENCE_ANALYZE: (id: string) => `/jobs/${id}/intelligence/analyze`,
+    INTELLIGENCE_GET: (id: string) => `/jobs/${id}/intelligence`,
   },
   RECOMMENDATIONS: {
     USER: "/recommendations",
@@ -61,6 +68,31 @@ export const API_ENDPOINTS = {
     SESSION: (id: string) => `/copilot/sessions/${id}`,
     SESSIONS: "/copilot/sessions",
     DELETE_SESSION: (id: string) => `/copilot/sessions/${id}`,
+  },
+  OPTIMIZATION: {
+    GENERATE: "/api/optimization/generate",
+    ACCEPT: "/api/optimization/suggestions/accept",
+    REJECT: "/api/optimization/suggestions/reject",
+    SESSION: (sessionId: string) => `/api/optimization/sessions/${sessionId}`,
+    SESSIONS: (resumeId: string) => `/api/optimization/resume/${resumeId}/sessions`,
+    HISTORY: (resumeId: string) => `/api/optimization/resume/${resumeId}/history`,
+    REANALYZE: "/api/optimization/reanalyze",
+  },
+  VERSIONS: {
+    LIST: (resumeId: string) => `/api/resumes/${resumeId}/versions`,
+    CREATE: (resumeId: string) => `/api/resumes/${resumeId}/versions`,
+    GET: (versionId: string) => `/api/resumes/versions/${versionId}`,
+    UPDATE: (versionId: string) => `/api/resumes/versions/${versionId}`,
+    DELETE: (versionId: string) => `/api/resumes/versions/${versionId}`,
+    DUPLICATE: (versionId: string) => `/api/resumes/versions/${versionId}/duplicate`,
+    SET_MASTER: (versionId: string) => `/api/resumes/versions/${versionId}/set-master`,
+    DIFF: (versionId: string) => `/api/resumes/versions/${versionId}/diff`,
+  },
+  EXPORT: {
+    PDF: (resumeId: string, versionId: string) =>
+      `/api/export/resumes/${resumeId}/versions/${versionId}/pdf`,
+    DOCX: (resumeId: string, versionId: string) =>
+      `/api/export/resumes/${resumeId}/versions/${versionId}/docx`,
   },
 } as const;
 

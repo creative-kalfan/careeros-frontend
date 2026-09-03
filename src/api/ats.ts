@@ -2,21 +2,82 @@ import { request } from "../utils/request";
 import { apiConfig } from "./config";
 import { API_ENDPOINTS } from "../constants/api";
 import { ApiClientError } from "../utils/api-error";
-import type { ResumeContent } from "../types/resume";
 
 export type AtsAnalysisResult = {
-  atsScore: number;
-  skillMatchScore: number;
-  keywordMatchScore: number;
-  semanticSimilarityScore: number;
-  missingSkills: string[];
-  missingKeywords: string[];
+  overall_score: number;
+  keyword_match_score: number;
+  skills_match_score: number;
+  experience_relevance_score: number;
+  qualification_match_score: number;
+  structure_format_score: number;
+  // Backend returns these as snake_case (see app/models/ats.py ATSAnalysisResult).
+  // Optional to stay tolerant of older persisted reports that may omit them.
+  matched_keywords?: string[];
+  missing_keywords?: string[];
+  matched_skills?: string[];
+  missing_skills?: string[];
   recommendations: string[];
-  matchedKeywords: string[];
-  matchedSkills: string[];
-  engineVersion?: string;
-  extractedKeywords?: string[];
-  extractedSkills?: string[];
+  // Fields the backend already returns but were not previously surfaced in the
+  // frontend type. All optional to stay tolerant of older persisted reports.
+  partial_keywords?: string[];
+  partial_skills?: string[];
+  analysis_explanation?: {
+    overall?: string;
+    keyword?: string;
+    skills?: string;
+    experience?: string;
+    qualification?: string;
+    structure?: string;
+    semantic_reasoning?: string;
+  };
+  high_priority_recommendations?: string[];
+  medium_priority_recommendations?: string[];
+  low_priority_recommendations?: string[];
+  template_analysis?: {
+    layout?: string;
+    is_ats_friendly?: boolean;
+    compatibility_rating?: string;
+  };
+  section_analysis?: {
+    contact_info?: boolean;
+    skills_present?: boolean;
+    experience_present?: boolean;
+    education_present?: boolean;
+    projects_present?: boolean;
+  };
+  requirement_coverage?: AtsRequirementCoverage[];
+  scoring_version?: string;
+  semantic_metadata?: {
+    semantic_available?: boolean;
+    semantic_success?: boolean;
+    semantic_model?: string;
+    semantic_provider?: string;
+    semantic_latency_ms?: number;
+    reconciled_count?: number;
+    semantic_upgrades?: number;
+    semantic_overrides?: number;
+  };
+};
+
+export type AtsRequirementCoverage = {
+  requirement?: string;
+  requirement_type?: string;
+  category?: string;
+  importance?: string;
+  status?: string;
+  job_evidence?: string;
+  resume_evidence?: string[];
+  evidence_level?: string;
+  evidence_sources?: string[];
+  deterministic_status?: string;
+  evidence_source_section?: string;
+  evidence_explanation?: string;
+  semantic_status?: string;
+  semantic_confidence?: number;
+  semantic_evidence?: string;
+  semantic_reasoning?: string;
+  semantic_evidence_strength?: string;
+  reasoning_source?: string;
 };
 
 export type AtsReport = {
@@ -41,119 +102,23 @@ export type AnalyzeResumeResponse = {
   report?: AtsReport;
 };
 
-export type OptimizationSuggestion = {
-  id: string;
-  category: "skills" | "summary" | "experience" | "projects" | "education";
-  kind: "add_skill" | "summary_rewrite" | "keyword_in_summary" | "experience_bullet" | "project_enhancement" | "education_detail";
-  title: string;
-  description: string;
-  preview: string;
-  status: "pending" | "accepted" | "rejected";
-  payload: Record<string, unknown>;
-};
-
-export type OptimizationSuggestionsResponse = {
-  suggestions: OptimizationSuggestion[];
-  reportId: string;
-  baselineScores: {
-    atsScore: number;
-    keywordMatchScore: number;
-    skillMatchScore: number;
-    semanticSimilarityScore: number;
-  };
-};
-
-export type RecalculateAtsResponse = {
-  previous: {
-    atsScore: number;
-    skillMatchScore: number;
-    keywordMatchScore: number;
-    semanticSimilarityScore: number;
-  };
-  current: {
-    atsScore: number;
-    skillMatchScore: number;
-    keywordMatchScore: number;
-    semanticSimilarityScore: number;
-    reportId: string;
-  };
-  delta: {
-    atsScore: number;
-    skillMatchScore: number;
-    keywordMatchScore: number;
-    semanticSimilarityScore: number;
-  };
-};
-
 export type AtsApi = {
   analyze: (data: {
     resumeId: string;
+    versionId?: string;
     jobDescription: string;
+    jobTitle?: string;
+    company?: string;
     persist?: boolean;
   }) => Promise<AnalyzeResumeResponse>;
-
-  getSuggestions: (data: {
-    resumeId: string;
-    content: ResumeContent;
-    reportId?: string;
-  }) => Promise<OptimizationSuggestionsResponse>;
-
-  recalculate: (data: {
-    resumeId: string;
-    content: ResumeContent;
-    jobDescription?: string;
-  }) => Promise<RecalculateAtsResponse>;
-
-  acceptSuggestion: (data: {
-    resumeId: string;
-    suggestion: OptimizationSuggestion;
-    content: ResumeContent;
-  }) => Promise<{
-    content: ResumeContent;
-    versionId: string;
-    versionName: string;
-    suggestionId: string;
-  }>;
 };
 
 export const atsApi: AtsApi = {
-  analyze: async ({ resumeId, jobDescription, persist = true }) => {
+  analyze: async ({ resumeId, versionId, jobDescription, jobTitle, company, persist = true }) => {
     const res = await request<AnalyzeResumeResponse>({
       method: "POST",
       path: API_ENDPOINTS.ATS.ANALYZE,
-      body: { resumeId, jobDescription, persist },
-    });
-    return res;
-  },
-
-  getSuggestions: async ({ resumeId, content, reportId }) => {
-    const res = await request<OptimizationSuggestionsResponse>({
-      method: "POST",
-      path: `/optimizer/${resumeId}/suggestions`,
-      body: { content, reportId },
-    });
-    return res;
-  },
-
-  recalculate: async ({ resumeId, content, jobDescription }) => {
-    const res = await request<RecalculateAtsResponse>({
-      method: "POST",
-      path: `/optimizer/${resumeId}/recalculate-ats`,
-      body: { content, jobDescription },
-    });
-    return res;
-  },
-
-  acceptSuggestion: async ({ resumeId, suggestion, content }) => {
-    const res = await request<{
-      content: ResumeContent;
-      versionId: string;
-      versionName: string;
-      suggestionId: string;
-    }>({
-      method: "POST",
-      path: `/optimizer/${resumeId}/accept`,
-      body: { suggestion, content },
+      body: { resumeId, versionId, jobDescription, jobTitle, company, persist },
     });
     return res;
   },

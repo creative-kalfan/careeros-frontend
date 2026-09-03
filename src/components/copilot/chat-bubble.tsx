@@ -37,7 +37,10 @@ function inline(text: string) {
     if (t.startsWith("**")) parts.push(<strong key={idx++}>{t.slice(2, -2)}</strong>);
     else if (t.startsWith("`"))
       parts.push(
-        <code key={idx++} className="rounded-md bg-surface-elevated px-1 py-0.5 font-mono text-[0.85em]">
+        <code
+          key={idx++}
+          className="rounded-md bg-surface-elevated px-1 py-0.5 font-mono text-[0.85em]"
+        >
           {t.slice(1, -1)}
         </code>,
       );
@@ -69,7 +72,9 @@ export function ChatBubble({
   };
 
   return (
-    <div className={cn("group flex animate-fade-in gap-2.5", isUser ? "justify-end" : "justify-start")}>
+    <div
+      className={cn("group flex animate-fade-in gap-2.5", isUser ? "justify-end" : "justify-start")}
+    >
       {!isUser && (
         <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary to-accent text-primary-foreground shadow-elevation-1">
           <span className="font-mono text-[11px] font-bold">AI</span>
@@ -89,10 +94,18 @@ export function ChatBubble({
         {message.card && <ResponseCardView card={message.card} />}
         {!isUser && (
           <div className="mt-1.5 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-            <button onClick={copy} className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-foreground" title="Copy">
+            <button
+              onClick={copy}
+              className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
+              title="Copy"
+            >
               {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
             </button>
-            <button onClick={onRegenerate} className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-foreground" title="Regenerate">
+            <button
+              onClick={onRegenerate}
+              className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
+              title="Regenerate"
+            >
               <RotateCcw className="h-3 w-3" />
             </button>
             <button
@@ -105,7 +118,11 @@ export function ChatBubble({
             >
               <Pin className="h-3 w-3" />
             </button>
-            <button onClick={onDelete} className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-destructive" title="Delete">
+            <button
+              onClick={onDelete}
+              className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-destructive"
+              title="Delete"
+            >
               <Trash2 className="h-3 w-3" />
             </button>
           </div>

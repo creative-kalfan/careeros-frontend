@@ -1,101 +1,81 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   SlidersHorizontal,
   MapPin,
   Briefcase,
+  Building2,
+  Clock,
+  Sparkles,
+  Wrench,
+  ArrowUpDown,
   RotateCcw,
-  ChevronDown,
+  Search,
+  Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { filterOptions } from "@/lib/jobs";
 
-function Group({
-  icon: Icon,
-  title,
-  count,
-  defaultOpen = true,
-  children,
+export type FiltersPaneValues = {
+  role?: string;
+  company?: string;
+  location?: string;
+  workMode?: string[];
+  employmentType?: string[];
+  experience?: string[];
+  skills?: string[];
+  sort?: string;
+};
+
+export function AdditionalFiltersDrawer({
+  open,
+  onOpenChange,
+  values,
+  onApply,
+  onReset,
 }: {
-  icon: React.ElementType;
-  title: string;
-  count?: number;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  values?: FiltersPaneValues;
+  onApply?: (filters: Record<string, string[]>) => void;
+  onReset?: () => void;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="group flex w-full items-center justify-between px-1 py-1.5 text-left">
-        <div className="flex items-center gap-2">
-          <Icon className="h-3.5 w-3.5 text-primary" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {title}
-          </span>
-          {count != null && (
-            <span className="rounded-full bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] text-primary">
-              {count}
-            </span>
-          )}
-        </div>
-        <ChevronDown
-          className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${
-            open ? "" : "-rotate-90"
-          }`}
-        />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pt-2 pb-1">{children}</CollapsibleContent>
-    </Collapsible>
-  );
-}
+  const [companyQuery, setCompanyQuery] = useState(values?.company ?? "");
+  const [locationQuery, setLocationQuery] = useState(values?.location ?? "");
+  const [selectedSort, setSelectedSort] = useState<string>(values?.sort ?? "best-match");
+  const [skillSearch, setSkillSearch] = useState("");
+  const [selected, setSelected] = useState<Record<string, Set<string>>>({
+    workMode: new Set(values?.workMode ?? []),
+    employmentType: new Set(values?.employmentType ?? []),
+    experience: new Set(values?.experience ?? []),
+    skills: new Set(values?.skills ?? []),
+  });
 
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active?: boolean;
-  onClick?: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
-        active
-          ? "border-primary/50 bg-primary/15 text-foreground"
-          : "border-border/60 bg-surface-elevated/50 text-muted-foreground hover:border-border hover:text-foreground"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
+  useEffect(() => {
+    if (values) {
+      setCompanyQuery(values.company ?? "");
+      setLocationQuery(values.location ?? "");
+      if (values.sort) setSelectedSort(values.sort);
+      setSelected({
+        workMode: new Set(values.workMode ?? []),
+        employmentType: new Set(values.employmentType ?? []),
+        experience: new Set(values.experience ?? []),
+        skills: new Set(values.skills ?? []),
+      });
+    }
+  }, [values, open]);
 
-export function FiltersPane({ onApply }: { onApply?: (filters: Record<string, string[]>) => void } = {}) {
-  const [selected, setSelected] = useState<Record<string, Set<string>>>({});
-  const [roleQuery, setRoleQuery] = useState("");
-  const [locationQuery, setLocationQuery] = useState("");
-
-  const applyFilters = () => {
-    const payload: Record<string, string[]> = {};
-    if (roleQuery.trim()) payload.role = [roleQuery.trim()];
-    if (locationQuery.trim()) payload.location = [locationQuery.trim()];
-    Object.entries(selected).forEach(([key, set]) => {
-      if (set.size > 0) payload[key] = Array.from(set);
-    });
-    onApply?.(payload);
-  };
-
-  function toggle(group: string, val: string) {
+  const toggle = (group: string, val: string) => {
     setSelected((prev) => {
       const next = { ...prev };
       const s = new Set(next[group] ?? []);
@@ -104,86 +84,208 @@ export function FiltersPane({ onApply }: { onApply?: (filters: Record<string, st
       next[group] = s;
       return next;
     });
-  }
-  function isOn(group: string, val: string) {
-    return selected[group]?.has(val) ?? false;
-  }
+  };
 
-  const activeCount = Object.values(selected).reduce((n, s) => n + s.size, 0) + (roleQuery.trim() ? 1 : 0) + (locationQuery.trim() ? 1 : 0);
+  const isOn = (group: string, val: string) => {
+    return selected[group]?.has(val) ?? false;
+  };
+
+  const handleApply = () => {
+    const payload: Record<string, string[]> = {};
+    if (companyQuery.trim()) payload.company = [companyQuery.trim()];
+    if (locationQuery.trim()) payload.location = [locationQuery.trim()];
+    if (selectedSort) payload.sort = [selectedSort];
+    Object.entries(selected).forEach(([key, set]) => {
+      if (set.size > 0) payload[key] = Array.from(set);
+    });
+    onApply?.(payload);
+    onOpenChange(false);
+  };
+
+  const handleReset = () => {
+    setCompanyQuery("");
+    setLocationQuery("");
+    setSelectedSort("best-match");
+    setSelected({
+      workMode: new Set(),
+      employmentType: new Set(),
+      experience: new Set(),
+      skills: new Set(),
+    });
+    onReset?.();
+    onApply?.({});
+  };
+
+  const filteredSkills = filterOptions.skills.filter((s) =>
+    s.toLowerCase().includes(skillSearch.toLowerCase())
+  );
+
+  const activeCount =
+    (companyQuery.trim() ? 1 : 0) +
+    (locationQuery.trim() ? 1 : 0) +
+    selected.skills.size +
+    (selectedSort && selectedSort !== "best-match" ? 1 : 0);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-primary" />
-          <div className="text-[13px] font-semibold">Smart Filters</div>
-          {activeCount > 0 && (
-            <Badge variant="secondary" className="rounded-full text-[10px]">
-              {activeCount}
-            </Badge>
-          )}
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 rounded-md px-2 text-[11px] text-muted-foreground"
-          onClick={() => setSelected({})}
-        >
-          <RotateCcw className="mr-1 h-3 w-3" />
-          Reset
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          className="h-7 rounded-md px-2 text-[11px]"
-          onClick={applyFilters}
-        >
-          Apply
-        </Button>
-      </div>
-
-      <ScrollArea className="flex-1">
-        <div className="space-y-2 p-3">
-          <Group icon={Briefcase} title="Role">
-            <Input
-              value={roleQuery}
-              onChange={(e) => setRoleQuery(e.target.value)}
-              placeholder="e.g. Staff Frontend Engineer"
-              className="h-8 rounded-lg bg-surface-elevated/40 text-xs"
-            />
-          </Group>
-
-          <Group icon={MapPin} title="Location">
-            <Input
-              value={locationQuery}
-              onChange={(e) => setLocationQuery(e.target.value)}
-              placeholder="City, region or 'Remote'"
-              className="h-8 rounded-lg bg-surface-elevated/40 text-xs"
-            />
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {filterOptions.workMode.map((m) => (
-                <Chip
-                  key={m}
-                  active={isOn("workMode", m)}
-                  onClick={() => toggle("workMode", m)}
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="flex flex-col w-full sm:max-w-md p-0 gap-0 border-l border-border/80 bg-background/95 backdrop-blur-xl">
+        <SheetHeader className="p-5 border-b border-border text-left">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+              <SheetTitle className="text-sm font-semibold tracking-tight">
+                Additional Filters
+              </SheetTitle>
+              {activeCount > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="rounded-full text-[10px] bg-primary/15 text-primary border-0 font-mono font-medium"
                 >
-                  {m}
-                </Chip>
-              ))}
-            </div>
-          </Group>
-
-          <div className="rounded-xl border border-border/50 bg-surface-elevated/30 p-3">
-            <div className="text-[11px] font-semibold text-muted-foreground">
-              Additional filters
-            </div>
-            <div className="mt-1 text-[10.5px] text-muted-foreground/70">
-              Experience, salary, skills, company, employment type, and posted date filters are not yet supported by the backend.
+                  {activeCount} active
+                </Badge>
+              )}
             </div>
           </div>
+          <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+            Refine opportunities by company, tech stack, and discovery criteria.
+          </SheetDescription>
+        </SheetHeader>
 
-        </div>
-      </ScrollArea>
-    </div>
+        <ScrollArea className="flex-1 px-5 py-4">
+          <div className="space-y-5">
+            {/* Skills & Tech Stack Filter */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Wrench className="h-3.5 w-3.5 text-muted-foreground" />
+                  Skills & Technologies
+                </label>
+                {selected.skills.size > 0 && (
+                  <span className="text-[11px] font-mono text-primary font-medium">
+                    {selected.skills.size} selected
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  value={skillSearch}
+                  onChange={(e) => setSkillSearch(e.target.value)}
+                  placeholder="Filter skills (e.g. React, Python)..."
+                  className="h-8 rounded-lg pl-8 text-xs bg-surface-elevated/40 border-border/70"
+                />
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {filteredSkills.map((skill) => {
+                  const active = isOn("skills", skill);
+                  return (
+                    <button
+                      key={skill}
+                      type="button"
+                      onClick={() => toggle("skills", skill)}
+                      className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium transition-all ${
+                        active
+                          ? "border-primary/40 bg-primary/10 text-primary shadow-xs"
+                          : "border-border/70 bg-surface-elevated/30 text-muted-foreground hover:border-border hover:text-foreground"
+                      }`}
+                    >
+                      {active && <Check className="h-3 w-3 text-primary" />}
+                      {skill}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Target Company Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                Company
+              </label>
+              <Input
+                value={companyQuery}
+                onChange={(e) => setCompanyQuery(e.target.value)}
+                placeholder="e.g. Stripe, OpenAI, Google"
+                className="h-8.5 rounded-lg text-xs bg-surface-elevated/40 border-border/70"
+              />
+            </div>
+
+            {/* Target Location / City Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                Specific City or Region
+              </label>
+              <Input
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+                placeholder="e.g. Bengaluru, San Francisco, London"
+                className="h-8.5 rounded-lg text-xs bg-surface-elevated/40 border-border/70"
+              />
+            </div>
+
+            {/* Sort Criteria */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                Sort By
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {filterOptions.sort.map((s) => {
+                  const active = selectedSort === s.value;
+                  return (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => setSelectedSort(s.value)}
+                      className={`rounded-lg border px-3 py-2 text-left text-xs font-medium transition-all ${
+                        active
+                          ? "border-border bg-surface-elevated text-foreground font-semibold shadow-xs"
+                          : "border-border/70 bg-surface-elevated/30 text-muted-foreground hover:border-border hover:text-foreground"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+
+        <SheetFooter className="p-4 border-t border-border bg-surface-elevated/20 flex flex-row items-center justify-between gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            className="h-8.5 rounded-lg px-3 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+            Reset all
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              className="h-8.5 rounded-lg px-3 text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleApply}
+              className="h-8.5 rounded-lg px-4 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground border-0"
+            >
+              Apply Filters
+            </Button>
+          </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
+
+// Export backward-compatible alias for existing imports
+export { AdditionalFiltersDrawer as FiltersPane };

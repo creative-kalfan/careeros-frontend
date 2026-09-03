@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   GripVertical,
   Trash2,
@@ -38,7 +38,12 @@ function Toolbar() {
         {items.map((it, i) => (
           <Tooltip key={i}>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" aria-label={it.label}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg"
+                aria-label={it.label}
+              >
                 <it.icon className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -96,7 +101,13 @@ function SectionShell({
           {section.title}
         </h3>
         <div className="ml-auto flex items-center opacity-0 transition group-hover:opacity-100">
-          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md text-muted-foreground hover:text-destructive" onClick={onDelete} aria-label="Delete section">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 rounded-md text-muted-foreground hover:text-destructive"
+            onClick={onDelete}
+            aria-label="Delete section"
+          >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -106,10 +117,27 @@ function SectionShell({
   );
 }
 
-export function EditorPane({ resume }: { resume: ResumeData }) {
+export function EditorPane({
+  resume,
+  onChange,
+  onImproveBullet,
+}: {
+  resume: ResumeData;
+  onChange?: (data: ResumeData) => void;
+  onImproveBullet?: (entryId: string, bulletId: string, bulletText: string) => void;
+}) {
   const [sections, setSections] = useState(resume.sections);
   const [dragId, setDragId] = useState<string | null>(null);
   const [data, setData] = useState(resume);
+
+  useEffect(() => {
+    setSections(resume.sections);
+    setData(resume);
+  }, [resume.sections, resume]);
+
+  useEffect(() => {
+    onChange?.(data);
+  }, [data, onChange]);
 
   const move = (from: string, to: string) => {
     if (from === to) return;
@@ -126,12 +154,16 @@ export function EditorPane({ resume }: { resume: ResumeData }) {
       <div className="border-b border-border/60 px-6 pb-4 pt-5">
         <Input
           value={data.contact.fullName}
-          onChange={(e) => setData({ ...data, contact: { ...data.contact, fullName: e.target.value } })}
+          onChange={(e) =>
+            setData({ ...data, contact: { ...data.contact, fullName: e.target.value } })
+          }
           className="h-auto border-0 bg-transparent px-0 py-1 text-2xl font-semibold tracking-tight shadow-none focus-visible:ring-0"
         />
         <Input
           value={data.contact.headline}
-          onChange={(e) => setData({ ...data, contact: { ...data.contact, headline: e.target.value } })}
+          onChange={(e) =>
+            setData({ ...data, contact: { ...data.contact, headline: e.target.value } })
+          }
           className="h-auto border-0 bg-transparent px-0 py-0.5 text-sm text-muted-foreground shadow-none focus-visible:ring-0"
         />
         <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2 lg:grid-cols-4">
@@ -179,7 +211,10 @@ export function EditorPane({ resume }: { resume: ResumeData }) {
                 {section.type === "experience" && (
                   <div className="space-y-5">
                     {data.experience.map((exp) => (
-                      <div key={exp.id} className="rounded-xl border border-border/50 bg-background/30 p-4">
+                      <div
+                        key={exp.id}
+                        className="rounded-xl border border-border/50 bg-background/30 p-4"
+                      >
                         <div className="grid gap-1.5 sm:grid-cols-[minmax(0,1fr)_auto]">
                           <div className="min-w-0">
                             <Input
@@ -188,7 +223,7 @@ export function EditorPane({ resume }: { resume: ResumeData }) {
                                 setData({
                                   ...data,
                                   experience: data.experience.map((x) =>
-                                    x.id === exp.id ? { ...x, role: e.target.value } : x
+                                    x.id === exp.id ? { ...x, role: e.target.value } : x,
                                   ),
                                 })
                               }
@@ -203,16 +238,32 @@ export function EditorPane({ resume }: { resume: ResumeData }) {
                           </div>
                         </div>
                         <ul className="mt-3 space-y-1.5">
-                          {exp.bullets.map((b, i) => (
-                            <li key={i} className="flex gap-2 text-[13px] leading-relaxed">
+                          {exp.bullets.map((b) => (
+                            <li
+                              key={b.id}
+                              className="group/bullet flex gap-2 text-[13px] leading-relaxed"
+                            >
                               <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-muted-foreground/70" />
-                              <span>{b}</span>
+                              <span className="flex-1">{b.text}</span>
+                              {onImproveBullet && (
+                                <button
+                                  className="mt-0.5 shrink-0 opacity-0 transition group-hover/bullet:opacity-100 text-muted-foreground hover:text-primary"
+                                  onClick={() => onImproveBullet(exp.id, b.id, b.text)}
+                                  aria-label="Improve this bullet with AI"
+                                >
+                                  <Sparkles className="h-3 w-3" />
+                                </button>
+                              )}
                             </li>
                           ))}
                         </ul>
                       </div>
                     ))}
-                    <Button variant="ghost" size="sm" className="h-8 rounded-lg text-xs text-muted-foreground">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 rounded-lg text-xs text-muted-foreground"
+                    >
                       <Plus className="mr-1.5 h-3.5 w-3.5" /> Add role
                     </Button>
                   </div>
@@ -237,9 +288,14 @@ export function EditorPane({ resume }: { resume: ResumeData }) {
                 {section.type === "projects" && (
                   <div className="space-y-3">
                     {data.projects.map((p) => (
-                      <div key={p.id} className="rounded-xl border border-border/50 bg-background/30 p-3">
+                      <div
+                        key={p.id}
+                        className="rounded-xl border border-border/50 bg-background/30 p-3"
+                      >
                         <div className="text-sm font-semibold">{p.name}</div>
-                        <div className="mt-1 text-[13px] text-muted-foreground">{p.description}</div>
+                        <div className="mt-1 text-[13px] text-muted-foreground">
+                          {p.description}
+                        </div>
                       </div>
                     ))}
                   </div>

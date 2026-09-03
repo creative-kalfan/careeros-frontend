@@ -1,12 +1,8 @@
 export type ApplicationStatus =
-  | "not_applied"
-  | "saved"
-  | "applied"
-  | "interviewing"
-  | "offer"
-  | "rejected";
+  "not_applied" | "saved" | "applied" | "interviewing" | "offer" | "rejected";
 
-export type EmploymentType = "Full-time" | "Part-time" | "Contract" | "Internship" | "Not specified";
+export type EmploymentType =
+  "Full-time" | "Part-time" | "Contract" | "Internship" | "Not specified";
 export type WorkMode = "Remote" | "Hybrid" | "On-site" | "Unknown";
 
 // Rich UI-facing job shape consumed by the Jobs module components.
@@ -15,7 +11,8 @@ export type Job = {
   id: string;
   role: string;
   company: string;
-  companyLogo: string; // derived initial fallback
+  companyLogo: string; // initials — fallback when no real logo is available
+  companyLogoUrl?: string; // real logo image URL when the company is known
   companyBrand: string; // deterministic gradient token
   location: string;
   workMode: WorkMode;
@@ -66,6 +63,13 @@ export type Job = {
   applicationDeadline?: string | null;
   // Direct apply URL (mapped from backend NormalizedJob.applyUrl)
   applyUrl?: string | null;
+  // Source platform & human-friendly provenance metadata
+  sourcePlatform?: string | null;
+  sourceProvenance?: {
+    label: string;
+    verified: boolean;
+    type: "career_site" | "yc" | "direct" | "aggregator" | "general";
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -110,7 +114,7 @@ export type JobSearchFilters = {
   experience?: string;
   remote?: boolean;
   employmentType?: string;
-  sort?: "newest" | "oldest" | "best-match";
+  sort?: "newest" | "oldest" | "best-match" | "salary";
   page?: number;
   pageSize?: number;
   includeInactive?: boolean;

@@ -26,3 +26,9 @@ dist-ssr
 *.sw?
 .git_disabled/
 .env
+
+# Playwright
+playwright/.auth/
+playwright/screenshots/
+test-results/
+playwright-report/

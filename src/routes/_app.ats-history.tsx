@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, AlertCircle, FileText, Clock, BarChart3 } from "lucide-react";
+import {
+  ArrowLeft,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertCircle,
+  FileText,
+  Clock,
+  BarChart3,
+} from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,7 +54,11 @@ function ATSHistoryPage() {
 
   const resumeId = selectedResumeId || resumesData?.resumes?.[0]?.id || null;
 
-  const { data: historyData, isLoading: historyLoading, isError } = useQuery({
+  const {
+    data: historyData,
+    isLoading: historyLoading,
+    isError,
+  } = useQuery({
     queryKey: ["ats-history", resumeId],
     queryFn: () =>
       request<{ reports: ATSReport[]; total: number; page: number; pageSize: number }>({
@@ -56,13 +69,13 @@ function ATSHistoryPage() {
     staleTime: 30_000,
   });
 
-  const reports = historyData?.reports || [];
+  const reports = useMemo(() => historyData?.reports || [], [historyData?.reports]);
   const resumes = resumesData?.resumes || [];
 
   const scoreTrend = useMemo(() => {
     if (reports.length < 2) return null;
     const sorted = [...reports].sort(
-      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
     const first = sorted[0].ats_score;
     const last = sorted[sorted.length - 1].ats_score;
@@ -73,9 +86,15 @@ function ATSHistoryPage() {
   if (resumesLoading) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
-        <PageHeader eyebrow="Analytics" title="ATS History" description="Loading your ATS analysis history..." />
+        <PageHeader
+          eyebrow="Analytics"
+          title="ATS History"
+          description="Loading your ATS analysis history..."
+        />
         <div className="grid gap-4 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl" />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-48 rounded-2xl" />
+          ))}
         </div>
       </div>
     );
@@ -86,8 +105,12 @@ function ATSHistoryPage() {
       <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-20 items-center justify-center gap-4">
         <FileText className="h-12 w-12 text-muted-foreground/40" />
         <h2 className="text-lg font-semibold">No resumes yet</h2>
-        <p className="text-sm text-muted-foreground">Upload a resume to start analyzing your ATS scores.</p>
-        <Button asChild><Link to="/resumes">Upload Resume</Link></Button>
+        <p className="text-sm text-muted-foreground">
+          Upload a resume to start analyzing your ATS scores.
+        </p>
+        <Button asChild>
+          <Link to="/resumes">Upload Resume</Link>
+        </Button>
       </div>
     );
   }
@@ -137,8 +160,17 @@ function ATSHistoryPage() {
                 ) : (
                   <TrendingDown className="h-4 w-4 text-destructive" />
                 )}
-                <span className={scoreTrend.improved ? "text-success" : scoreTrend.diff === 0 ? "" : "text-destructive"}>
-                  {scoreTrend.diff > 0 ? "+" : ""}{scoreTrend.diff} pts
+                <span
+                  className={
+                    scoreTrend.improved
+                      ? "text-success"
+                      : scoreTrend.diff === 0
+                        ? ""
+                        : "text-destructive"
+                  }
+                >
+                  {scoreTrend.diff > 0 ? "+" : ""}
+                  {scoreTrend.diff} pts
                 </span>
               </div>
               <div className="text-xs text-muted-foreground">
@@ -152,56 +184,83 @@ function ATSHistoryPage() {
       {/* Reports list */}
       {historyLoading ? (
         <div className="flex flex-col gap-3">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-2xl" />
+          ))}
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center gap-4 py-16">
           <AlertCircle className="h-12 w-12 text-destructive" />
           <h2 className="text-lg font-semibold">Failed to load history</h2>
-          <p className="text-sm text-muted-foreground">Could not load ATS history for this resume.</p>
+          <p className="text-sm text-muted-foreground">
+            Could not load ATS history for this resume.
+          </p>
         </div>
       ) : reports.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 py-16">
           <BarChart3 className="h-12 w-12 text-muted-foreground/40" />
           <h2 className="text-lg font-semibold">No ATS analyses yet</h2>
-          <p className="text-sm text-muted-foreground">Run an ATS analysis to see your history here.</p>
-          <Button asChild><Link to="/ats">Open ATS Studio</Link></Button>
+          <p className="text-sm text-muted-foreground">
+            Run an ATS analysis to see your history here.
+          </p>
+          <Button asChild>
+            <Link to="/ats">Open ATS Studio</Link>
+          </Button>
         </div>
       ) : (
         <ScrollArea className="max-h-[600px]">
           <div className="flex flex-col gap-4">
             {reports.map((report: ATSReport) => {
               const scoreColor =
-                report.ats_score >= 80 ? "text-success" : report.ats_score >= 60 ? "text-warning" : "text-destructive";
+                report.ats_score >= 80
+                  ? "text-success"
+                  : report.ats_score >= 60
+                    ? "text-warning"
+                    : "text-destructive";
               return (
                 <Card key={report.id} className="border-border/60">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className={`text-2xl font-bold ${scoreColor}`}>{report.ats_score}</span>
+                          <span className={`text-2xl font-bold ${scoreColor}`}>
+                            {report.ats_score}
+                          </span>
                           <Badge variant="secondary" className="text-xs">
                             {report.engine_version || "v1"}
                           </Badge>
                         </div>
                         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                          <span className="text-muted-foreground">Keyword match: {report.keyword_match_score}%</span>
-                          <span className="text-muted-foreground">Skill match: {report.skill_match_score}%</span>
-                          <span className="text-muted-foreground">Semantic similarity: {report.semantic_similarity_score}%</span>
+                          <span className="text-muted-foreground">
+                            Keyword match: {report.keyword_match_score}%
+                          </span>
+                          <span className="text-muted-foreground">
+                            Skill match: {report.skill_match_score}%
+                          </span>
+                          <span className="text-muted-foreground">
+                            Semantic similarity: {report.semantic_similarity_score}%
+                          </span>
                         </div>
                         {report.missing_keywords.length > 0 && (
                           <div className="mt-2">
-                            <span className="text-xs font-medium text-muted-foreground">Missing keywords: </span>
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Missing keywords:{" "}
+                            </span>
                             <span className="text-xs text-muted-foreground">
                               {report.missing_keywords.slice(0, 5).join(", ")}
-                              {report.missing_keywords.length > 5 && ` +${report.missing_keywords.length - 5} more`}
+                              {report.missing_keywords.length > 5 &&
+                                ` +${report.missing_keywords.length - 5} more`}
                             </span>
                           </div>
                         )}
                         {report.recommendations.length > 0 && (
                           <div className="mt-2">
-                            <span className="text-xs font-medium text-muted-foreground">Recommendations: </span>
-                            <span className="text-xs text-muted-foreground">{report.recommendations.length}</span>
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Recommendations:{" "}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {report.recommendations.length}
+                            </span>
                           </div>
                         )}
                       </div>

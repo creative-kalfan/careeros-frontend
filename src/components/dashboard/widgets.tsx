@@ -1,9 +1,34 @@
 import { Link } from "@tanstack/react-router";
 import type { ComponentType, ReactNode } from "react";
+import { motion, useReducedMotion, useMotionValue, useSpring } from "framer-motion";
+import { staggerItem } from "@/lib/motion";
+import { useRef } from "react";
 import {
-  Sparkles, Target, Clock, Users, GraduationCap, AlertTriangle,
-  FileText, Search, Bot, KanbanSquare, Upload, ArrowUpRight,
-  TrendingUp, Trophy, Flame, Calendar, CheckCircle2, CircleDashed,
+  Sparkles,
+  Target,
+  Clock,
+  Users,
+  GraduationCap,
+  AlertTriangle,
+  FileText,
+  Search,
+  Bot,
+  KanbanSquare,
+  Upload,
+  ArrowUpRight,
+  TrendingUp,
+  Trophy,
+  Flame,
+  Calendar,
+  CheckCircle2,
+  CircleDashed,
+  Compass,
+  ShieldCheck,
+  Zap,
+  ArrowRight,
+  Layers,
+  BarChart3,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -11,19 +36,43 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Area, AreaChart, Bar, BarChart, Cell, Line, LineChart,
-  PieChart, Pie, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Cell,
+  Line,
+  LineChart,
+  PieChart,
+  Pie,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 import type {
-  PriorityCard, TrendPoint, StatusSlice, ActivityHeat,
-  SkillGap, CareerGoal, Recommendation, TimelineEvent,
-  UpcomingItem, Achievement, CareerInsight,
+  PriorityCard,
+  TrendPoint,
+  StatusSlice,
+  ActivityHeat,
+  SkillGap,
+  CareerGoal,
+  Recommendation,
+  TimelineEvent,
+  UpcomingItem,
+  Achievement,
+  CareerInsight,
 } from "@/lib/dashboard-data";
 
 /* ─────────────────────────────────────── Widget shell */
 
 export function Widget({
-  title, subtitle, action, children, className, span,
+  title,
+  subtitle,
+  action,
+  children,
+  className,
+  span,
 }: {
   title: string;
   subtitle?: string;
@@ -33,23 +82,39 @@ export function Widget({
   span?: string;
 }) {
   return (
-    <Card className={cn("glass rounded-2xl border-border/60 p-5 sm:p-6", span, className)}>
-      <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-        <div className="min-w-0">
-          <h2 className="truncate text-sm font-semibold tracking-tight sm:text-[15px]">{title}</h2>
-          {subtitle && <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>}
+    <motion.div variants={staggerItem} className={cn(span, className)}>
+      <Card className="workstation-panel spatial-card relative h-full rounded-xl border border-border/80 p-4 sm:p-5 shadow-elevation-1 bg-surface">
+        <div className="mb-3.5 flex items-start justify-between gap-3 border-b border-border/40 pb-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-primary/80 shadow-[0_0_8px_var(--color-primary)]" />
+              <h2 className="truncate text-xs font-bold uppercase tracking-wider text-foreground">
+                {title}
+              </h2>
+            </div>
+            {subtitle && (
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground/80 font-mono">
+                {subtitle}
+              </p>
+            )}
+          </div>
+          {action && <div className="shrink-0">{action}</div>}
         </div>
-        {action && <div className="shrink-0">{action}</div>}
-      </div>
-      {children}
-    </Card>
+        {children}
+      </Card>
+    </motion.div>
   );
 }
 
 /* ─────────────────────────────────────── Progress ring */
 
 export function ProgressRing({
-  value, size = 96, stroke = 8, label, sublabel, tone = "primary",
+  value,
+  size = 80,
+  stroke = 6,
+  label,
+  sublabel,
+  tone = "primary",
 }: {
   value: number;
   size?: number;
@@ -63,36 +128,196 @@ export function ProgressRing({
   const clamped = Math.max(0, Math.min(100, value));
   const dash = (clamped / 100) * c;
   const toneClass = {
-    primary: "text-primary",
-    success: "text-success",
-    warning: "text-warning",
-    accent: "text-accent",
+    primary: "text-primary drop-shadow-[0_0_8px_var(--color-primary)]",
+    success: "text-success drop-shadow-[0_0_8px_var(--color-success)]",
+    warning: "text-warning drop-shadow-[0_0_8px_var(--color-warning)]",
+    accent: "text-accent drop-shadow-[0_0_8px_var(--color-accent)]",
   }[tone];
+
   return (
     <div className="relative inline-grid place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} strokeWidth={stroke}
-          className="fill-none stroke-border/60" />
-        <circle cx={size / 2} cy={size / 2} r={r} strokeWidth={stroke}
-          strokeLinecap="round" strokeDasharray={`${dash} ${c}`}
-          className={cn("fill-none transition-[stroke-dasharray] duration-700 ease-out motion-reduce:transition-none", toneClass)}
-          stroke="currentColor" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          strokeWidth={stroke}
+          className="fill-none stroke-border/40"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${dash} ${c}`}
+          className={cn(
+            "fill-none transition-[stroke-dasharray] duration-700 ease-out motion-reduce:transition-none",
+            toneClass
+          )}
+          stroke="currentColor"
+        />
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">
         <div>
-          <div className="font-mono text-xl font-semibold leading-none tracking-tight">{label ?? clamped}</div>
-          {sublabel && <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{sublabel}</div>}
+          <div className="font-mono text-lg font-bold leading-none tracking-tight text-foreground">
+            {label ?? `${clamped}%`}
+          </div>
+          {sublabel && (
+            <div className="mt-1 text-[9px] uppercase tracking-wider text-muted-foreground font-mono font-medium">
+              {sublabel}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-/* ─────────────────────────────────────── Hero */
+/* ─────────────────────────────────────── Executive Telemetry Ribbon */
 
-export function CommandHero({
-  greeting, name, streak, health, resume, weekly, weeklyLabel,
+export function ExecutiveTelemetryRibbon({
+  greeting,
+  name,
+  streak,
+  health,
+  resumeScore,
+  matchPoolCount,
+  highFitCount,
+  weeklyProgress,
+  weeklyGoalLabel,
 }: {
+  greeting: string;
+  name: string;
+  streak: number;
+  health: { overall: number; delta: number };
+  resumeScore: number;
+  matchPoolCount: number;
+  highFitCount: number;
+  weeklyProgress: number;
+  weeklyGoalLabel: string;
+}) {
+  return (
+    <motion.div variants={staggerItem}>
+      <div className="workstation-panel spatial-card relative overflow-hidden rounded-xl border border-border/80 bg-surface p-4 sm:p-5 shadow-elevation-2">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)] xl:items-center">
+          {/* Executive identity & direct commands */}
+          <div className="min-w-0 flex flex-col justify-between">
+            <div>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-primary shadow-xs">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+                  </span>
+                  Executive Telemetry
+                </div>
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-0.5 text-[10px] font-mono font-semibold text-warning">
+                  <Flame className="h-3 w-3 text-warning shrink-0" />
+                  <span>{streak}-Day Active Streak</span>
+                </div>
+              </div>
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl text-foreground">
+                {greeting}, <span className="text-primary">{name}</span>
+              </h1>
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed max-w-lg">
+                Primary flight deck: real-time ATS calibration, spatial skill alignment, and high-impact career directives.
+              </p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Button
+                asChild
+                size="sm"
+                className="h-8 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Link to="/resumes">
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-white" /> Open Resume Studio
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated"
+              >
+                <Link to="/jobs">
+                  <Search className="mr-1.5 h-3.5 w-3.5 text-primary" /> Browse Match Pool
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated text-muted-foreground hover:text-foreground"
+              >
+                <Link to="/ats">
+                  <Target className="mr-1.5 h-3.5 w-3.5 text-accent" /> ATS Studio
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Telemetry Gauge Strip */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 border-t border-border/60 pt-4 xl:border-t-0 xl:border-l xl:border-border/60 xl:pl-6 xl:pt-0">
+            {/* 1. Health Score Ring */}
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-primary/40">
+              <ProgressRing value={health.overall} tone="primary" sublabel="Health" />
+              <div className="flex items-center gap-1 font-mono text-[11px] font-semibold text-success">
+                <ArrowUpRight className="h-3 w-3" />+{health.delta}%
+              </div>
+              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
+                Career Health
+              </span>
+            </div>
+
+            {/* 2. ATS Readiness */}
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-accent/40">
+              <ProgressRing value={resumeScore} tone="accent" sublabel="ATS" />
+              <Badge variant="outline" className="h-4 border-accent/40 bg-accent/10 px-1.5 font-mono text-[9px] text-accent">
+                Target 90+
+              </Badge>
+              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
+                ATS Readiness
+              </span>
+            </div>
+
+            {/* 3. Matching Pool */}
+            <div className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-primary/40">
+              <div className="grid h-12 w-12 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary">
+                <Target className="h-6 w-6" />
+              </div>
+              <div className="mt-1 font-mono text-lg font-bold text-foreground">
+                {matchPoolCount} <span className="text-xs font-normal text-muted-foreground">Roles</span>
+              </div>
+              <div className="text-[10px] font-mono text-emerald-400 font-medium">
+                {highFitCount} High-Fit (80%+)
+              </div>
+              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
+                Target Pool
+              </span>
+            </div>
+
+            {/* 4. Weekly Velocity */}
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-success/40">
+              <ProgressRing value={weeklyProgress} tone="success" sublabel="Velocity" />
+              <div className="truncate text-[10px] font-medium text-muted-foreground font-mono max-w-[90px]">
+                {weeklyGoalLabel}
+              </div>
+              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
+                Weekly Goal
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────── Legacy CommandHero */
+
+export function CommandHero(props: {
   greeting: string;
   name: string;
   streak: number;
@@ -102,58 +327,257 @@ export function CommandHero({
   weeklyLabel: string;
 }) {
   return (
-    <Card className="glass-strong relative overflow-hidden rounded-3xl border-border/60 p-6 sm:p-8">
-      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-linear-to-br from-primary/25 via-accent/15 to-transparent blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-linear-to-tr from-success/15 to-transparent blur-3xl" />
-      <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <div className="min-w-0">
-          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-            <Flame className="h-3 w-3 text-warning" /> {streak}-day streak
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-4xl">
-            {greeting}, <span className="text-foreground/90">{name}</span>
-          </h1>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-[15px]">
-            Your career health is <span className="font-medium text-foreground">strong</span> and trending up.
-            You're <span className="font-medium text-foreground">3 quick fixes</span> away from ATS 91.
-          </p>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <Button asChild className="rounded-xl shadow-[var(--shadow-glow)]">
-              <Link to="/resumes/$id" params={{ id: "senior-pm-2026" }}>
-                <Sparkles className="mr-1.5 h-4 w-4" /> Continue resume
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="rounded-xl">
-              <Link to="/jobs"><Search className="mr-1.5 h-4 w-4" /> Browse jobs</Link>
-            </Button>
-            <Button asChild variant="ghost" className="rounded-xl">
-              <Link to="/ats"><Target className="mr-1.5 h-4 w-4" /> ATS breakdown</Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 sm:gap-6">
-          <div className="flex flex-col items-center gap-2">
-            <ProgressRing value={health.overall} tone="primary" sublabel="Health" />
-            <div className="inline-flex items-center gap-0.5 text-xs font-medium text-success">
-              <ArrowUpRight className="h-3 w-3" />+{health.delta}
-            </div>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <ProgressRing value={resume} tone="accent" sublabel="Resume" />
-            <div className="text-xs text-muted-foreground">ATS score</div>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <ProgressRing value={weekly} tone="success" sublabel="Week" />
-            <div className="truncate text-xs text-muted-foreground">{weeklyLabel}</div>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <ExecutiveTelemetryRibbon
+      greeting={props.greeting}
+      name={props.name}
+      streak={props.streak}
+      health={props.health}
+      resumeScore={props.resume}
+      matchPoolCount={22}
+      highFitCount={8}
+      weeklyProgress={props.weekly}
+      weeklyGoalLabel={props.weeklyLabel}
+    />
   );
 }
 
-/* ─────────────────────────────────────── Priorities */
+/* ─────────────────────────────────────── Action Directives Panel */
+
+export interface CareerDirectiveItem {
+  id: string;
+  title: string;
+  detail: string;
+  scoreImpact?: string;
+  badge: string;
+  tone: "primary" | "success" | "warning" | "accent";
+  actionLabel: string;
+  href: string;
+  icon: "resume" | "ats" | "jobs" | "skills" | "interview";
+}
+
+export function CareerActionDirectives({
+  directives,
+}: {
+  directives: CareerDirectiveItem[];
+}) {
+  const iconMap: Record<CareerDirectiveItem["icon"], ComponentType<{ className?: string }>> = {
+    resume: Sparkles,
+    ats: Target,
+    jobs: Search,
+    skills: GraduationCap,
+    interview: Calendar,
+  };
+
+  const toneClasses: Record<
+    CareerDirectiveItem["tone"],
+    { ring: string; badge: string; text: string; bg: string }
+  > = {
+    primary: {
+      ring: "border-primary/40 hover:border-primary/70",
+      badge: "border-primary/30 text-primary bg-primary/10",
+      text: "text-primary",
+      bg: "bg-primary/10 text-primary",
+    },
+    success: {
+      ring: "border-success/40 hover:border-success/70",
+      badge: "border-success/30 text-success bg-success/10",
+      text: "text-success",
+      bg: "bg-success/10 text-success",
+    },
+    warning: {
+      ring: "border-warning/40 hover:border-warning/70",
+      badge: "border-warning/30 text-warning bg-warning/10",
+      text: "text-warning",
+      bg: "bg-warning/10 text-warning",
+    },
+    accent: {
+      ring: "border-accent/40 hover:border-accent/70",
+      badge: "border-accent/30 text-accent bg-accent/10",
+      text: "text-accent",
+      bg: "bg-accent/10 text-accent",
+    },
+  };
+
+  return (
+    <div className="workstation-panel spatial-card relative flex flex-col h-full overflow-hidden rounded-xl border border-border/80 bg-surface shadow-elevation-2 p-4 sm:p-5">
+      <div className="flex items-center justify-between border-b border-border/60 pb-3">
+        <div className="flex items-center gap-2">
+          <Zap className="h-4 w-4 text-warning animate-pulse" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
+            High-Leverage Career Directives
+          </h2>
+        </div>
+        <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground border-border/60">
+          {directives.length} PENDING
+        </Badge>
+      </div>
+
+      <div className="mt-3.5 flex flex-col gap-2.5 grow justify-between">
+        {directives.map((d) => {
+          const Icon = iconMap[d.icon];
+          const tone = toneClasses[d.tone];
+
+          return (
+            <div
+              key={d.id}
+              className={cn(
+                "group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border/70 bg-surface-instrument/80 p-3 transition-all hover:bg-surface-elevated/70 shadow-2xs",
+                tone.ring
+              )}
+            >
+              <div className="flex items-start gap-3 min-w-0">
+                <div className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border/50", tone.bg)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="truncate text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                      {d.title}
+                    </h3>
+                    <Badge variant="outline" className={cn("text-[9px] font-mono uppercase px-1.5 py-0", tone.badge)}>
+                      {d.badge}
+                    </Badge>
+                  </div>
+                  <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground leading-snug">
+                    {d.detail}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t border-border/40 sm:border-t-0">
+                {d.scoreImpact && (
+                  <span className="font-mono text-[11px] font-semibold text-emerald-400">
+                    {d.scoreImpact}
+                  </span>
+                )}
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs font-mono font-medium rounded-lg border-border/80 group-hover:border-primary/50 group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                >
+                  <Link to={d.href}>
+                    {d.actionLabel} <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────── Pipeline & Distribution Instrument */
+
+export function PipelineDistributionInstrument({
+  applications,
+  matchDistribution,
+}: {
+  applications: StatusSlice[];
+  matchDistribution: StatusSlice[];
+}) {
+  const totalApps = applications.reduce((s, a) => s + a.value, 0);
+  const totalMatches = matchDistribution.reduce((s, m) => s + m.value, 0);
+
+  return (
+    <div className="workstation-panel spatial-card relative rounded-xl border border-border/80 bg-surface p-4 sm:p-5 shadow-elevation-1">
+      <div className="flex items-center justify-between border-b border-border/60 pb-3">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-primary" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
+            Pipeline Distribution & Match Calibration
+          </h2>
+        </div>
+        <div className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
+          <span>Active Pipeline: <strong className="text-foreground">{totalApps}</strong></span>
+          <span>•</span>
+          <span>Match Pool: <strong className="text-foreground">{totalMatches}</strong></span>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-6 lg:grid-cols-2">
+        {/* Pipeline Breakdown Gauges */}
+        <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-surface-instrument/60 p-3.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground">Application Conversion Stages</span>
+            <span className="font-mono text-[10px] text-muted-foreground">CONVERSION FLOW</span>
+          </div>
+
+          {/* Segmented Linear Track */}
+          <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted/60 p-0.5 gap-0.5">
+            {applications.map((app) => {
+              const pct = totalApps > 0 ? (app.value / totalApps) * 100 : 0;
+              if (pct === 0) return null;
+              return (
+                <div
+                  key={app.label}
+                  style={{ width: `${pct}%`, backgroundColor: app.color }}
+                  className="h-full rounded-xs transition-all hover:opacity-80"
+                  title={`${app.label}: ${app.value} (${Math.round(pct)}%)`}
+                />
+              );
+            })}
+          </div>
+
+          {/* Metrics Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+            {applications.map((app) => (
+              <div
+                key={app.label}
+                className="flex flex-col rounded-md border border-border/40 bg-surface/50 p-2 text-center"
+              >
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: app.color }} />
+                  <span className="text-[11px] text-muted-foreground">{app.label}</span>
+                </div>
+                <span className="mt-1 font-mono text-sm font-bold text-foreground">
+                  {app.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Match Tiers Calibration */}
+        <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-surface-instrument/60 p-3.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground">Target Role Compatibility Tiers</span>
+            <span className="font-mono text-[10px] text-muted-foreground">FIT SPECTRUM</span>
+          </div>
+
+          <div className="space-y-2">
+            {matchDistribution.map((tier) => {
+              const pct = totalMatches > 0 ? Math.round((tier.value / totalMatches) * 100) : 0;
+              return (
+                <div key={tier.label} className="space-y-1">
+                  <div className="flex items-center justify-between font-mono text-[11px]">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: tier.color }} />
+                      {tier.label}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {tier.value} roles <span className="text-muted-foreground">({pct}%)</span>
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${pct}%`, backgroundColor: tier.color }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────── Priorities legacy tile */
 
 const priorityIcon: Record<PriorityCard["kind"], ComponentType<{ className?: string }>> = {
   resume: Sparkles,
@@ -173,31 +597,75 @@ const accentClass: Record<PriorityCard["accent"], string> = {
 };
 
 export function PriorityTile({ p }: { p: PriorityCard }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const springX = useSpring(rotateX, { stiffness: 300, damping: 25 });
+  const springY = useSpring(rotateY, { stiffness: 300, damping: 25 });
+  const reducedMotion = useReducedMotion();
+
+  function handleMouse(e: React.MouseEvent<HTMLDivElement>) {
+    if (reducedMotion || !ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    rotateY.set(((e.clientX - cx) / (rect.width / 2)) * 4);
+    rotateX.set(-((e.clientY - cy) / (rect.height / 2)) * 4);
+  }
+
+  function handleLeave() {
+    rotateX.set(0);
+    rotateY.set(0);
+  }
+
   const Icon = priorityIcon[p.kind];
   return (
-    <a
-      href={p.href}
-      className="group glass relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 p-4 transition hover:-translate-y-0.5 hover:border-border hover:shadow-[var(--shadow-glow)] motion-reduce:transition-none motion-reduce:hover:transform-none"
+    <motion.div
+      ref={ref}
+      variants={staggerItem}
+      onMouseMove={handleMouse}
+      onMouseLeave={handleLeave}
+      style={{ perspective: "800px", rotateX: springX, rotateY: springY }}
+      className="h-full"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl ring-1", accentClass[p.accent])}>
-          <Icon className="h-[18px] w-[18px]" />
+      <a
+        href={p.href}
+        className="group glass spatial-card relative flex h-full flex-col overflow-hidden rounded-xl border border-border/80 p-4 transition-colors hover:border-primary/40 hover:shadow-elevation-2"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div
+            className={cn(
+              "grid h-8 w-8 shrink-0 place-items-center rounded-lg ring-1",
+              accentClass[p.accent]
+            )}
+          >
+            <Icon className="h-4 w-4" />
+          </div>
+          {p.count !== undefined && (
+            <Badge variant="secondary" className="rounded-md font-mono text-xs">
+              {p.count}
+            </Badge>
+          )}
         </div>
-        {p.count !== undefined && (
-          <Badge variant="secondary" className="rounded-full font-mono text-[11px]">{p.count}</Badge>
-        )}
-      </div>
-      <div className="mt-3 min-w-0 grow">
-        <h3 className="text-sm font-semibold leading-snug">{p.title}</h3>
-        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{p.detail}</p>
-      </div>
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">{p.meta}</span>
-        <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/90">
-          {p.cta} <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-        </span>
-      </div>
-    </a>
+        <div className="mt-3 min-w-0 grow">
+          <h3 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+            {p.title}
+          </h3>
+          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground leading-relaxed">
+            {p.detail}
+          </p>
+        </div>
+        <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 font-mono">
+            {p.meta}
+          </span>
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/90 group-hover:text-primary transition-colors">
+            {p.cta}{" "}
+            <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </span>
+        </div>
+      </a>
+    </motion.div>
   );
 }
 
@@ -206,7 +674,13 @@ export function PriorityTile({ p }: { p: PriorityCard }) {
 const chartAxis = { fontSize: 10, fill: "hsl(var(--muted-foreground))" };
 const gridStroke = "hsl(var(--border) / 0.5)";
 
-export function TrendAreaChart({ data, color = "hsl(var(--primary))" }: { data: TrendPoint[]; color?: string }) {
+export function TrendAreaChart({
+  data,
+  color = "hsl(var(--primary))",
+}: {
+  data: TrendPoint[];
+  color?: string;
+}) {
   return (
     <div className="h-40 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -222,11 +696,19 @@ export function TrendAreaChart({ data, color = "hsl(var(--primary))" }: { data: 
           <Tooltip
             cursor={{ stroke: gridStroke }}
             contentStyle={{
-              background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))",
-              borderRadius: 12, fontSize: 12,
+              background: "hsl(var(--popover))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: 12,
+              fontSize: 12,
             }}
           />
-          <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2} fill="url(#areaFill)" />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={2}
+            fill="url(#areaFill)"
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -243,49 +725,109 @@ export function DualLineChart({ data }: { data: TrendPoint[] }) {
           <Tooltip
             cursor={{ stroke: gridStroke }}
             contentStyle={{
-              background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))",
-              borderRadius: 12, fontSize: 12,
+              background: "hsl(var(--popover))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: 12,
+              fontSize: 12,
             }}
           />
-          <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="secondary" stroke="hsl(var(--accent))" strokeWidth={2} strokeDasharray="4 4" dot={false} />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="hsl(var(--primary))"
+            strokeWidth={2}
+            dot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="secondary"
+            stroke="hsl(var(--accent))"
+            strokeWidth={2}
+            strokeDasharray="4 4"
+            dot={false}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-export function DonutChart({ data, centerLabel }: { data: StatusSlice[]; centerLabel: string }) {
-  const total = data.reduce((s, d) => s + d.value, 0);
+export type ChartSliceItem = {
+  label?: string;
+  name?: string;
+  value: number;
+  color?: string;
+};
+
+const DEFAULT_CHART_COLORS = [
+  "oklch(0.64 0.21 258)",
+  "oklch(0.66 0.18 290)",
+  "oklch(0.74 0.16 152)",
+  "oklch(0.78 0.15 75)",
+  "oklch(0.64 0.22 27)",
+];
+
+export function DonutChart({
+  data,
+  centerLabel,
+}: {
+  data: (StatusSlice | ChartSliceItem)[];
+  centerLabel: string;
+}) {
+  const normalized = data.map((d, i) => {
+    const item = d as ChartSliceItem;
+    return {
+      label: item.label ?? item.name ?? `Item ${i + 1}`,
+      value: item.value,
+      color: item.color ?? DEFAULT_CHART_COLORS[i % DEFAULT_CHART_COLORS.length],
+    };
+  });
+
+  const total = normalized.reduce((s, d) => s + d.value, 0);
+
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
       <div className="relative h-40">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} innerRadius={44} outerRadius={68} paddingAngle={2} dataKey="value" stroke="none">
-              {data.map((d, i) => <Cell key={i} fill={d.color} />)}
+            <Pie
+              data={normalized}
+              innerRadius={44}
+              outerRadius={68}
+              paddingAngle={2}
+              dataKey="value"
+              stroke="none"
+            >
+              {normalized.map((d, i) => (
+                <Cell key={i} fill={d.color} />
+              ))}
             </Pie>
             <Tooltip
               contentStyle={{
-                background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))",
-                borderRadius: 12, fontSize: 12,
+                background: "var(--popover)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                fontSize: 12,
+                color: "var(--popover-foreground)",
               }}
             />
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div className="text-center">
-            <div className="font-mono text-xl font-semibold">{total}</div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{centerLabel}</div>
+            <div className="font-mono text-xl font-semibold text-foreground">{total}</div>
+            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              {centerLabel}
+            </div>
           </div>
         </div>
       </div>
       <ul className="space-y-1.5 text-xs">
-        {data.map((d) => (
+        {normalized.map((d) => (
           <li key={d.label} className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
             <span className="text-muted-foreground">{d.label}</span>
-            <span className="ml-auto font-mono text-foreground/90">{d.value}</span>
+            <span className="ml-auto font-mono text-foreground/90 font-medium">{d.value}</span>
           </li>
         ))}
       </ul>
@@ -293,22 +835,36 @@ export function DonutChart({ data, centerLabel }: { data: StatusSlice[]; centerL
   );
 }
 
-export function DistributionBars({ data }: { data: StatusSlice[] }) {
+export function DistributionBars({ data }: { data: (StatusSlice | ChartSliceItem)[] }) {
+  const normalized = data.map((d, i) => {
+    const item = d as ChartSliceItem;
+    return {
+      label: item.label ?? item.name ?? `Item ${i + 1}`,
+      value: item.value,
+      color: item.color ?? DEFAULT_CHART_COLORS[i % DEFAULT_CHART_COLORS.length],
+    };
+  });
+
   return (
     <div className="h-40 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+        <BarChart data={normalized} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <XAxis dataKey="label" tickLine={false} axisLine={false} tick={chartAxis} />
           <YAxis tickLine={false} axisLine={false} tick={chartAxis} />
           <Tooltip
-            cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+            cursor={{ fill: "var(--surface-elevated)" }}
             contentStyle={{
-              background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))",
-              borderRadius: 12, fontSize: 12,
+              background: "var(--popover)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              fontSize: 12,
+              color: "var(--popover-foreground)",
             }}
           />
           <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-            {data.map((d, i) => <Cell key={i} fill={d.color} />)}
+            {normalized.map((d, i) => (
+              <Cell key={i} fill={d.color} />
+            ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -324,16 +880,22 @@ export function ActivityHeatmap({ data }: { data: ActivityHeat[] }) {
     <div className="grid gap-1.5">
       {data.map((row) => (
         <div key={row.day} className="grid grid-cols-[32px_1fr] items-center gap-2">
-          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">{row.day}</span>
-          <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${buckets}, minmax(0, 1fr))` }}>
+          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            {row.day}
+          </span>
+          <div
+            className="grid gap-1"
+            style={{ gridTemplateColumns: `repeat(${buckets}, minmax(0, 1fr))` }}
+          >
             {row.values.map((v, i) => (
               <div
                 key={i}
                 className="aspect-square rounded-[4px] ring-1 ring-inset ring-border/40 transition"
                 style={{
-                  background: v === 0
-                    ? "hsl(var(--muted) / 0.35)"
-                    : `hsl(var(--primary) / ${0.2 + v * 0.18})`,
+                  background:
+                    v === 0
+                      ? "hsl(var(--muted) / 0.35)"
+                      : `hsl(var(--primary) / ${0.2 + v * 0.18})`,
                 }}
                 title={`${row.day} · ${v} actions`}
               />
@@ -344,7 +906,11 @@ export function ActivityHeatmap({ data }: { data: ActivityHeat[] }) {
       <div className="mt-2 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
         <span>Less</span>
         {[0.2, 0.4, 0.6, 0.8].map((o) => (
-          <span key={o} className="h-2.5 w-2.5 rounded-[3px]" style={{ background: `hsl(var(--primary) / ${o})` }} />
+          <span
+            key={o}
+            className="h-2.5 w-2.5 rounded-[3px]"
+            style={{ background: `hsl(var(--primary) / ${o})` }}
+          />
         ))}
         <span>More</span>
       </div>
@@ -361,13 +927,19 @@ export function SkillGapList({ items }: { items: SkillGap[] }) {
         <li key={s.skill}>
           <div className="mb-1.5 flex items-center justify-between text-sm">
             <span className="truncate font-medium">{s.skill}</span>
-            <span className="font-mono text-[11px] text-muted-foreground">{s.current}→{s.target} · {s.jobs} jobs</span>
+            <span className="font-mono text-[11px] text-muted-foreground">
+              {s.current}→{s.target} · {s.jobs} jobs
+            </span>
           </div>
           <div className="relative h-1.5 overflow-hidden rounded-full bg-muted/40">
-            <div className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-primary to-accent transition-[width] duration-700 motion-reduce:transition-none"
-              style={{ width: `${s.current}%` }} />
-            <div className="absolute inset-y-0 w-0.5 bg-foreground/60"
-              style={{ left: `${s.target}%` }} />
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-primary to-accent transition-[width] duration-700 motion-reduce:transition-none"
+              style={{ width: `${s.current}%` }}
+            />
+            <div
+              className="absolute inset-y-0 w-0.5 bg-foreground/60"
+              style={{ left: `${s.target}%` }}
+            />
           </div>
         </li>
       ))}
@@ -382,7 +954,9 @@ export function GoalList({ items }: { items: CareerGoal[] }) {
         <li key={g.id}>
           <div className="mb-1.5 flex items-center justify-between text-sm">
             <span className="truncate">{g.label}</span>
-            <span className="font-mono text-[11px] text-muted-foreground">{g.progress}% · {g.target}</span>
+            <span className="font-mono text-[11px] text-muted-foreground">
+              {g.progress}% · {g.target}
+            </span>
           </div>
           <Progress value={g.progress} className="h-1.5" />
         </li>
@@ -412,7 +986,9 @@ export function RecommendationRow({ r }: { r: Recommendation }) {
         <div className="flex items-center gap-2">
           <h4 className="truncate text-sm font-medium">{r.title}</h4>
           {r.score !== undefined && (
-            <Badge variant="secondary" className="rounded-full font-mono text-[10px]">{r.score}%</Badge>
+            <Badge variant="secondary" className="rounded-full font-mono text-[10px]">
+              {r.score}%
+            </Badge>
           )}
         </div>
         <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{r.detail}</p>
@@ -438,12 +1014,19 @@ export function ActivityTimeline({ items }: { items: TimelineEvent[] }) {
       <div className="absolute inset-y-1 left-[7px] w-px bg-border/60" />
       {items.map((e) => (
         <li key={e.id} className="relative">
-          <span className={cn("absolute -left-[18px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-background/60", timelineDot[e.kind])} />
+          <span
+            className={cn(
+              "absolute -left-[18px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-background/60",
+              timelineDot[e.kind]
+            )}
+          />
           <div className="flex items-baseline justify-between gap-3">
-            <h4 className="truncate text-sm font-medium">{e.title}</h4>
-            <span className="shrink-0 text-[11px] text-muted-foreground">{e.time}</span>
+            <h4 className="truncate text-xs font-semibold text-foreground">{e.title}</h4>
+            <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{e.time}</span>
           </div>
-          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{e.detail}</p>
+          <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground leading-snug">
+            {e.detail}
+          </p>
         </li>
       ))}
     </ol>
@@ -462,14 +1045,22 @@ export function UpcomingList({ items }: { items: UpcomingItem[] }) {
   return (
     <ul className="space-y-2.5">
       {items.map((u) => (
-        <li key={u.id} className="flex items-start gap-3 rounded-xl border border-border/50 bg-background/30 p-3">
+        <li
+          key={u.id}
+          className="flex items-start gap-3 rounded-xl border border-border/50 bg-background/30 p-3"
+        >
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-background/60 ring-1 ring-border/60">
             <Calendar className="h-4 w-4 text-foreground/80" />
           </div>
           <div className="min-w-0 grow">
             <div className="flex items-center gap-2">
               <h4 className="truncate text-sm font-medium">{u.title}</h4>
-              <span className={cn("ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ring-1", urgencyStyle[u.urgency])}>
+              <span
+                className={cn(
+                  "ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ring-1",
+                  urgencyStyle[u.urgency]
+                )}
+              >
                 {u.when}
               </span>
             </div>
@@ -481,11 +1072,16 @@ export function UpcomingList({ items }: { items: UpcomingItem[] }) {
   );
 }
 
-/* ─────────────────────────────────────── Quick actions */
+/* ─────────────────────────────────────── Quick command matrix */
 
 const qaIcon: Record<string, ComponentType<{ className?: string }>> = {
-  upload: Upload, search: Search, sparkles: Sparkles, file: FileText,
-  bot: Bot, kanban: KanbanSquare,
+  upload: Upload,
+  search: Search,
+  sparkles: Sparkles,
+  file: FileText,
+  bot: Bot,
+  kanban: KanbanSquare,
+  star: Target,
 };
 
 export function QuickActionsGrid({
@@ -498,16 +1094,18 @@ export function QuickActionsGrid({
       {items.map((a) => {
         const Icon = qaIcon[a.icon] ?? Sparkles;
         return (
-          <a
+          <Link
             key={a.id}
-            href={a.href}
-            className="group flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-background/40 p-3 transition hover:-translate-y-0.5 hover:border-border hover:bg-background/60 motion-reduce:transition-none motion-reduce:hover:transform-none"
+            to={a.href}
+            className="group glass spatial-card flex flex-col items-start gap-2 rounded-lg border border-border/70 bg-surface-instrument/70 p-3 transition-colors hover:border-primary/50 hover:bg-surface-elevated shadow-2xs"
           >
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20 transition group-hover:bg-primary/15">
+            <div className="grid h-8 w-8 place-items-center rounded-md border border-primary/20 bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
               <Icon className="h-4 w-4" />
             </div>
-            <span className="text-xs font-medium leading-tight">{a.label}</span>
-          </a>
+            <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+              {a.label}
+            </span>
+          </Link>
         );
       })}
     </div>
@@ -517,22 +1115,23 @@ export function QuickActionsGrid({
 /* ─────────────────────────────────────── Achievements */
 
 const tierRing: Record<Achievement["tier"], string> = {
-  bronze: "from-amber-700/40 to-amber-500/10 text-amber-500",
-  silver: "from-slate-400/40 to-slate-300/10 text-slate-300",
-  gold: "from-yellow-500/40 to-yellow-300/10 text-yellow-400",
-  platinum: "from-primary/40 to-accent/10 text-primary",
+  bronze: "text-amber-500 bg-amber-500/10 ring-amber-500/20",
+  silver: "text-slate-300 bg-slate-300/10 ring-slate-300/20",
+  gold: "text-yellow-400 bg-yellow-400/10 ring-yellow-400/20",
+  platinum: "text-primary bg-primary/10 ring-primary/20",
 };
 
 export function AchievementCard({ a }: { a: Achievement }) {
   return (
-    <div className={cn(
-      "relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 p-4 transition",
-      a.earned ? "bg-background/40" : "bg-background/20 opacity-90"
-    )}>
-      <div className={cn("absolute -right-8 -top-8 h-24 w-24 rounded-full bg-linear-to-br blur-2xl", tierRing[a.tier])} />
+    <div
+      className={cn(
+        "glass spatial-card relative flex h-full flex-col overflow-hidden rounded-xl border border-border/80 p-4 transition-colors",
+        a.earned ? "bg-surface shadow-xs" : "bg-surface/50 opacity-90"
+      )}
+    >
       <div className="relative flex items-start justify-between">
-        <div className={cn("grid h-10 w-10 place-items-center rounded-xl bg-background/60 ring-1 ring-border/60", tierRing[a.tier].split(" ").pop())}>
-          <Trophy className="h-[18px] w-[18px]" />
+        <div className={cn("grid h-9 w-9 place-items-center rounded-lg ring-1", tierRing[a.tier])}>
+          <Trophy className="h-4 w-4" />
         </div>
         {a.earned ? (
           <CheckCircle2 className="h-4 w-4 text-success" />
@@ -541,15 +1140,19 @@ export function AchievementCard({ a }: { a: Achievement }) {
         )}
       </div>
       <div className="relative mt-3 min-w-0">
-        <h4 className="text-sm font-semibold">{a.title}</h4>
-        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{a.detail}</p>
+        <h4 className="text-xs font-semibold text-foreground">{a.title}</h4>
+        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground leading-relaxed">
+          {a.detail}
+        </p>
       </div>
-      <div className="relative mt-3">
+      <div className="relative mt-3 border-t border-border/40 pt-2.5">
         {a.earned ? (
-          <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">Earned · {a.earnedAt}</span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
+            Earned · {a.earnedAt}
+          </span>
         ) : (
           <>
-            <div className="mb-1 flex items-center justify-between text-[11px] text-muted-foreground">
+            <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground">
               <span>In progress</span>
               <span className="font-mono">{a.progress}%</span>
             </div>
@@ -563,22 +1166,34 @@ export function AchievementCard({ a }: { a: Achievement }) {
 
 /* ─────────────────────────────────────── Insight ribbon */
 
-const insightStyle: Record<CareerInsight["kind"], string> = {
-  trend: "from-primary/15 to-transparent text-primary",
-  opportunity: "from-success/15 to-transparent text-success",
-  gap: "from-warning/15 to-transparent text-warning",
+const insightStyle: Record<CareerInsight["kind"], { badge: string; border: string }> = {
+  trend: { badge: "bg-primary/10 text-primary border-primary/20", border: "border-primary/30" },
+  opportunity: {
+    badge: "bg-success/10 text-success border-success/20",
+    border: "border-success/30",
+  },
+  gap: { badge: "bg-warning/10 text-warning border-warning/20", border: "border-warning/30" },
 };
 
 export function InsightPill({ i }: { i: CareerInsight }) {
+  const meta = insightStyle[i.kind];
   return (
-    <div className={cn("relative overflow-hidden rounded-2xl border border-border/60 bg-linear-to-r p-4", insightStyle[i.kind])}>
-      <div className="flex items-start gap-3">
-        <TrendingUp className="mt-0.5 h-4 w-4 shrink-0" />
-        <div className="min-w-0">
-          <div className="text-xs font-semibold uppercase tracking-[0.12em] opacity-80">
-            {i.kind === "trend" ? "Trend" : i.kind === "opportunity" ? "Opportunity" : "Gap"}
+    <div
+      className={cn(
+        "glass spatial-card relative rounded-xl border border-border/80 bg-surface/70 p-3.5 shadow-xs transition-colors hover:border-border hover:bg-surface-elevated/70"
+      )}
+    >
+      <div className="flex items-start gap-2.5">
+        <div
+          className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-md border", meta.badge)}
+        >
+          <TrendingUp className="h-3.5 w-3.5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+            {i.kind === "trend" ? "Trend" : i.kind === "opportunity" ? "Opportunity" : "Next Step"}
           </div>
-          <p className="mt-0.5 text-sm text-foreground/90">{i.text}</p>
+          <p className="mt-0.5 text-xs text-foreground/90 leading-snug">{i.text}</p>
         </div>
       </div>
     </div>

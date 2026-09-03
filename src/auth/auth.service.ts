@@ -26,7 +26,11 @@ function mapSupabaseUser(sbUser: {
   return {
     id: sbUser.id,
     email: sbUser.email ?? "",
-    name: (metadata?.full_name as string) || (metadata?.name as string) || sbUser.email?.split("@")[0] || "User",
+    name:
+      (metadata?.full_name as string) ||
+      (metadata?.name as string) ||
+      sbUser.email?.split("@")[0] ||
+      "User",
     avatar: metadata?.avatar_url as string | undefined,
     role: (appMeta?.role as User["role"]) || "user",
     permissions: [],
@@ -128,17 +132,17 @@ export const authService = {
     }
 
     const user = mapSupabaseUser(authData.user);
-    
+
     // If no session is returned (email confirmation required), return user without tokens
     if (!authData.session) {
-      return { 
-        user, 
+      return {
+        user,
         tokens: {
           accessToken: "",
           refreshToken: "",
           expiresIn: 0,
           refreshExpiresIn: 0,
-        }
+        },
       };
     }
 
@@ -181,9 +185,7 @@ export const authService = {
   },
 
   verifyEmail: async (data: VerifyEmailRequest): Promise<void> => {
-    // Supabase handles email verification via magic link
-    // This is a no-op since verification is done through the email link
-    console.log("Email verification handled by Supabase:", data.token);
+    await supabase.auth.verifyOtp({ token_hash: data.token, type: "email" });
   },
 
   refreshToken: async (refreshToken: string): Promise<{ tokens: Tokens }> => {

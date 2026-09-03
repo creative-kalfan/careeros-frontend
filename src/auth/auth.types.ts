@@ -60,14 +60,9 @@ export type Session = {
   lastActivityAt: string;
 };
 
-export type AuthStatus = 
-  | "idle" 
-  | "loading" 
-  | "authenticated" 
-  | "unauthenticated" 
-  | "error";
+export type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated" | "error";
 
-export type AuthErrorCode = 
+export type AuthErrorCode =
   | "INVALID_CREDENTIALS"
   | "EMAIL_NOT_VERIFIED"
   | "TOKEN_EXPIRED"

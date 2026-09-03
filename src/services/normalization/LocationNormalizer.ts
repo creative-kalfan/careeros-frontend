@@ -20,24 +20,24 @@ export class LocationNormalizer {
 
   constructor() {
     this.cityAliases = {
-      "bangalore": "Bengaluru",
-      "bengaluru": "Bengaluru",
-      "bombay": "Mumbai",
-      "mumbai": "Mumbai",
-      "madras": "Chennai",
-      "chennai": "Chennai",
+      bangalore: "Bengaluru",
+      bengaluru: "Bengaluru",
+      bombay: "Mumbai",
+      mumbai: "Mumbai",
+      madras: "Chennai",
+      chennai: "Chennai",
       "new delhi": "Delhi",
-      "delhi": "Delhi",
+      delhi: "Delhi",
     };
 
     this.workModeAliases = {
-      "remote": "REMOTE",
+      remote: "REMOTE",
       "work from home": "REMOTE",
-      "wfh": "REMOTE",
-      "hybrid": "HYBRID",
+      wfh: "REMOTE",
+      hybrid: "HYBRID",
       "on-site": "ONSITE",
-      "onsite": "ONSITE",
-      "office": "ONSITE",
+      onsite: "ONSITE",
+      office: "ONSITE",
     };
   }
 

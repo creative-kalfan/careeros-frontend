@@ -67,13 +67,7 @@ function PaneSection({
   );
 }
 
-function RecommendationCard({
-  rec,
-  toneRing,
-}: {
-  rec: AtsRecommendation;
-  toneRing: string;
-}) {
+function RecommendationCard({ rec, toneRing }: { rec: AtsRecommendation; toneRing: string }) {
   return (
     <button className="group w-full rounded-xl border border-border/60 bg-surface-elevated/50 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-surface-elevated">
       <div className="flex items-start gap-2">

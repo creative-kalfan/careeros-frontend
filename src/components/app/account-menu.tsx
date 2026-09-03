@@ -70,7 +70,7 @@ export function AccountMenu() {
           className={cn(
             "relative h-9 w-9 rounded-full p-0 transition-all",
             "hover:shadow-[var(--shadow-glow)]",
-            open && "shadow-[var(--shadow-glow)]"
+            open && "shadow-[var(--shadow-glow)]",
           )}
           aria-label={`Account menu for ${displayName}`}
           aria-expanded={open}
@@ -96,7 +96,7 @@ export function AccountMenu() {
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
           "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-          "origin-(--radix-popover-content-transform-origin)"
+          "origin-(--radix-popover-content-transform-origin)",
         )}
       >
         {/* Account header */}
@@ -108,9 +108,7 @@ export function AccountMenu() {
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
-            {email && (
-              <p className="truncate text-xs text-muted-foreground">{email}</p>
-            )}
+            {email && <p className="truncate text-xs text-muted-foreground">{email}</p>}
           </div>
         </div>
 
@@ -128,7 +126,7 @@ export function AccountMenu() {
                   "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm",
                   "text-foreground/80 transition-colors",
                   "hover:bg-surface-elevated hover:text-foreground",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -148,7 +146,7 @@ export function AccountMenu() {
             "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm",
             "text-destructive/90 transition-colors",
             "hover:bg-destructive/10 hover:text-destructive",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           )}
         >
           <LogOut className="h-4 w-4 shrink-0" />

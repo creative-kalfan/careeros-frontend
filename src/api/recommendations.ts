@@ -1,8 +1,7 @@
-import { apiConfig } from "./config";
-import type { ApiResponse, PaginatedResponse, PaginationParams } from "../types/api/index.ts";
+import { request } from "@/utils/request";
+import type { ApiResponse } from "../types/api/index.ts";
 
 export type RecommendationPriority = "excellent" | "strong" | "good" | "possible";
-
 export type RecommendationStatus = "NEW" | "VIEWED" | "SAVED" | "DISMISSED" | "APPLIED";
 
 export interface RecommendationReason {
@@ -41,8 +40,12 @@ export interface RecommendationListParams {
 }
 
 export interface RecommendationsApi {
-  getRecommendations: (params?: RecommendationListParams) => Promise<ApiResponse<{ recommendations: Recommendation[] }>>;
-  getTopRecommendations: (limit?: number) => Promise<ApiResponse<{ recommendations: Recommendation[] }>>;
+  getRecommendations: (
+    params?: RecommendationListParams,
+  ) => Promise<ApiResponse<{ recommendations: Recommendation[] }>>;
+  getTopRecommendations: (
+    limit?: number,
+  ) => Promise<ApiResponse<{ recommendations: Recommendation[] }>>;
   refreshRecommendations: () => Promise<ApiResponse<{ result: unknown }>>;
   saveRecommendation: (id: string) => Promise<ApiResponse<{ recommendation: Recommendation }>>;
   dismissRecommendation: (id: string) => Promise<ApiResponse<{ recommendation: Recommendation }>>;
@@ -51,7 +54,7 @@ export interface RecommendationsApi {
 export const recommendationsApi: RecommendationsApi = {
   getRecommendations: async (params = {}) => {
     const searchParams = new URLSearchParams();
-    
+
     if (params.status) searchParams.set("status", params.status);
     if (params.sort) searchParams.set("sort", params.sort);
     if (params.remote !== undefined) searchParams.set("remote", String(params.remote));
@@ -63,85 +66,42 @@ export const recommendationsApi: RecommendationsApi = {
     if (params.priority) searchParams.set("priority", params.priority);
     if (params.limit) searchParams.set("limit", String(params.limit));
 
-    const response = await fetch(`${apiConfig.baseUrl}/recommendations?${searchParams.toString()}`, {
+    const qs = searchParams.toString();
+    const path = qs ? `/recommendations?${qs}` : "/recommendations";
+
+    return request<ApiResponse<{ recommendations: Recommendation[] }>>({
       method: "GET",
-      headers: apiConfig.defaultHeaders,
-      credentials: "include",
+      path,
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to fetch recommendations");
-    }
-
-    return response.json();
   },
 
   getTopRecommendations: async (limit = 5) => {
-    const response = await fetch(`${apiConfig.baseUrl}/recommendations/top?limit=${limit}`, {
+    return request<ApiResponse<{ recommendations: Recommendation[] }>>({
       method: "GET",
-      headers: apiConfig.defaultHeaders,
-      credentials: "include",
+      path: `/recommendations/top?limit=${limit}`,
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to fetch top recommendations");
-    }
-
-    return response.json();
   },
 
   refreshRecommendations: async () => {
-    const response = await fetch(`${apiConfig.baseUrl}/recommendations/refresh`, {
+    return request<ApiResponse<{ result: unknown }>>({
       method: "POST",
-      headers: apiConfig.defaultHeaders,
-      credentials: "include",
+      path: "/recommendations/refresh",
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to refresh recommendations");
-    }
-
-    return response.json();
   },
 
   saveRecommendation: async (id: string) => {
-    const response = await fetch(`${apiConfig.baseUrl}/recommendations/save`, {
+    return request<ApiResponse<{ recommendation: Recommendation }>>({
       method: "POST",
-      headers: {
-        ...apiConfig.defaultHeaders,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ recommendationId: id }),
+      path: `/recommendations/save`,
+      body: { recommendationId: id },
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to save recommendation");
-    }
-
-    return response.json();
   },
 
   dismissRecommendation: async (id: string) => {
-    const response = await fetch(`${apiConfig.baseUrl}/recommendations/dismiss`, {
+    return request<ApiResponse<{ recommendation: Recommendation }>>({
       method: "POST",
-      headers: {
-        ...apiConfig.defaultHeaders,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ recommendationId: id }),
+      path: `/recommendations/dismiss`,
+      body: { recommendationId: id },
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to dismiss recommendation");
-    }
-
-    return response.json();
   },
 };

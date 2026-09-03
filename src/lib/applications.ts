@@ -27,7 +27,14 @@ export interface ApplicationUI {
   notes: string;
   attachments: { id: string; name: string; kind: string; size: string }[];
   history: { id: string; time: string; title: string; detail: string; kind: string }[];
-  interviews: { id: string; name: string; when: string; interviewer?: string; status: string; notes?: string }[];
+  interviews: {
+    id: string;
+    name: string;
+    when: string;
+    interviewer?: string;
+    status: string;
+    notes?: string;
+  }[];
   assessments: { id: string; label: string; due: string; status: string }[];
   culture?: string;
   glassdoor?: number;
@@ -155,7 +162,9 @@ function timeAgo(dateStr: string): string {
 // Compute stats from applications
 export function computeStats(apps: ApplicationUI[]): StatsUI {
   const total = apps.filter((a) => a.stage !== "saved" && a.stage !== "archived").length;
-  const withInterviews = apps.filter((a) => a.stage === "interview" || a.stage === "offer" || a.stage === "accepted").length;
+  const withInterviews = apps.filter(
+    (a) => a.stage === "interview" || a.stage === "offer" || a.stage === "accepted",
+  ).length;
   const withOffers = apps.filter((a) => a.stage === "offer" || a.stage === "accepted").length;
   const accepted = apps.filter((a) => a.stage === "accepted").length;
 
@@ -206,10 +215,7 @@ export function filterApplications(
 }
 
 // Search applications by query
-export function searchApplications(
-  apps: ApplicationUI[],
-  query: string,
-): ApplicationUI[] {
+export function searchApplications(apps: ApplicationUI[], query: string): ApplicationUI[] {
   if (!query.trim()) return apps;
   const q = query.toLowerCase();
   return apps.filter(
@@ -229,7 +235,11 @@ export interface SidebarFilter {
 }
 
 export const sidebarFilters: SidebarFilter[] = [
-  { id: "all", label: "All applications", stages: ["applied", "assessment", "interview", "offer", "accepted", "rejected"] },
+  {
+    id: "all",
+    label: "All applications",
+    stages: ["applied", "assessment", "interview", "offer", "accepted", "rejected"],
+  },
   { id: "interviews", label: "Interviews", stages: ["interview"] },
   { id: "assessments", label: "Assessments", stages: ["assessment"] },
   { id: "offers", label: "Offers", stages: ["offer", "accepted"] },

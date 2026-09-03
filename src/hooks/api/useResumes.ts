@@ -1,11 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { resumeApi } from "../../api/resume";
-import type { ResumeData, ResumeListResponse } from "../../types/resume";
+import type {
+  ResumeData,
+  ResumeListResponse,
+  ResumeRecord,
+  ParseResumeResponse,
+  CompletenessResponseData,
+} from "../../types/resume";
 
 export const resumeQueryKeys = {
   all: ["resumes"] as const,
   list: ["resumes", "list"] as const,
+  data: (id: string) => ["resumes", "data", id] as const,
   detail: (id: string) => ["resumes", "detail", id] as const,
+  completeness: (id: string) => ["resumes", "completeness", id] as const,
 };
 
 export function useResumes() {
@@ -18,8 +26,17 @@ export function useResumes() {
 
 export function useResume(id: string | null) {
   return useQuery<ResumeData>({
-    queryKey: resumeQueryKeys.detail(id ?? ""),
+    queryKey: resumeQueryKeys.data(id ?? ""),
     queryFn: () => resumeApi.getById(id as string),
+    enabled: Boolean(id),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useResumeDetail(id: string | null) {
+  return useQuery<ResumeRecord>({
+    queryKey: resumeQueryKeys.detail(id ?? ""),
+    queryFn: () => resumeApi.getResumeDetail(id as string),
     enabled: Boolean(id),
     staleTime: 1000 * 60 * 5,
   });
@@ -37,7 +54,11 @@ export function useCreateResume() {
 
 export function useUpdateResume() {
   const queryClient = useQueryClient();
-  return useMutation<ResumeData, Error, { id: string; title?: string; content?: Record<string, unknown> }>({
+  return useMutation<
+    ResumeData,
+    Error,
+    { id: string; title?: string; content?: Record<string, unknown> }
+  >({
     mutationFn: ({ id, ...data }) => resumeApi.update(id, data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: resumeQueryKeys.list });
@@ -53,7 +74,6 @@ export function useDeleteResume() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: resumeQueryKeys.all });
     },
-    // Optimistic removal
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: resumeQueryKeys.list });
       const previous = queryClient.getQueryData<ResumeListResponse>(resumeQueryKeys.list);
@@ -92,5 +112,29 @@ export function useUploadResume() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: resumeQueryKeys.list });
     },
+  });
+}
+
+export function useUpdateResumeContent() {
+  const queryClient = useQueryClient();
+  return useMutation<
+    ResumeRecord,
+    Error,
+    { id: string; content: Record<string, unknown>; meta?: Record<string, unknown> }
+  >({
+    mutationFn: ({ id, content, meta }) => resumeApi.updateResumeContent(id, content, meta),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: resumeQueryKeys.list });
+      queryClient.setQueryData(resumeQueryKeys.detail(data.id), data);
+    },
+  });
+}
+
+export function useResumeCompleteness(id: string | null) {
+  return useQuery<CompletenessResponseData>({
+    queryKey: resumeQueryKeys.completeness(id ?? ""),
+    queryFn: () => resumeApi.getCompleteness(id as string),
+    enabled: Boolean(id),
+    staleTime: 1000 * 60 * 5,
   });
 }

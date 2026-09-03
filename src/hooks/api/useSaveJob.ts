@@ -17,24 +17,19 @@ export function useSaveJob() {
       const previous = queryClient.getQueriesData<{ jobs: Job[] }>({
         queryKey: jobsQueryKeys.all,
       });
-      queryClient.setQueriesData<{ jobs: Job[] }>(
-        { queryKey: jobsQueryKeys.all },
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            jobs: old.jobs.map((j) =>
-              j.id === jobId ? { ...j, bookmarked: true, status: "saved" } : j,
-            ),
-          };
-        },
-      );
+      queryClient.setQueriesData<{ jobs: Job[] }>({ queryKey: jobsQueryKeys.all }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          jobs: old.jobs.map((j) =>
+            j.id === jobId ? { ...j, bookmarked: true, status: "saved" } : j,
+          ),
+        };
+      });
       return { previous };
     },
     onError: (_err, _jobId, context) => {
-      context?.previous?.forEach(([key, data]) =>
-        queryClient.setQueryData(key, data),
-      );
+      context?.previous?.forEach(([key, data]) => queryClient.setQueryData(key, data));
     },
   });
 
@@ -48,24 +43,19 @@ export function useSaveJob() {
       const previous = queryClient.getQueriesData<{ jobs: Job[] }>({
         queryKey: jobsQueryKeys.all,
       });
-      queryClient.setQueriesData<{ jobs: Job[] }>(
-        { queryKey: jobsQueryKeys.all },
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            jobs: old.jobs.map((j) =>
-              j.id === jobId ? { ...j, bookmarked: false, status: "not_applied" } : j,
-            ),
-          };
-        },
-      );
+      queryClient.setQueriesData<{ jobs: Job[] }>({ queryKey: jobsQueryKeys.all }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          jobs: old.jobs.map((j) =>
+            j.id === jobId ? { ...j, bookmarked: false, status: "not_applied" } : j,
+          ),
+        };
+      });
       return { previous };
     },
     onError: (_err, _jobId, context) => {
-      context?.previous?.forEach(([key, data]) =>
-        queryClient.setQueryData(key, data),
-      );
+      context?.previous?.forEach(([key, data]) => queryClient.setQueryData(key, data));
     },
   });
 

@@ -81,18 +81,33 @@ export function CopilotPanel() {
   function submit(prompt: string) {
     const text = prompt.trim();
     if (!text) return;
-    const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: "user", content: text, timestamp: "now" };
+    const userMsg: ChatMessage = {
+      id: `u-${Date.now()}`,
+      role: "user",
+      content: text,
+      timestamp: "now",
+    };
     setConversations((prev) =>
-      prev.map((c) => (c.id === active.id ? { ...c, messages: [...c.messages, userMsg], updatedAt: "now" } : c)),
+      prev.map((c) =>
+        c.id === active.id ? { ...c, messages: [...c.messages, userMsg], updatedAt: "now" } : c,
+      ),
     );
     setInput("");
     setThinking(true);
     // TODO(API): Replace with streaming request to backend Copilot endpoint.
     setTimeout(() => {
       const { content, card } = generateMockResponse(text);
-      const aiMsg: ChatMessage = { id: `a-${Date.now()}`, role: "assistant", content, card, timestamp: "now" };
+      const aiMsg: ChatMessage = {
+        id: `a-${Date.now()}`,
+        role: "assistant",
+        content,
+        card,
+        timestamp: "now",
+      };
       setConversations((prev) =>
-        prev.map((c) => (c.id === active.id ? { ...c, messages: [...c.messages, aiMsg], updatedAt: "now" } : c)),
+        prev.map((c) =>
+          c.id === active.id ? { ...c, messages: [...c.messages, aiMsg], updatedAt: "now" } : c,
+        ),
       );
       setThinking(false);
     }, 900);
@@ -177,7 +192,10 @@ export function CopilotPanel() {
   if (isMobile) {
     return (
       <div className="fixed inset-0 z-50 animate-fade-in">
-        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
+        <div
+          className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        />
         <div className="glass-strong absolute inset-x-0 bottom-0 top-[10vh] flex animate-[slide-in-right_0.3s_ease-out] flex-col rounded-t-3xl shadow-elevation-3">
           <PanelHeader {...headerProps} mobile />
           <PanelBody {...bodyProps} />
@@ -239,7 +257,7 @@ function PanelHeader({
 }) {
   return (
     <header className="flex items-center gap-2 border-b border-border/60 px-3 py-2.5">
-      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary to-accent text-primary-foreground shadow-elevation-1">
+      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-xs">
         <Sparkles className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
@@ -247,8 +265,8 @@ function PanelHeader({
           <span className="truncate text-sm font-semibold tracking-tight">Career Copilot</span>
           <ChevronDown className="h-3 w-3 text-muted-foreground" />
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/40 px-1.5 py-0.5">
+        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface-instrument px-1.5 py-0.5 font-mono">
             <ModuleIcon className="h-2.5 w-2.5 text-primary" />
             <span className="uppercase tracking-wider">{moduleTitle}</span>
           </span>
@@ -257,7 +275,11 @@ function PanelHeader({
       </div>
       <div className="flex shrink-0 items-center gap-0.5">
         <IconBtn title="History" active={showHistory} onClick={onToggleHistory}>
-          {showHistory ? <PanelRightClose className="h-3.5 w-3.5" /> : <History className="h-3.5 w-3.5" />}
+          {showHistory ? (
+            <PanelRightClose className="h-3.5 w-3.5" />
+          ) : (
+            <History className="h-3.5 w-3.5" />
+          )}
         </IconBtn>
         <IconBtn title="New conversation" onClick={onNew}>
           <Plus className="h-3.5 w-3.5" />
@@ -292,7 +314,9 @@ function IconBtn({
       title={title}
       className={cn(
         "grid h-7 w-7 place-items-center rounded-lg transition",
-        active ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground",
+        active
+          ? "bg-primary/15 text-primary"
+          : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground",
       )}
     >
       {children}
@@ -333,7 +357,10 @@ function PanelBody({
 }) {
   const isEmpty = active.messages.length === 0;
   return (
-    <div className="grid min-h-0 flex-1" style={{ gridTemplateColumns: showHistory ? "220px 1fr" : "1fr" }}>
+    <div
+      className="grid min-h-0 flex-1"
+      style={{ gridTemplateColumns: showHistory ? "220px 1fr" : "1fr" }}
+    >
       {showHistory && (
         <div className="min-h-0 border-r border-border/60 bg-sidebar/40">
           <ConversationList
@@ -374,7 +401,13 @@ function PanelBody({
             </div>
           </div>
         )}
-        <Composer input={input} setInput={setInput} onSubmit={onSubmit} inputRef={inputRef} disabled={thinking} />
+        <Composer
+          input={input}
+          setInput={setInput}
+          onSubmit={onSubmit}
+          inputRef={inputRef}
+          disabled={thinking}
+        />
       </div>
     </div>
   );
@@ -412,8 +445,12 @@ function Composer({
         />
         <div className="mt-1 flex items-center justify-between px-1">
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <kbd className="rounded border border-border bg-background/60 px-1 py-0.5 font-mono">⌘</kbd>
-            <kbd className="rounded border border-border bg-background/60 px-1 py-0.5 font-mono">/</kbd>
+            <kbd className="rounded border border-border bg-background/60 px-1 py-0.5 font-mono">
+              ⌘
+            </kbd>
+            <kbd className="rounded border border-border bg-background/60 px-1 py-0.5 font-mono">
+              /
+            </kbd>
             <span>to focus · Shift+Enter for newline</span>
           </div>
           <button
@@ -434,14 +471,11 @@ function CopilotLauncher() {
   return (
     <button
       onClick={() => setOpen(true)}
-      title="Open Copilot (⌘I)"
-      className="group fixed bottom-5 right-5 z-40 flex h-12 animate-[scale-in_0.2s_ease-out] items-center gap-2 rounded-full border border-border/60 bg-linear-to-br from-primary to-accent px-4 text-primary-foreground shadow-elevation-3 transition hover:scale-105"
+      title="Open AI Copilot (⌘I)"
+      aria-label="Open AI Copilot"
+      className="group fixed bottom-5 right-5 z-40 hidden sm:flex h-9 w-9 items-center justify-center rounded-full border border-primary/40 bg-surface-elevated/90 text-primary shadow-elevation-2 backdrop-blur-md transition-all hover:scale-110 hover:border-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
     >
-      <Sparkles className="h-4 w-4" />
-      <span className="text-sm font-semibold">Copilot</span>
-      <span className="ml-1 hidden items-center gap-0.5 rounded-md border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[10px] sm:inline-flex">
-        <CommandIcon className="h-2.5 w-2.5" />I
-      </span>
+      <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
     </button>
   );
 }

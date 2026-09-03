@@ -83,6 +83,7 @@ import { apiConfig } from "@/api/config";
 #### 3. Request Utility (`src/utils/request.ts`)
 
 Core HTTP request function with:
+
 - Automatic JSON serialization
 - Timeout handling via AbortController
 - Standardized error handling
@@ -101,6 +102,7 @@ const data = await request<ResponseType>({
 #### 4. Error Handling (`src/utils/api-error.ts`)
 
 Standardized error handling with:
+
 - `ApiClientError` class for API errors
 - Type guards for error checking
 - Helper functions for error message extraction
@@ -121,6 +123,7 @@ try {
 ### API Modules
 
 Each API module exports:
+
 - **Type definitions**: Request/response types
 - **Service object**: Object with typed methods
 - **TODO implementations**: Placeholder methods ready for backend integration
@@ -298,7 +301,7 @@ Safe environment variable access with defaults:
 
 ```typescript
 export const env = {
-  VITE_API_BASE_URL: getEnv("VITE_API_BASE_URL", "http://localhost:3000/api"),
+  VITE_API_BASE_URL: getEnv("VITE_API_BASE_URL", "http://localhost:8000"),
 } as const;
 ```
 
@@ -364,7 +367,7 @@ import { useLogin } from "@/hooks/api/useAuth";
 
 function LoginForm() {
   const login = useLogin();
-  
+
   const handleSubmit = async (data: LoginRequest) => {
     try {
       const response = await login.mutateAsync(data);
@@ -379,6 +382,7 @@ function LoginForm() {
 ### Step 4: Add Authentication
 
 Implement authentication flow:
+
 - Store tokens in secure storage
 - Add request interceptors for auth headers
 - Handle token refresh

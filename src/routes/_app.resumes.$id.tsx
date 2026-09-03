@@ -1,262 +1,923 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowLeft, MoreHorizontal, Save, Send, PanelLeft, PanelRight, Command as CmdIcon, AlertTriangle } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { ArrowLeft, Save, Sparkles, Layers, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-tooltip";
 import { LeftPane } from "@/components/resume/left-pane";
-import { EditorPane } from "@/components/resume/editor-pane";
-import { PreviewPane } from "@/components/resume/preview-pane";
-import { useResume, useUpdateResume } from "@/hooks/api/useResumes";
+import { PreviewPane, A4DocumentSkeleton } from "@/components/resume/preview-pane";
+import { useResumeDetail, useUpdateResumeContent, resumeQueryKeys } from "@/hooks/api/useResumes";
+import { useAnalyzeResume } from "@/hooks/api/useATS";
 import { getErrorMessage } from "@/utils/api-error";
+import { ATSAnalysisDialog } from "@/components/resume/ats-analysis-dialog";
+// OptimizationWorkspace removed — generation now happens inline in LeftPane
+import { VersionManager } from "@/components/resume/version-manager";
+import { FinalReview } from "@/components/resume/final-review";
+import {
+  useVersions,
+  useCreateVersion,
+  useApplyVersionOperation,
+  useVersion,
+} from "@/hooks/api/useVersions";
+import {
+  useGenerateExperienceBulletOptimization,
+  useGenerateOptimization,
+} from "@/hooks/api/useOptimization";
+import { requestBlob } from "@/utils/request";
+import { profileToResumeData, applyResumeDataToProfile, formatResumeDisplayName } from "@/lib/resume";
+import type { ResumeVersion } from "@/types/version";
+import type { AtsAnalysisResult } from "@/api/ats";
+import type { EvidenceLocationMap } from "@/lib/evidence-location";
+import type { ResumeProfile, ResumeData } from "@/types/resume";
+import type { OptimizationSuggestion } from "@/types/optimization";
+import { optimizationApi } from "@/api/optimization";
+import { useOriginalResumeFile } from "@/hooks/useOriginalResumeFile";
+import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
+
+import { useQueryClient } from "@tanstack/react-query";
+
+type ResumeStudioSearchParams = {
+  template?: string;
+  versionId?: string;
+  jobTitle?: string;
+  company?: string;
+  jobDescription?: string;
+};
 
 export const Route = createFileRoute("/_app/resumes/$id")({
+  validateSearch: (search: Record<string, unknown>): ResumeStudioSearchParams => {
+    return {
+      template: search.template ? String(search.template) : undefined,
+      versionId: search.versionId ? String(search.versionId) : undefined,
+      jobTitle: search.jobTitle ? String(search.jobTitle) : undefined,
+      company: search.company ? String(search.company) : undefined,
+      jobDescription: search.jobDescription ? String(search.jobDescription) : undefined,
+    };
+  },
   head: () => ({
     meta: [
-      { title: "Resume Builder · CareerOS" },
-      { name: "description", content: "Three-pane resume workspace with AI suggestions, live ATS score and PDF-ready preview." },
+      { title: "Resume Studio · CareerOS" },
+      {
+        name: "description",
+        content: "AI-powered resume optimization with targeted suggestions and ATS analysis.",
+      },
     ],
   }),
   component: ResumeWorkspace,
 });
 
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false);
-  useEffect(() => {
-    const mql = window.matchMedia(query);
-    setMatches(mql.matches);
-    const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
-    mql.addEventListener("change", listener);
-    return () => mql.removeEventListener("change", listener);
-  }, [query]);
-  return matches;
-}
-
 function ResumeWorkspace() {
   const { id } = Route.useParams();
-  const { data: resume, isLoading, isError, error } = useResume(id);
-  const updateMutation = useUpdateResume();
-  const isDesktop = useMediaQuery("(min-width: 1100px)");
-  const [showLeft, setShowLeft] = useState(true);
-  const [showRight, setShowRight] = useState(true);
+  const navigate = Route.useNavigate();
+  const search = Route.useSearch() as ResumeStudioSearchParams;
+  const templateSlug = search?.template;
+  const versionIdFromSearch = search?.versionId;
+  const searchJobTitle = search?.jobTitle;
+  const searchCompany = search?.company;
+  const searchJobDescription = search?.jobDescription;
+
+  const { data: record, isLoading, isError, error } = useResumeDetail(id);
+  const { data: versionsData } = useVersions(id);
+  const queryClient = useQueryClient();
+  const updateMutation = useUpdateResumeContent();
+  const analyzeResume = useAnalyzeResume();
+
+  const [resumeData, setResumeData] = useState<ResumeData | null>(null);
+  const [profile, setProfile] = useState<ResumeProfile | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastAppliedSuggestionId, setLastAppliedSuggestionId] = useState<string | null>(null);
+  const [documentMode, setDocumentMode] = useState<"original" | "canonical">(() =>
+    versionIdFromSearch ? "canonical" : "original",
+  );
+
+  const [showATSDialog, setShowATSDialog] = useState(false);
+  const [atsScore, setATSScore] = useState<number | null>(null);
+  const [atsAnalysis, setATSAnalysis] = useState<AtsAnalysisResult | null>(null);
+  const [atsReportId, setAtsReportId] = useState<string | null>(null);
+  // Optimization generation is now handled inline in LeftPane
+  const [jobTitle, setJobTitle] = useState<string>("");
+  const [company, setCompany] = useState<string>("");
+  const [jobDescription, setJobDescription] = useState<string>("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedAtsIssue, setSelectedAtsIssue] = useState<string | null>(null);
+  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
+  const [showSaved, setShowSaved] = useState(false);
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState<ResumeVersion | null>(null);
+  const [showVersionManager, setShowVersionManager] = useState(false);
+  const [showFinalReview, setShowFinalReview] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const versions = useMemo(() => versionsData?.versions ?? [], [versionsData]);
+  const masterVersion = versions.find((v) => v.is_master);
+  const activeVersionId =
+    selectedVersionId || versionIdFromSearch || masterVersion?.id || versions[0]?.id || null;
+
+  // Auto-resolve active working version from versions list
+  useEffect(() => {
+    if (!selectedVersionId && versions.length > 0) {
+      const target =
+        (versionIdFromSearch && versions.find((v) => v.id === versionIdFromSearch)) ||
+        masterVersion ||
+        versions[0];
+      if (target) {
+        setSelectedVersionId(target.id);
+      }
+    }
+  }, [selectedVersionId, versions, versionIdFromSearch, masterVersion]);
+
+  // Target 4.4 — shared evidence→PDF location map (Target 4.2). Computed once
+  // inside PdfCanvasPreview against the PDF text layer, lifted here so the ATS
+  // intelligence panel can show location confidence without recomputing.
+  // Stays `undefined` until PdfCanvasPreview reports its computation — an
+  // explicit `null`/defined value is treated by PdfCanvasPreview as
+  // "externally provided" and would skip the internal mapping pass.
+  const [evidenceLocations, setEvidenceLocations] = useState<
+    EvidenceLocationMap | null | undefined
+  >(undefined);
+  const handleEvidenceLocationsChange = useCallback((locations: EvidenceLocationMap | null) => {
+    setEvidenceLocations(locations);
+  }, []);
+
+  const lastAutoAnalyzedRef = useRef<string | null>(null);
+
+  const { data: selectedVersionData } = useVersion(activeVersionId ?? "");
+  const createVersionMutation = useCreateVersion(id);
+  const applyOperationMutation = useApplyVersionOperation(id);
+  const generateBulletMutation = useGenerateExperienceBulletOptimization();
+  const generateOptimizationMutation = useGenerateOptimization();
+  const { toast } = useToast();
+
+  // Generate signed URL for original uploaded PDF
+  const {
+    signedUrl: originalFileUrl,
+    generateSignedUrl,
+    isGenerating: isGeneratingSignedUrl,
+  } = useOriginalResumeFile();
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const mod = e.metaKey || e.ctrlKey;
-      if (!mod) return;
-      const k = e.key.toLowerCase();
-      if (k === "s") {
-        e.preventDefault();
-        if (resume) {
-          updateMutation.mutate({ id, title: resume.name, content: resume as unknown as Record<string, unknown> });
-          toast.success("Draft saved", { description: "Your resume is up to date." });
-        }
-      } else if (k === "\\") {
-        e.preventDefault();
-        setShowLeft((v) => !v);
-      } else if (k === "/") {
-        e.preventDefault();
-        setShowRight((v) => !v);
+    if (record?.storage_path) {
+      generateSignedUrl(record.storage_path);
+    }
+  }, [record?.storage_path, generateSignedUrl]);
+
+  // Reset working state synchronously when navigating between resumes to eliminate any stale data flash
+  useEffect(() => {
+    setResumeData(null);
+    setProfile(null);
+    setSelectedVersionId(null);
+    setSelectedVersion(null);
+    setEvidenceLocations(undefined);
+    setSelectedAtsIssue(null);
+    setSelectedTargetId(null);
+    setATSScore(null);
+    setATSAnalysis(null);
+    setAtsReportId(null);
+    lastAutoAnalyzedRef.current = null;
+  }, [id]);
+
+  useEffect(() => {
+    if (versionIdFromSearch && (!selectedVersionId || selectedVersionId !== versionIdFromSearch)) {
+      setSelectedVersionId(versionIdFromSearch);
+    }
+  }, [versionIdFromSearch, selectedVersionId]);
+
+  useEffect(() => {
+    if (selectedVersionData?.version) {
+      setSelectedVersion(selectedVersionData.version);
+      if (!selectedVersionData.version.is_master) {
+        setDocumentMode("canonical");
       }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resume?.id]);
+    }
+  }, [selectedVersionData]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-[calc(100dvh-56px)] flex-col">
-        <div className="flex items-center gap-3 border-b border-border/60 px-3 py-2.5 sm:px-5">
-          <Skeleton className="h-8 w-8 rounded-lg" />
-          <div className="space-y-1.5">
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-3 w-24" />
-          </div>
-        </div>
-        <div className="grid min-h-0 flex-1 place-items-center p-10">
-          <div className="text-sm text-muted-foreground">Loading resume…</div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const versionRow = selectedVersionData?.version;
+    const source = versionRow || record;
+    if (!source) return;
+    if (versionRow && !versionRow.is_master) {
+      setDocumentMode("canonical");
+    }
+    const content = source.content as { profile?: ResumeProfile } | null;
+    const fullProfile = content?.profile;
+    if (fullProfile) {
+      setProfile(fullProfile);
+      setResumeData({
+        ...profileToResumeData(fullProfile),
+        id: source.id,
+        name: "title" in source ? source.title : source.version_name || "Untitled Resume",
+        updatedAt: new Date(source.updated_at).toLocaleString(),
+        atsScore: 0,
+      });
+    } else {
+      setProfile({
+        personal: {
+          fullName: "",
+          email: "",
+          phone: "",
+          location: "",
+          headline: "",
+          website: "",
+          linkedin: "",
+          github: "",
+        },
+        targetRole: "",
+        summary: "",
+        experience: [],
+        internships: [],
+        education: [],
+        skills: {
+          technical: [],
+          tools: [],
+          languages: [],
+          databases: [],
+          analytics: [],
+          softSkills: [],
+          custom: {},
+        },
+        projects: [],
+        certifications: [],
+        achievements: [],
+        leadership: [],
+        languages: [],
+        links: [],
+        additional: [],
+      });
+      setResumeData({
+        id: source.id,
+        name: "title" in source ? source.title : source.version_name || "Untitled Resume",
+        targetRole: "",
+        updatedAt: new Date(source.updated_at).toLocaleString(),
+        atsScore: 0,
+        contact: {
+          fullName: "",
+          headline: "",
+          email: "",
+          phone: "",
+          location: "",
+          website: "",
+          linkedin: "",
+          github: "",
+        },
+        summary: "",
+        experience: [],
+        education: [],
+        skills: [],
+        projects: [],
+        sections: [
+          { id: "s-summary", type: "summary", title: "Summary" },
+          { id: "s-experience", type: "experience", title: "Experience" },
+          { id: "s-skills", type: "skills", title: "Skills" },
+          { id: "s-projects", type: "projects", title: "Projects" },
+          { id: "s-education", type: "education", title: "Education" },
+        ],
+        internships: [],
+        certifications: [],
+        achievements: [],
+        leadership: [],
+        languages: [],
+        links: [],
+        additional: [],
+      });
+    }
+  }, [record, selectedVersionData]);
 
-  if (isError || !resume) {
-    return (
-      <div className="flex h-[calc(100dvh-56px)] flex-col">
-        <div className="flex items-center gap-3 border-b border-border/60 px-3 py-2.5 sm:px-5">
-          <Button asChild variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-lg">
-            <Link to="/resumes"><ArrowLeft className="h-4 w-4" /></Link>
-          </Button>
-        </div>
-        <div className="grid min-h-0 flex-1 place-items-center p-10 text-center">
-          <div className="max-w-[320px]">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-destructive/25 to-destructive/10">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
+  useEffect(() => {
+    const versionRow = selectedVersionData?.version;
+    if (versionRow?.job_description && !jobDescription)
+      setJobDescription(versionRow.job_description);
+    if (versionRow?.target_job_title && !jobTitle) setJobTitle(versionRow.target_job_title);
+    if (versionRow?.target_company && !company) setCompany(versionRow.target_company);
+  }, [selectedVersionData, jobDescription, jobTitle, company]);
+
+  useEffect(() => {
+    if (!jobTitle && searchJobTitle && !jobTitle.trim()) setJobTitle(searchJobTitle);
+    if (!company && searchCompany && !company.trim()) setCompany(searchCompany);
+    if (!jobDescription && searchJobDescription && !jobDescription.trim())
+      setJobDescription(searchJobDescription);
+  }, [jobTitle, company, jobDescription, searchJobTitle, searchCompany, searchJobDescription]);
+
+  // Poll while parsing is asynchronous so the Studio renders the parsed
+  // resume as soon as the background parsing job completes.
+  useEffect(() => {
+    const status = record?.parse_status;
+    if (!status || (status !== "pending" && status !== "processing")) return;
+    const timer = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [record?.parse_status, queryClient, id]);
+
+  useEffect(() => {
+    if (analyzeResume.isSuccess && analyzeResume.data) {
+      const result = analyzeResume.data.result;
+      setATSScore(result.overall_score);
+      setATSAnalysis(result);
+      if (analyzeResume.data.report?.id) {
+        setAtsReportId(analyzeResume.data.report.id);
+      }
+      setIsAnalyzing(false);
+      setShowSaved(true);
+      const timer = setTimeout(() => {
+        setShowSaved(false);
+        setShowATSDialog(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+    if (analyzeResume.isError) {
+      setIsAnalyzing(false);
+      const msg = getErrorMessage(analyzeResume.error);
+      toast.error(msg === "An unexpected error occurred" ? "ATS analysis failed" : msg);
+    }
+  }, [analyzeResume, analyzeResume.data, toast]);
+
+  const handleSave = useCallback(async () => {
+    if (!id || !resumeData) return;
+    setIsSaving(true);
+    try {
+      const profileToSave =
+        profile ??
+        (() => {
+          const raw = (record?.content as { profile?: ResumeProfile } | null)?.profile;
+          if (!raw) return null;
+          return applyResumeDataToProfile(raw, resumeData);
+        })();
+      if (!profileToSave) {
+        toast.error("No resume content to save");
+        return;
+      }
+      await updateMutation.mutateAsync({ id, content: { profile: profileToSave } });
+      setProfile(profileToSave);
+      toast.success("Resume saved successfully");
+      setShowSaved(true);
+      setTimeout(() => setShowSaved(false), 2000);
+    } catch {
+      toast.error("Failed to save resume");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [id, resumeData, profile, record, updateMutation, toast]);
+
+  useKeyboardShortcut(
+    { key: "s", meta: true, ignoreInInputs: false },
+    useCallback(
+      (e) => {
+        e.preventDefault();
+        handleSave();
+      },
+      [handleSave],
+    ),
+  );
+
+  const handleSelectElement = useCallback((elementId: string, _section: string) => {
+    setSelectedTargetId((prev) => (prev === elementId ? null : elementId));
+  }, []);
+
+  const handleAnalyze = useCallback(
+    (values: { jobTitle?: string; company?: string; jobDescription: string }) => {
+      if (!id) return;
+      const contextKey = [
+        id,
+        selectedVersionId || "",
+        values.jobTitle || "",
+        values.company || "",
+        values.jobDescription,
+      ].join("|");
+      lastAutoAnalyzedRef.current = contextKey;
+      // A new analysis invalidates the previous requirement keys and their
+      // evidence locations — clear stale selection state (no recalculation).
+      setSelectedAtsIssue(null);
+      setEvidenceLocations(undefined);
+      analyzeResume.mutate({
+        resumeId: id,
+        versionId: selectedVersionId ?? undefined,
+        jobTitle: values.jobTitle || undefined,
+        company: values.company || undefined,
+        jobDescription: values.jobDescription,
+        persist: true,
+      });
+      setIsAnalyzing(true);
+      setJobTitle(values.jobTitle || "");
+      setCompany(values.company || "");
+      setJobDescription(values.jobDescription);
+    },
+    [id, selectedVersionId, analyzeResume],
+  );
+
+  // Auto-trigger ATS analysis when a valid job context is available and we
+  // haven't already analyzed this exact context. The guard key includes resume
+  // ID, version, job title, company, and job description so that a genuine
+  // context change produces a new analysis, while the same context never
+  // triggers twice.
+  useEffect(() => {
+    if (!id) return;
+    if (!jobDescription.trim()) return;
+    if (analyzeResume.isPending) return;
+
+    const contextKey = [
+      id,
+      selectedVersionId || "",
+      jobTitle.trim(),
+      company.trim(),
+      jobDescription.trim(),
+    ].join("|");
+    if (lastAutoAnalyzedRef.current === contextKey) return;
+
+    lastAutoAnalyzedRef.current = contextKey;
+    analyzeResume.mutate({
+      resumeId: id,
+      versionId: selectedVersionId ?? undefined,
+      jobTitle: jobTitle || undefined,
+      company: company || undefined,
+      jobDescription,
+      persist: true,
+    });
+  }, [id, selectedVersionId, jobTitle, company, jobDescription, analyzeResume]);
+
+  const handleRunOptimization = useCallback(async () => {
+    if (!jobDescription.trim()) {
+      toast.error("Job description is required for optimization");
+      return;
+    }
+    if (generateOptimizationMutation.isPending) return;
+    try {
+      const result = await generateOptimizationMutation.mutateAsync({
+        resumeId: id,
+        versionId: activeVersionId ?? undefined,
+        jobDescription,
+        jobTitle: jobTitle || undefined,
+        company: company || undefined,
+        atsReportId: atsReportId || undefined,
+      });
+      toast.success(result.message || "Suggestions generated");
+      // Sessions query is auto-invalidated by useGenerateOptimization onSuccess.
+      // LeftPane will re-render with the new suggestions.
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to generate suggestions");
+    }
+  }, [
+    id,
+    activeVersionId,
+    jobDescription,
+    jobTitle,
+    company,
+    atsReportId,
+    generateOptimizationMutation,
+    toast,
+  ]);
+
+  const _verifyTargetExists = (
+    resumeData: ResumeData | null,
+    suggestion: OptimizationSuggestion,
+  ) => {
+    if (!resumeData) return false;
+    const section = suggestion.section || suggestion.type;
+    if (section === "experience" && suggestion.entryId && resumeData.experience) {
+      return resumeData.experience.some((e) => e.id === suggestion.entryId);
+    }
+    if (section === "projects" && suggestion.entryId && resumeData.projects) {
+      return resumeData.projects.some((p) => p.id === suggestion.entryId);
+    }
+    return true;
+  };
+
+  const handleApplySuggestion = useCallback(
+    async (suggestion: OptimizationSuggestion, sessionId?: string) => {
+      if (!id || !resumeData) return;
+      // DOUBLE APPLY PROTECTION: skip if the same suggestion is already being applied
+      if (lastAppliedSuggestionId === suggestion.id) {
+        toast.info("Suggestion already applied");
+        return;
+      }
+      const isEditingMaster = !activeVersionId || selectedVersionData?.version.is_master;
+      let targetVersionId = activeVersionId;
+
+      if (isEditingMaster) {
+        const profileToSave =
+          profile ??
+          (() => {
+            const raw = (record?.content as { profile?: ResumeProfile } | null)?.profile;
+            if (!raw) return null;
+            return applyResumeDataToProfile(raw, resumeData);
+          })();
+        if (!profileToSave) {
+          toast.error("No master resume content found");
+          return;
+        }
+        const newVersion = await createVersionMutation.mutateAsync({
+          version_name: `Optimized Version ${new Date().toLocaleDateString()}`,
+          parent_version_id: activeVersionId || undefined,
+          target_job_title: jobTitle || undefined,
+          target_company: company || undefined,
+          job_description: jobDescription || undefined,
+          source: "suggestion",
+          content: { profile: profileToSave },
+        });
+        targetVersionId = newVersion.version.id;
+        setSelectedVersionId(newVersion.version.id);
+        setDocumentMode("canonical");
+        navigate({
+          search: (prev: ResumeStudioSearchParams) => ({ ...prev, versionId: newVersion.version.id }),
+          replace: true,
+        } as any);
+        toast.success("Created optimized version for editing");
+      }
+
+      if (!targetVersionId) {
+        toast.error("No version available for editing");
+        return;
+      }
+
+      // STALE SUGGESTION PROTECTION: verify target still exists in current resume data
+      if (!_verifyTargetExists(resumeData, suggestion)) {
+        toast.error(
+          "Suggestion is stale — the target could not be found. Please re-generate suggestions.",
+        );
+        return;
+      }
+
+      if (suggestion.section && suggestion.suggestedText) {
+        try {
+          const opResult = await applyOperationMutation.mutateAsync({
+            versionId: targetVersionId,
+            data: {
+              operation: "replace",
+              section: suggestion.section,
+              target_id: suggestion.entryId || undefined,
+              child_id: suggestion.childId || undefined,
+              child_text: suggestion.childId ? suggestion.suggestedText : undefined,
+              replacement: {
+                currentText: suggestion.currentText || undefined,
+                suggestedText: suggestion.suggestedText,
+              },
+              reason: suggestion.explanation,
+              source: "optimization",
+            },
+          });
+          const updatedVer = opResult?.version;
+          const updatedProfile = (updatedVer?.content as { profile?: ResumeProfile })?.profile;
+          if (updatedProfile) {
+            setProfile(updatedProfile);
+            setResumeData((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    ...profileToResumeData(updatedProfile),
+                  }
+                : null,
+            );
+          }
+          if (sessionId) {
+            try {
+              await optimizationApi.accept({
+                sessionId,
+                suggestionId: suggestion.id,
+              });
+              queryClient.invalidateQueries({ queryKey: ["optimization", "sessions", id] });
+            } catch {
+              // Non-blocking: version operation was already applied successfully
+            }
+          }
+          setDocumentMode("canonical");
+          toast.success("Suggestion applied to version");
+          setLastAppliedSuggestionId(suggestion.id);
+        } catch {
+          toast.error("Failed to apply suggestion");
+          setLastAppliedSuggestionId(null);
+        }
+      }
+    },
+    [
+      id,
+      resumeData,
+      profile,
+      activeVersionId,
+      selectedVersionData,
+      record,
+      createVersionMutation,
+      applyOperationMutation,
+      lastAppliedSuggestionId,
+      queryClient,
+      toast,
+    ],
+  );
+
+  const hasAnalysis = atsScore !== null && atsAnalysis !== null;
+
+  // ATS issues that can be geometrically located on the original PDF: partial
+  // keyword/skill matches (the resume contains related evidence). Missing
+  // requirements have no resolvable location in the resume, so they remain in
+  // the LeftPane only — never faked as PDF coordinates.
+  const highlightStrings = useMemo(() => {
+    if (!atsAnalysis) return [];
+    const set = new Set<string>([
+      ...(atsAnalysis.partial_keywords ?? []),
+      ...(atsAnalysis.partial_skills ?? []),
+    ]);
+    return [...set];
+  }, [atsAnalysis]);
+
+  return (
+    <div className="font-sans antialiased flex h-screen flex-col bg-background">
+      <header className="glass-topbar border-b border-border/80 px-4 py-2.5 flex-shrink-0 z-30 select-none">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-elevated/60"
+              aria-label="Back to resumes"
+            >
+              <Link to="/resumes">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_var(--color-success)]" />
+              <h1 className="truncate text-sm font-semibold tracking-tight text-foreground">
+                {jobTitle || formatResumeDisplayName(record?.original_filename, record?.title)}
+              </h1>
+              {company && (
+                <Badge
+                  variant="secondary"
+                  className="hidden shrink-0 rounded-md bg-surface-elevated/80 border border-border/60 text-[10.5px] font-medium sm:inline-flex"
+                >
+                  {company}
+                </Badge>
+              )}
             </div>
-            <div className="mt-4 text-sm font-semibold">Couldn't load resume</div>
-            <div className="mt-1 text-xs text-muted-foreground">{getErrorMessage(error)}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            {showSaved && (
+              <Badge
+                variant="outline"
+                className="rounded-full text-[10px] font-mono text-emerald-400 border-emerald-500/30 bg-emerald-500/10 animate-fade-in"
+              >
+                Saved ✓
+              </Badge>
+            )}
             <Button
               variant="outline"
               size="sm"
-              className="mt-4 rounded-lg text-xs"
-              onClick={() => window.location.reload()}
+              className="h-8 gap-1.5 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated"
+              onClick={() => setShowATSDialog(true)}
+              aria-label="Analyze resume against job description"
             >
-              Try again
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="hidden sm:inline">ATS Analysis</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated"
+              onClick={() => setShowVersionManager(true)}
+              aria-label="Manage versions"
+            >
+              <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="hidden sm:inline">Versions</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated hidden sm:inline-flex"
+              onClick={() => setShowFinalReview(true)}
+            >
+              Export
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-8 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              <Save className="mr-1.5 h-3.5 w-3.5" />
+              {isSaving ? "Saving..." : "Save"}
             </Button>
           </div>
         </div>
-      </div>
-    );
-  }
+      </header>
 
-  return (
-    <div className="flex h-[calc(100dvh-56px)] flex-col">
-      <WorkspaceHeader
-        resumeName={resume.name}
-        target={resume.targetRole}
-        updated={resume.updatedAt}
-        atsScore={resume.atsScore}
-        showLeft={showLeft}
-        showRight={showRight}
-        onToggleLeft={() => setShowLeft((v) => !v)}
-        onToggleRight={() => setShowRight((v) => !v)}
-        isDesktop={isDesktop}
-        onSave={() => {
-          updateMutation.mutate({ id, title: resume.name, content: resume as unknown as Record<string, unknown> });
-          toast.success("Draft saved", { description: "Your resume is up to date." });
-        }}
-        isSaving={updateMutation.isPending}
-      />
-
-      {isDesktop ? (
-        <div
-          className="grid min-h-0 flex-1"
-          style={{
-            gridTemplateColumns: `${showLeft ? "minmax(280px, 340px)" : "0px"} minmax(0, 1fr) ${
-              showRight ? "minmax(360px, 440px)" : "0px"
-            }`,
-          }}
-        >
-          {showLeft ? (
-            <div className="min-h-0 min-w-0 animate-fade-in overflow-hidden border-r border-border/60 bg-sidebar/40">
-              <LeftPane atsScore={resume.atsScore} currentId={resume.id} />
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div className="w-[390px] xl:w-[430px] flex-shrink-0 border-r border-border/80 bg-surface/90 backdrop-blur-md overflow-hidden flex flex-col z-20 shadow-elevation-1">
+          <LeftPane
+            currentId={id}
+            currentVersionId={activeVersionId}
+            targetJobTitle={jobTitle}
+            targetCompany={company}
+            targetJobDescription={jobDescription}
+            hasAnalysis={hasAnalysis}
+            onApplySuggestion={handleApplySuggestion}
+            onRunOptimization={handleRunOptimization}
+            onOpenATSDialog={() => setShowATSDialog(true)}
+            atsAnalysis={atsAnalysis}
+            isAnalyzing={isAnalyzing || analyzeResume.isPending}
+            selectedAtsIssue={selectedAtsIssue}
+            onSelectIssue={setSelectedAtsIssue}
+            evidenceLocations={evidenceLocations}
+            reportId={atsReportId || analyzeResume.data?.report?.id || null}
+            analyzeError={
+              analyzeResume.isError
+                ? (() => {
+                    const msg = getErrorMessage(analyzeResume.error);
+                    return msg === "An unexpected error occurred"
+                      ? "Failed to run ATS analysis"
+                      : msg;
+                  })()
+                : null
+            }
+            isGeneratingOptimization={generateOptimizationMutation.isPending}
+            generateOptimizationError={
+              generateOptimizationMutation.isError
+                ? (() => {
+                    const msg = getErrorMessage(generateOptimizationMutation.error);
+                    return msg === "An unexpected error occurred"
+                      ? "Failed to generate suggestions"
+                      : msg;
+                  })()
+                : null
+            }
+            onSelectVersion={(vid) => {
+              setSelectedVersionId(vid);
+              navigate({
+                search: (prev: ResumeStudioSearchParams) => ({ ...prev, versionId: vid }),
+                replace: true,
+              } as any);
+            }}
+          />
+        </div>
+        <div className="flex-1 overflow-hidden document-workbench" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 20%, oklch(0.175 0.018 265 / 0.4), transparent 70%)' }}>
+          {isLoading || !record || record.id !== id ? (
+            <div className="flex min-h-full items-start justify-center p-6 sm:p-10 overflow-y-auto">
+              <A4DocumentSkeleton />
             </div>
-          ) : (
-            <div />
-          )}
-
-          <div className="min-h-0 min-w-0 overflow-hidden bg-background/40">
-            <EditorPane resume={resume} />
-          </div>
-
-          {showRight ? (
-            <div className="min-h-0 min-w-0 animate-fade-in overflow-hidden border-l border-border/60 bg-sidebar/30">
-              <PreviewPane resume={resume} />
+          ) : isError ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+              <div className="inline-flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                <span>{getErrorMessage(error)}</span>
+              </div>
+              <div className="mt-2">
+                <Button asChild variant="outline" size="sm" className="rounded-xl">
+                  <Link to="/resumes">Back to resumes</Link>
+                </Button>
+              </div>
             </div>
+          ) : resumeData ? (
+            <PreviewPane
+              resume={resumeData}
+              templateSlug={templateSlug}
+              originalFileUrl={originalFileUrl}
+              originalFilename={record?.original_filename ?? null}
+              documentMode={documentMode}
+              onDocumentModeChange={setDocumentMode}
+              isDocumentLoading={documentMode === "original" ? isGeneratingSignedUrl || isLoading : isLoading}
+              isScanning={isAnalyzing || analyzeResume.isPending}
+              atsIssues={highlightStrings}
+              onSelectIssue={setSelectedAtsIssue}
+              requirementCoverage={atsAnalysis?.requirement_coverage}
+              evidenceLocations={evidenceLocations}
+              onEvidenceLocationsChange={handleEvidenceLocationsChange}
+              selectedRequirementId={selectedAtsIssue}
+              selectedTargetId={selectedTargetId}
+              onSelectElement={handleSelectElement}
+              onExportPdf={() => setShowFinalReview(true)}
+            />
           ) : (
-            <div />
+            <div className="flex min-h-full items-start justify-center p-6 sm:p-10 overflow-y-auto">
+              <A4DocumentSkeleton />
+            </div>
           )}
         </div>
-      ) : (
-        <Tabs defaultValue="editor" className="flex flex-1 flex-col">
-          <TabsList className="mx-3 mt-2 grid w-[calc(100%-1.5rem)] grid-cols-3 rounded-xl bg-surface-elevated/60">
-            <TabsTrigger value="ai" className="rounded-lg text-xs">AI & ATS</TabsTrigger>
-            <TabsTrigger value="editor" className="rounded-lg text-xs">Editor</TabsTrigger>
-            <TabsTrigger value="preview" className="rounded-lg text-xs">Preview</TabsTrigger>
-          </TabsList>
-          <TabsContent value="ai" className="mt-2 flex-1 overflow-hidden">
-            <LeftPane atsScore={resume.atsScore} currentId={resume.id} />
-          </TabsContent>
-          <TabsContent value="editor" className="mt-2 flex-1 overflow-hidden">
-            <EditorPane resume={resume} />
-          </TabsContent>
-          <TabsContent value="preview" className="mt-2 flex-1 overflow-hidden">
-            <PreviewPane resume={resume} />
-          </TabsContent>
-        </Tabs>
+      </div>
+
+      <Dialog open={showVersionManager} onOpenChange={setShowVersionManager}>
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-background">
+          <DialogHeader className="p-4 border-b border-border/60">
+            <DialogTitle className="text-base font-semibold">Resume Versions</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Manage master and tailored resume versions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-4">
+            <VersionManager
+              resumeId={id}
+              selectedVersionId={selectedVersionId}
+              onSelectVersion={(v) => {
+                setSelectedVersionId(v?.id || null);
+                setShowVersionManager(false);
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showFinalReview} onOpenChange={setShowFinalReview}>
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-background">
+          <DialogHeader className="p-4 border-b border-border/60">
+            <DialogTitle className="text-base font-semibold">Final Review & Export</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Review document readiness and download formatted PDF or DOCX.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-4">
+            <FinalReview
+              version={
+                selectedVersion ||
+                (record
+                  ? {
+                      id: record.id,
+                      resume_id: record.id,
+                      version_name: record.title || "Master Resume",
+                      source: "manual",
+                      content: record.content || {},
+                      is_master: true,
+                      status: "active",
+                      created_at: record.created_at,
+                      updated_at: record.updated_at,
+                    }
+                  : {
+                      id: "",
+                      resume_id: id,
+                      version_name: "Resume",
+                      source: "manual",
+                      content: {},
+                      is_master: true,
+                      status: "active",
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                    })
+              }
+              onExportPdf={async () => {
+                setIsExporting(true);
+                try {
+                  const vid = selectedVersionId || record?.id;
+                  if (!vid) throw new Error("No version selected");
+                  const blob = await requestBlob({
+                    method: "GET",
+                    path: `/api/export/resumes/${id}/versions/${vid}/pdf`,
+                  });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${(selectedVersion?.version_name || record?.title || "resume").replace(/\s+/g, "_")}.pdf`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                } catch {
+                  toast.error("Export failed");
+                } finally {
+                  setIsExporting(false);
+                  setShowFinalReview(false);
+                }
+              }}
+              onExportDocx={async () => {
+                setIsExporting(true);
+                try {
+                  const vid = selectedVersionId || record?.id;
+                  if (!vid) throw new Error("No version selected");
+                  const blob = await requestBlob({
+                    method: "GET",
+                    path: `/api/export/resumes/${id}/versions/${vid}/docx`,
+                  });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${(selectedVersion?.version_name || record?.title || "resume").replace(/\s+/g, "_")}.docx`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                } catch {
+                  toast.error("Export failed");
+                } finally {
+                  setIsExporting(false);
+                  setShowFinalReview(false);
+                }
+              }}
+              onReanalyze={() => {
+                setShowFinalReview(false);
+                setShowATSDialog(true);
+              }}
+              isExporting={isExporting}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {showATSDialog && (
+        <ATSAnalysisDialog
+          resumeId={id}
+          onClose={() => setShowATSDialog(false)}
+          onAnalyze={handleAnalyze}
+          defaultValues={{ jobTitle, company, jobDescription }}
+        />
       )}
-    </div>
-  );
-}
-
-function WorkspaceHeader({
-  resumeName,
-  target,
-  updated,
-  atsScore,
-  showLeft,
-  showRight,
-  onToggleLeft,
-  onToggleRight,
-  isDesktop,
-  onSave,
-  isSaving,
-}: {
-  resumeName: string;
-  target: string;
-  updated: string;
-  atsScore: number;
-  showLeft: boolean;
-  showRight: boolean;
-  onToggleLeft: () => void;
-  onToggleRight: () => void;
-  isDesktop: boolean;
-  onSave: () => void;
-  isSaving: boolean;
-}) {
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border/60 bg-background/60 px-3 py-2.5 backdrop-blur sm:px-5">
-      <div className="flex min-w-0 items-center gap-2">
-        <Button asChild variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-lg" aria-label="Back to resumes">
-          <Link to="/resumes"><ArrowLeft className="h-4 w-4" /></Link>
-        </Button>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className="truncate text-sm font-semibold">{resumeName}</h1>
-            <Badge variant="secondary" className="hidden shrink-0 rounded-full text-[10px] sm:inline-flex">
-              {target || "No target"}
-            </Badge>
-          </div>
-          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-            <span className="inline-flex h-1.5 w-1.5 rounded-full bg-success" />
-            Autosaved · {updated}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-1">
-        <div className="mr-2 hidden items-center gap-1.5 rounded-lg border border-border/60 bg-surface-elevated/40 px-2 py-1 sm:flex">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">ATS</span>
-          <span className="font-mono text-xs font-semibold">{atsScore}</span>
-        </div>
-        {isDesktop && (
-          <>
-            <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${showLeft ? "text-primary" : ""}`} onClick={onToggleLeft} aria-label="Toggle left pane">
-              <PanelLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${showRight ? "text-primary" : ""}`} onClick={onToggleRight} aria-label="Toggle right pane">
-              <PanelRight className="h-4 w-4" />
-            </Button>
-          </>
-        )}
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" aria-label="More">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-        <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs" onClick={onSave} disabled={isSaving}>
-          <Save className="mr-1.5 h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{isSaving ? "Saving…" : "Save"}</span>
-          <kbd className="ml-1.5 hidden rounded-md border border-border/60 bg-background/70 px-1 py-px font-mono text-[9px] text-muted-foreground sm:inline-flex items-center gap-0.5">
-            <CmdIcon className="h-2.5 w-2.5" />S
-          </kbd>
-        </Button>
-        <Button size="sm" className="h-8 rounded-lg text-xs shadow-[var(--shadow-glow)]">
-          <Send className="mr-1.5 h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Apply</span>
-        </Button>
-      </div>
     </div>
   );
 }

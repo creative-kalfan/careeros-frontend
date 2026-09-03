@@ -13,6 +13,7 @@ export { applicationsApi } from "./applications.ts";
 export { dashboardApi } from "./dashboard.ts";
 export { notificationsApi } from "./notifications.ts";
 export { copilotApi } from "./copilot.ts";
+export { improvementApi } from "./improvement.ts";
 
 export type { AuthApi } from "./auth.ts";
 export type { ResumeApi } from "./resume.ts";
@@ -23,4 +24,26 @@ export type { ApplicationsApi } from "./applications.ts";
 export type { DashboardApi } from "./dashboard.ts";
 export type { NotificationsApi } from "./notifications.ts";
 export type { CopilotApi } from "./copilot.ts";
-export type { Application, CreateApplicationRequest, UpdateApplicationStatusRequest, ApplicationStatus, ApplicationStage } from "../types/application.ts";
+export type {
+  ImprovementApi,
+  ImprovementProposal,
+  ProposalDecision,
+  ProposalDecisionState,
+  ProposalEligibility,
+  ListProposalDecisionsResponse,
+  ApprovedProposal,
+  ApprovedChangeSet,
+  BulkDecisionResponse,
+  ImprovementAssessmentResponse,
+  AssessImprovementResponse,
+  ApplyApprovedImprovementsRequest,
+  AppliedProposalSummary,
+  ApplyApprovedImprovementsResponse,
+} from "./improvement.ts";
+export type {
+  Application,
+  CreateApplicationRequest,
+  UpdateApplicationStatusRequest,
+  ApplicationStatus,
+  ApplicationStage,
+} from "../types/application.ts";

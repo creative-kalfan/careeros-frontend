@@ -6,7 +6,8 @@ import { useAuth } from "../../auth/useAuth";
 export const jobsQueryKeys = {
   all: ["jobs"] as const,
   list: (filters: JobSearchFilters) => ["jobs", "list", filters] as const,
-  personalized: (filters: JobSearchFilters & { includeAts?: boolean }) => ["jobs", "personalized", filters] as const,
+  personalized: (filters: JobSearchFilters & { includeAts?: boolean }) =>
+    ["jobs", "personalized", filters] as const,
   detail: (id: string) => ["jobs", "detail", id] as const,
   saved: ["jobs", "saved"] as const,
 };

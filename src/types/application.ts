@@ -1,22 +1,10 @@
 // Types for the Applications (Mission Control) domain
 // Aligned with backend server action contracts and database schema
 
-export type ApplicationStatus =
-  | "applied"
-  | "assessment"
-  | "interview"
-  | "offer"
-  | "rejected";
+export type ApplicationStatus = "applied" | "assessment" | "interview" | "offer" | "rejected";
 
 export type ApplicationStage =
-  | "saved"
-  | "applied"
-  | "assessment"
-  | "interview"
-  | "offer"
-  | "accepted"
-  | "rejected"
-  | "archived";
+  "saved" | "applied" | "assessment" | "interview" | "offer" | "accepted" | "rejected" | "archived";
 
 export interface Application {
   id: string;
@@ -66,7 +54,11 @@ export const APPLICATION_STAGES: { id: ApplicationStage; label: string; tone: st
   { id: "interview", label: "Interview", tone: "text-warning bg-warning/10 ring-warning/25" },
   { id: "offer", label: "Offer", tone: "text-success bg-success/10 ring-success/20" },
   { id: "accepted", label: "Accepted", tone: "text-success bg-success/15 ring-success/25" },
-  { id: "rejected", label: "Rejected", tone: "text-destructive bg-destructive/10 ring-destructive/20" },
+  {
+    id: "rejected",
+    label: "Rejected",
+    tone: "text-destructive bg-destructive/10 ring-destructive/20",
+  },
   { id: "archived", label: "Archived", tone: "text-muted-foreground bg-muted/40 ring-border/60" },
 ];
 

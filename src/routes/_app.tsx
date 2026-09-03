@@ -56,7 +56,15 @@ function AppLayout() {
         navigate({ to: "/onboarding", replace: true });
       }
     }
-  }, [isInitialized, isLoading, isAuthenticated, profile, isProfileLoading, isOnboardingRoute, navigate]);
+  }, [
+    isInitialized,
+    isLoading,
+    isAuthenticated,
+    profile,
+    isProfileLoading,
+    isOnboardingRoute,
+    navigate,
+  ]);
 
   // Show loading while initializing or loading profile
   if (!isInitialized || isLoading || (isAuthenticated && isProfileLoading)) {

@@ -1,6 +1,14 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { AuthContext } from "./AuthContext";
-import type { AuthContextValue, User, Session, Tokens, AuthStatus, AuthError, OnboardingProfile } from "./auth.types";
+import type {
+  AuthContextValue,
+  User,
+  Session,
+  Tokens,
+  AuthStatus,
+  AuthError,
+  OnboardingProfile,
+} from "./auth.types";
 import { authService } from "./auth.service";
 import { supabase } from "../lib/supabase";
 
@@ -13,52 +21,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [profile, setProfile] = useState<OnboardingProfile | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  // Guards against an infinite profile-fetch loop: if the profile request
+  // fails (e.g. transient 401 during token refresh), a `profile === null`
+  // gate must not retrigger the fetch indefinitely.
+  const profileFetchFailedRef = useRef(false);
 
   // Initialize auth state from Supabase session
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log("AUTH INIT START");
       try {
-        console.log("AuthProvider initialization entered");
         setStatus("loading");
 
-        // Get current session from Supabase
-        console.log("BEFORE: await authService.getSession()");
         let result: any;
         try {
           result = await authService.getSession();
-          console.log("AFTER: await authService.getSession()");
-          console.log("  returned value:", result);
-          console.log("  session exists?", Boolean(result));
-          console.log("  tokens exist?", Boolean(result?.tokens));
         } catch (e) {
-          console.error("ERROR in authService.getSession():", e);
           result = null;
         }
 
-        console.log("========== FRONTEND SESSION DEBUG ==========");
-        console.log("getSession result:", result);
-        console.log("result?.tokens?.accessToken:", result?.tokens?.accessToken);
-        console.log("accessToken length:", result?.tokens?.accessToken?.length);
-        console.log("accessToken prefix (first 20):", result?.tokens?.accessToken?.substring(0, 20));
-
         if (result) {
-          // Also verify the user with this token
-          console.log("BEFORE: await supabase.auth.getUser(accessToken)");
-          let userResult: any;
-          try {
-            userResult = await supabase.auth.getUser(result.tokens.accessToken);
-            console.log("AFTER: await supabase.auth.getUser(accessToken)");
-            console.log("  error:", userResult?.error);
-            console.log("  user:", userResult?.data?.user);
-          } catch (e) {
-            console.error("ERROR in supabase.auth.getUser():", e);
-            userResult = { error: e, data: { user: null } };
-          }
-
-          console.log("========== FRONTEND getUser WITH TOKEN ==========");
-          console.log("userResult:", userResult);
-
           setTokens(result.tokens);
           setUser(result.user);
           setSession(result.session);
@@ -67,13 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setStatus("unauthenticated");
         }
       } catch (err) {
-        console.error("Auth initialization error:", err);
         setStatus("unauthenticated");
       } finally {
-        console.log("Entering finally");
-        console.log("Setting isInitialized = true");
         setIsInitialized(true);
-        console.log("Leaving initialize()");
       }
     };
 
@@ -100,8 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } catch {
             // Fallback: map directly from session
             if (supabaseSession.user) {
-              const { user: mappedUser, tokens: mappedTokens, session: mappedSession } =
-                mapSessionDirect(supabaseSession);
+              const {
+                user: mappedUser,
+                tokens: mappedTokens,
+                session: mappedSession,
+              } = mapSessionDirect(supabaseSession);
               setTokens(mappedTokens);
               setUser(mappedUser);
               setSession(mappedSession);
@@ -115,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setSession(null);
         setProfile(null);
+        profileFetchFailedRef.current = false;
         setStatus("unauthenticated");
         setError(null);
       } else if (event === "USER_UPDATED") {
@@ -140,7 +121,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const mappedUser: User = {
       id: sbSession.user.id,
       email: sbSession.user.email ?? "",
-      name: (metadata?.full_name as string) || (metadata?.name as string) || sbSession.user.email?.split("@")[0] || "User",
+      name:
+        (metadata?.full_name as string) ||
+        (metadata?.name as string) ||
+        sbSession.user.email?.split("@")[0] ||
+        "User",
       avatar: metadata?.avatar_url as string | undefined,
       role: "user",
       permissions: [],
@@ -168,24 +153,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      console.log("login() entered");
       setStatus("loading");
       setError(null);
 
-      console.log("Calling backend");
       const response = await authService.login({ email, password });
-      console.log("Backend returned", { userId: response.user.id });
-
-      // Supabase manages its own session persistence
-      // No need to manually store tokens
 
       setTokens(response.tokens);
       setUser(response.user);
       setSession(response.session);
       setStatus("authenticated");
-      console.log("login() authenticated state set");
     } catch (err: any) {
-      console.error("login() caught error", err);
       const authError: AuthError = {
         code: err?.code || "INVALID_CREDENTIALS",
         message: err?.message || "Invalid email or password",
@@ -316,12 +293,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const fetchProfile = useCallback(async () => {
+    // A previous failed fetch must not be retried in a render-loop. The
+    // request layer performs a single token-refresh retry; after that, a
+    // genuine auth failure should surface to the user, not spin forever.
+    if (profileFetchFailedRef.current) return;
     setIsProfileLoading(true);
     try {
       const profileData = await authService.getProfile();
+      profileFetchFailedRef.current = false;
       setProfile(profileData);
     } catch (err) {
       console.error("Failed to fetch profile:", err);
+      profileFetchFailedRef.current = true;
       setProfile(null);
     } finally {
       setIsProfileLoading(false);
@@ -341,23 +324,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const updateProfile = useCallback(async (data: {
-    current_role?: string;
-    desired_role?: string;
-    skills?: string[];
-    location?: string;
-    preferred_companies?: string[];
-    salary_expectation_min?: number;
-    salary_expectation_max?: number;
-    experience?: string;
-  }) => {
-    try {
-      await authService.updateProfile(data);
-    } catch (err) {
-      console.error("Failed to update profile:", err);
-      throw err;
-    }
-  }, []);
+  const updateProfile = useCallback(
+    async (data: {
+      current_role?: string;
+      desired_role?: string;
+      skills?: string[];
+      location?: string;
+      preferred_companies?: string[];
+      salary_expectation_min?: number;
+      salary_expectation_max?: number;
+      experience?: string;
+    }) => {
+      try {
+        await authService.updateProfile(data);
+      } catch (err) {
+        console.error("Failed to update profile:", err);
+        throw err;
+      }
+    },
+    [],
+  );
 
   const completeOnboarding = useCallback(async () => {
     try {
@@ -372,28 +358,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const value: AuthContextValue = useMemo(() => ({
-    user,
-    session,
-    tokens,
-    status,
-    error,
-    isInitialized,
-    profile,
-    isProfileLoading,
-    login,
-    logout,
-    register,
-    forgotPassword,
-    resetPassword,
-    verifyEmail,
-    refreshToken,
-    clearError,
-    fetchProfile,
-    updateOnboardingStep,
-    updateProfile,
-    completeOnboarding,
-  }), [user, session, tokens, status, error, isInitialized, profile, isProfileLoading, login, logout, register, forgotPassword, resetPassword, verifyEmail, refreshToken, clearError, fetchProfile, updateOnboardingStep, updateProfile, completeOnboarding]);
+  const value: AuthContextValue = useMemo(
+    () => ({
+      user,
+      session,
+      tokens,
+      status,
+      error,
+      isInitialized,
+      profile,
+      isProfileLoading,
+      login,
+      logout,
+      register,
+      forgotPassword,
+      resetPassword,
+      verifyEmail,
+      refreshToken,
+      clearError,
+      fetchProfile,
+      updateOnboardingStep,
+      updateProfile,
+      completeOnboarding,
+    }),
+    [
+      user,
+      session,
+      tokens,
+      status,
+      error,
+      isInitialized,
+      profile,
+      isProfileLoading,
+      login,
+      logout,
+      register,
+      forgotPassword,
+      resetPassword,
+      verifyEmail,
+      refreshToken,
+      clearError,
+      fetchProfile,
+      updateOnboardingStep,
+      updateProfile,
+      completeOnboarding,
+    ],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

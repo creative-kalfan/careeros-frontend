@@ -1,9 +1,20 @@
-import { Bookmark, MapPin, Zap, Sparkles, Gauge } from "lucide-react";
+import { useState } from "react";
+import {
+  Bookmark,
+  MapPin,
+  Sparkles,
+  Building2,
+  CheckCircle2,
+  ExternalLink,
+  ShieldCheck,
+  SearchX,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { Job } from "@/types/jobs";
-import { formatSalary, statusMeta } from "@/lib/jobs";
+import { formatSalary, getMatchTier } from "@/lib/jobs";
 
 export function JobList({
   jobs,
@@ -12,6 +23,7 @@ export function JobList({
   loading,
   onToggleBookmark,
   query,
+  onClearFilters,
 }: {
   jobs: Job[];
   selectedId: string | null;
@@ -19,34 +31,44 @@ export function JobList({
   loading?: boolean;
   onToggleBookmark: (id: string) => void;
   query?: string;
+  onClearFilters?: () => void;
 }) {
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
-        <div className="min-w-0">
-          <div className="text-[13px] font-semibold">
-            {jobs.length.toLocaleString()} roles
-          </div>
-          <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-            {query ? `for "${query}"` : "Sorted by match score"}
-          </div>
+    <div className="flex h-full flex-col select-none">
+      {/* Header bar: count + status */}
+      <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-2.5 bg-surface/40">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold tracking-tight text-foreground">
+            {loading ? "Searching..." : `${jobs.length.toLocaleString()} opportunities`}
+          </span>
+          {query && (
+            <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+              for &ldquo;{query}&rdquo;
+            </span>
+          )}
         </div>
+        <span className="text-[10.5px] font-mono text-muted-foreground/80">
+          Ranked by match
+        </span>
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="space-y-2 p-3">
+        <div className="space-y-1.5 p-2.5">
           {loading &&
-            Array.from({ length: 5 }).map((_, i) => (
+            Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-border/50 bg-surface-elevated/40 p-3.5"
+                className="rounded-xl border border-border/50 bg-surface-elevated/20 p-3"
               >
                 <div className="flex items-start gap-3">
-                  <Skeleton className="h-10 w-10 rounded-xl" />
+                  <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <Skeleton className="h-3.5 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <Skeleton className="h-3 w-2/3" />
+                    <Skeleton className="h-4 w-3/4 rounded" />
+                    <Skeleton className="h-3 w-1/2 rounded" />
+                    <div className="flex gap-2 pt-1">
+                      <Skeleton className="h-3.5 w-16 rounded" />
+                      <Skeleton className="h-3.5 w-20 rounded" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -64,12 +86,29 @@ export function JobList({
             ))}
 
           {!loading && jobs.length === 0 && (
-            <div className="grid place-items-center rounded-2xl border border-dashed border-border/60 bg-surface-elevated/30 py-16 text-center">
-              <div className="max-w-[220px]">
-                <div className="text-sm font-semibold">No roles match</div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  Try widening filters or clearing your search.
+            <div className="grid place-items-center rounded-2xl border border-dashed border-border/70 bg-surface-elevated/20 p-8 text-center my-6">
+              <div className="max-w-[260px] space-y-3">
+                <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-muted/60 text-muted-foreground">
+                  <SearchX className="h-6 w-6" />
                 </div>
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    No matching opportunities
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                    Try adjusting search keywords or clearing additional filters.
+                  </p>
+                </div>
+                {onClearFilters && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onClearFilters}
+                    className="h-8 rounded-lg text-xs"
+                  >
+                    Reset filters
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -90,53 +129,84 @@ function JobCard({
   onSelect: () => void;
   onToggleBookmark: () => void;
 }) {
-  const status = statusMeta(job.status);
-  const matchScore = job.match?.overall;
-  const atsScore = job.atsScore;
-  const missingSkills = job.atsMissingSkills?.length ? job.atsMissingSkills : job.missingSkills;
+  const matchScore = job.match?.overall ?? job.aiMatch;
+  const matchTier = getMatchTier(matchScore);
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showRealLogo = Boolean(job.companyLogoUrl) && !logoFailed;
+  const provenance = job.sourceProvenance;
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
-      className={`group relative block w-full rounded-2xl border p-3.5 text-left transition-all duration-200 will-change-transform ${
+      onKeyDown={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      aria-pressed={selected}
+      className={`group relative block w-full cursor-pointer rounded-xl border p-3 text-left transition-all duration-150 will-change-transform focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
         selected
-          ? "border-primary/50 bg-primary/[0.06] ring-1 ring-primary/30"
-          : "border-border/50 bg-surface-elevated/40 hover:-translate-y-0.5 hover:border-border hover:bg-surface-elevated"
+          ? "border-primary/40 bg-surface-elevated shadow-xs"
+          : "border-border/60 bg-surface/50 hover:border-border hover:bg-surface-elevated/60 hover:translate-x-0.5"
       }`}
     >
+      {/* Active selection vertical blue indicator */}
       {selected && (
-        <span className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full bg-gradient-to-b from-primary to-accent" />
+        <span className="absolute left-0 top-2.5 bottom-2.5 w-[2.5px] rounded-r-sm bg-primary" />
       )}
+
       <div className="flex items-start gap-3">
+        {/* Company Logo / Avatar */}
         <div
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold text-white shadow-elevation-1"
-          style={{ background: job.companyBrand }}
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-xs font-bold text-foreground/80 shadow-2xs overflow-hidden border border-border/60 bg-surface-elevated"
           aria-hidden
         >
-          {job.companyLogo}
+          {showRealLogo ? (
+            <img
+              src={job.companyLogoUrl}
+              alt={`${job.company} logo`}
+              className="h-6 w-6 object-contain"
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              onError={() => setLogoFailed(true)}
+            />
+          ) : (
+            job.companyLogo
+          )}
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="truncate text-[13.5px] font-semibold leading-tight">
-                {job.role}
-              </div>
-              <div className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
-                {job.company} · {job.experience}
-              </div>
+          {/* Header row: Company name + Provenance + Bookmark */}
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="truncate text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                {job.company}
+              </span>
+              {provenance?.verified && (
+                <span
+                  title={provenance.label}
+                  className="inline-flex items-center text-[10px] text-success shrink-0"
+                >
+                  <ShieldCheck className="h-3 w-3" />
+                </span>
+              )}
             </div>
+
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleBookmark();
               }}
-              className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg transition ${
+              className={`grid h-6 w-6 shrink-0 place-items-center rounded-md transition-colors ${
                 job.bookmarked
-                  ? "text-warning"
-                  : "text-muted-foreground/60 hover:text-foreground"
+                  ? "text-warning hover:text-warning"
+                  : "text-muted-foreground/50 hover:text-foreground hover:bg-surface-elevated"
               }`}
-              aria-label="Bookmark"
+              aria-label={job.bookmarked ? "Unsave job" : "Save job"}
             >
               <Bookmark
                 className="h-3.5 w-3.5"
@@ -145,118 +215,44 @@ function JobCard({
             </button>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10.5px] text-muted-foreground">
+          {/* Job Title */}
+          <h3 className="truncate text-[13.5px] font-semibold tracking-tight text-foreground mt-0.5 leading-snug">
+            {job.role}
+          </h3>
+
+          {/* Metadata badges row */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              {job.location}
+              <MapPin className="h-3 w-3 text-muted-foreground/70" />
+              <span className="truncate max-w-[120px]">{job.location}</span>
             </span>
-            <span
-              className={`rounded-full border px-1.5 py-0.5 text-[10px] ${
-                job.workMode === "Remote"
-                  ? "border-success/30 bg-success/10 text-success"
-                  : job.workMode === "Hybrid"
-                  ? "border-info/30 bg-info/10 text-info"
-                  : job.workMode === "Unknown"
-                  ? "border-border/60 bg-surface-elevated/50 text-muted-foreground"
-                  : "border-border/60 bg-surface-elevated/50"
-              }`}
-            >
-              {job.workMode}
-            </span>
-            <span className="rounded-full border border-border/60 bg-surface-elevated/50 px-1.5 py-0.5 font-mono text-[10px]">
+            <span>·</span>
+            <span className="font-mono text-[10.5px]">
               {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}
             </span>
           </div>
 
-          <div className="mt-3 flex items-center gap-1.5">
-            {matchScore != null && (
-              <MatchPill icon={Sparkles} label="Match" value={matchScore} tone="primary" />
-            )}
-            {atsScore != null && atsScore > 0 ? (
-              <MatchPill icon={Gauge} label="ATS" value={atsScore} tone="accent" />
-            ) : (
-              <span className="rounded-full border border-border/60 bg-surface-elevated/50 px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                ATS N/A
-              </span>
-            )}
-            <span className="ml-auto text-[10px] text-muted-foreground">{job.postedAt}</span>
-          </div>
-
-          {missingSkills.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {missingSkills.slice(0, 3).map((skill) => (
+          {/* Bottom tag bar: Match score + Work mode + Freshness */}
+          <div className="mt-2.5 flex items-center justify-between gap-1 pt-1 border-t border-border/40 text-[10.5px]">
+            <div className="flex items-center gap-1.5">
+              {matchScore > 0 && (
                 <span
-                  key={skill}
-                  className="rounded-full border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] text-destructive"
+                  className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-mono text-[10.5px] font-semibold border ${matchTier.badgeClass}`}
                 >
-                  {skill}
-                </span>
-              ))}
-              {missingSkills.length > 3 && (
-                <span className="px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                  +{missingSkills.length - 3}
+                  {matchScore}% match
                 </span>
               )}
+              <span className="rounded px-1.5 py-0.5 bg-surface-elevated/60 text-muted-foreground text-[10px]">
+                {job.workMode}
+              </span>
             </div>
-          )}
 
-          <div className="mt-2.5 flex items-center gap-1.5">
-            <Badge
-              variant="secondary"
-              className="h-5 gap-1 rounded-full border-primary/30 bg-primary/10 px-1.5 text-[10px] text-primary"
-            >
-              <Sparkles className="h-2.5 w-2.5" />
-              Quick Fix
-            </Badge>
-            {job.quickApply && (
-              <Badge
-                variant="secondary"
-                className="h-5 gap-1 rounded-full border-success/30 bg-success/10 px-1.5 text-[10px] text-success"
-              >
-                <Zap className="h-2.5 w-2.5" />
-                Optimize
-              </Badge>
-            )}
-            {job.status !== "not_applied" && (
-              <Badge
-                variant="outline"
-                className={`h-5 rounded-full border px-1.5 text-[10px] ${status.tone}`}
-              >
-                {status.label}
-              </Badge>
-            )}
+            <span className="text-[10px] text-muted-foreground/80 font-mono">
+              {job.postedAt}
+            </span>
           </div>
         </div>
       </div>
-    </button>
-  );
-}
-
-function MatchPill({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: number;
-  tone: "primary" | "accent";
-}) {
-  if (value == null) return null;
-  const color =
-    tone === "primary"
-      ? "from-primary/25 to-primary/5 text-foreground ring-primary/25"
-      : "from-accent/25 to-accent/5 text-foreground ring-accent/25";
-  return (
-    <div
-      className={`inline-flex items-center gap-1 rounded-md bg-gradient-to-br px-1.5 py-0.5 text-[10.5px] font-medium ring-1 ${color}`}
-    >
-      <Icon className="h-2.5 w-2.5 opacity-80" />
-      <span className="text-[9.5px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      <span className="font-mono font-semibold">{value}</span>
     </div>
   );
 }

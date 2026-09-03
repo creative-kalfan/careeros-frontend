@@ -23,7 +23,10 @@ export const Route = createFileRoute("/_app/ats")({
   head: () => ({
     meta: [
       { title: "ATS Studio · CareerOS" },
-      { name: "description", content: "Continuous, dual-engine scoring with keyword and semantic diagnostics." },
+      {
+        name: "description",
+        content: "Continuous, dual-engine scoring with keyword and semantic diagnostics.",
+      },
     ],
   }),
   component: ATSPage,
@@ -108,12 +111,14 @@ function ATSPage() {
                 onClick={handleRescore}
                 disabled={!currentResumeId || analyzeMutation.isPending}
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${analyzeMutation.isPending ? "animate-spin" : ""}`} />
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${analyzeMutation.isPending ? "animate-spin" : ""}`}
+                />
                 {analyzeMutation.isPending ? "Scoring..." : "Rescore"}
               </Button>
               <Button
                 size="sm"
-                className="h-8 gap-1.5 rounded-lg bg-linear-to-r from-primary to-accent text-xs text-primary-foreground shadow-elevation-2"
+                className="h-8 gap-1.5 rounded-lg bg-primary hover:bg-primary/90 text-xs text-primary-foreground shadow-xs"
               >
                 <Download className="h-3.5 w-3.5" /> Export report
               </Button>
@@ -129,16 +134,17 @@ function ATSPage() {
             gridTemplateColumns: [
               showLeft ? "minmax(280px, 320px)" : "0px",
               "minmax(0, 1fr)",
-              showRight && isXL ? "minmax(320px, 380px)" : showRight ? "minmax(300px, 340px)" : "0px",
+              showRight && isXL
+                ? "minmax(320px, 380px)"
+                : showRight
+                  ? "minmax(300px, 340px)"
+                  : "0px",
             ].join(" "),
           }}
         >
           {showLeft && (
             <aside className="min-h-0 border-r border-border/60 bg-sidebar/40">
-              <LeftPane
-                activeSection={activeSection}
-                onSectionChange={handleSectionChange}
-              />
+              <LeftPane activeSection={activeSection} onSectionChange={handleSectionChange} />
             </aside>
           )}
           <main className="min-h-0 overflow-y-auto bg-app">

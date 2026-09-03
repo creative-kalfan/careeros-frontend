@@ -27,7 +27,16 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   const clearPendingPrompt = useCallback(() => setPendingPrompt(null), []);
 
   const value = useMemo(
-    () => ({ open, pinned, setOpen, toggle, togglePinned, sendPrompt, pendingPrompt, clearPendingPrompt }),
+    () => ({
+      open,
+      pinned,
+      setOpen,
+      toggle,
+      togglePinned,
+      sendPrompt,
+      pendingPrompt,
+      clearPendingPrompt,
+    }),
     [open, pinned, toggle, togglePinned, sendPrompt, pendingPrompt, clearPendingPrompt],
   );
 

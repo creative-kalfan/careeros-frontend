@@ -48,23 +48,19 @@ export function useMarkAsRead() {
       await queryClient.cancelQueries({ queryKey: [NOTIFICATIONS_QUERY_KEY] });
       await queryClient.cancelQueries({ queryKey: [NOTIFICATIONS_UNREAD_KEY] });
 
-      const previousAll = queryClient.getQueryData<NotificationRecord[]>(
-        [NOTIFICATIONS_QUERY_KEY]
-      );
-      const previousUnread = queryClient.getQueryData<NotificationRecord[]>(
-        [NOTIFICATIONS_UNREAD_KEY]
-      );
+      const previousAll = queryClient.getQueryData<NotificationRecord[]>([NOTIFICATIONS_QUERY_KEY]);
+      const previousUnread = queryClient.getQueryData<NotificationRecord[]>([
+        NOTIFICATIONS_UNREAD_KEY,
+      ]);
 
       // Update all notifications
-      queryClient.setQueryData<NotificationRecord[]>(
-        [NOTIFICATIONS_QUERY_KEY],
-        (old) => old?.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      queryClient.setQueryData<NotificationRecord[]>([NOTIFICATIONS_QUERY_KEY], (old) =>
+        old?.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
       );
 
       // Remove from unread
-      queryClient.setQueryData<NotificationRecord[]>(
-        [NOTIFICATIONS_UNREAD_KEY],
-        (old) => old?.filter((n) => n.id !== id)
+      queryClient.setQueryData<NotificationRecord[]>([NOTIFICATIONS_UNREAD_KEY], (old) =>
+        old?.filter((n) => n.id !== id),
       );
 
       return { previousAll, previousUnread };
@@ -93,14 +89,11 @@ export function useMarkAllAsRead() {
       await queryClient.cancelQueries({ queryKey: [NOTIFICATIONS_QUERY_KEY] });
       await queryClient.cancelQueries({ queryKey: [NOTIFICATIONS_UNREAD_KEY] });
 
-      const previousAll = queryClient.getQueryData<NotificationRecord[]>(
-        [NOTIFICATIONS_QUERY_KEY]
-      );
+      const previousAll = queryClient.getQueryData<NotificationRecord[]>([NOTIFICATIONS_QUERY_KEY]);
 
       // Mark all as read
-      queryClient.setQueryData<NotificationRecord[]>(
-        [NOTIFICATIONS_QUERY_KEY],
-        (old) => old?.map((n) => ({ ...n, is_read: true }))
+      queryClient.setQueryData<NotificationRecord[]>([NOTIFICATIONS_QUERY_KEY], (old) =>
+        old?.map((n) => ({ ...n, is_read: true })),
       );
 
       // Clear unread
@@ -138,13 +131,13 @@ export function useUpdateNotificationPreferences() {
     onMutate: async (updates) => {
       await queryClient.cancelQueries({ queryKey: [NOTIFICATIONS_PREFERENCES_KEY] });
 
-      const previous = queryClient.getQueryData<NotificationPreferenceRecord>(
-        [NOTIFICATIONS_PREFERENCES_KEY]
-      );
+      const previous = queryClient.getQueryData<NotificationPreferenceRecord>([
+        NOTIFICATIONS_PREFERENCES_KEY,
+      ]);
 
       queryClient.setQueryData<NotificationPreferenceRecord>(
         [NOTIFICATIONS_PREFERENCES_KEY],
-        (old) => ({ ...old, ...updates } as NotificationPreferenceRecord)
+        (old) => ({ ...old, ...updates }) as NotificationPreferenceRecord,
       );
 
       return { previous };

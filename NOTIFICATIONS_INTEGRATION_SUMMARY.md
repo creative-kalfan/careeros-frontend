@@ -2,19 +2,19 @@
 
 ## Files Created (Frontend)
 
-| File | Description |
-|------|-------------|
-| `src/types/notification.ts` | Types: `NotificationType`, `NotificationPriority`, `NotificationDeliveryChannel`, `NotificationRecord`, `NotificationPreferenceRecord`, `NotificationUI`, `transformNotification()`, `priorityConfig`, `typeLabels` |
-| `src/api/notifications.ts` | API client: `notificationsApi.getAll()`, `getUnread()`, `markAsRead()`, `markAllAsRead()`, `getPreferences()`, `updatePreferences()` |
+| File                                | Description                                                                                                                                                                                                                                           |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/types/notification.ts`         | Types: `NotificationType`, `NotificationPriority`, `NotificationDeliveryChannel`, `NotificationRecord`, `NotificationPreferenceRecord`, `NotificationUI`, `transformNotification()`, `priorityConfig`, `typeLabels`                                   |
+| `src/api/notifications.ts`          | API client: `notificationsApi.getAll()`, `getUnread()`, `markAsRead()`, `markAllAsRead()`, `getPreferences()`, `updatePreferences()`                                                                                                                  |
 | `src/hooks/api/useNotifications.ts` | React Query hooks: `useNotifications()`, `useUnreadNotifications()`, `useUnreadCount()`, `useMarkAsRead()`, `useMarkAllAsRead()`, `useNotificationPreferences()`, `useUpdateNotificationPreferences()` with optimistic updates and cache invalidation |
-| `src/routes/_app.notifications.tsx` | Full notifications page with Inbox, Unread, and Preferences tabs, loading states, error handling, empty states |
+| `src/routes/_app.notifications.tsx` | Full notifications page with Inbox, Unread, and Preferences tabs, loading states, error handling, empty states                                                                                                                                        |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `src/constants/api.ts` | Added `PREFERENCES: "/notification-preferences"` to `NOTIFICATIONS` endpoint |
-| `src/hooks/api/index.ts` | Exported all notification hooks |
+| File                     | Change                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `src/constants/api.ts`   | Added `PREFERENCES: "/notification-preferences"` to `NOTIFICATIONS` endpoint |
+| `src/hooks/api/index.ts` | Exported all notification hooks                                              |
 
 ## Hooks Added
 
@@ -38,6 +38,7 @@
 ## Backend Endpoints (Already Existed)
 
 The backend already had all required REST endpoints:
+
 - `GET /api/notifications` — List with `isRead`, `channel`, `type`, `limit` filters
 - `POST /api/notifications/read` — Mark single notification as read
 - `POST /api/notifications/read-all` — Mark all as read
@@ -61,6 +62,7 @@ All files compile without errors. The types align with the backend `Notification
 ## Integration Status
 
 The Notifications workspace is now fully backend-driven. All data flows through:
+
 1. `useNotifications()` → `notificationsApi.getAll()` → `GET /api/notifications`
 2. `useMarkAsRead()` → `notificationsApi.markAsRead()` → `POST /api/notifications/read`
 3. `useNotificationPreferences()` → `notificationsApi.getPreferences()` → `GET /api/notification-preferences`

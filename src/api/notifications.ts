@@ -17,7 +17,9 @@ export type NotificationsApi = {
   markAsRead: (id: string) => Promise<{ notification: NotificationRecord }>;
   markAllAsRead: () => Promise<{ notifications: NotificationRecord[] }>;
   getPreferences: () => Promise<{ preferences: NotificationPreferenceRecord }>;
-  updatePreferences: (updates: Partial<NotificationPreferenceRecord>) => Promise<{ preferences: NotificationPreferenceRecord }>;
+  updatePreferences: (
+    updates: Partial<NotificationPreferenceRecord>,
+  ) => Promise<{ preferences: NotificationPreferenceRecord }>;
 };
 
 // Backend response envelope: { success, data, meta? }
