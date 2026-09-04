@@ -177,7 +177,7 @@ export function PreviewPane({
     resume.source === "upload_parse" ||
     resume.source === "pdf_edit" ||
     selectedVersion?.source === "upload_parse" ||
-    selectedVersion?.source === "pdf_edit"
+    selectedVersion?.source === "pdf_edit",
   );
 
   // A resume backed by an uploaded file must NEVER silently fall back to a
@@ -185,9 +185,9 @@ export function PreviewPane({
   // skeleton; if resolution fails we show a real error with retry.
   const isAwaitingPdf = Boolean(
     (activeStoragePath || (isUploadedDocument && !originalPdfError)) &&
-      !originalPdfUrl &&
-      !originalPdfError &&
-      !templateSlug,
+    !originalPdfUrl &&
+    !originalPdfError &&
+    !templateSlug,
   );
   const isPdfFailed = Boolean(
     (activeStoragePath || isUploadedDocument) && originalPdfError && !templateSlug,

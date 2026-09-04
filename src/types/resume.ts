@@ -86,6 +86,10 @@ export interface ResumeData {
   additional: AdditionalEntry[];
   storage_path?: string | null;
   meta?: ResumeRecordMeta | null;
+  /** Original uploaded filename — present when the resume was uploaded from a file. */
+  original_filename?: string | null;
+  /** Parse/creation source — 'upload_parse' | 'pdf_edit' | 'compiled' | 'questionnaire' etc. */
+  source?: string | null;
 }
 
 // ---------------------------------------------------------------------------
