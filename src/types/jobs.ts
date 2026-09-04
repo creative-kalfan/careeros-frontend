@@ -159,5 +159,6 @@ export type JobSearchResponse = {
   pageSize: number;
   totalPages: number;
   hasNext: boolean;
+  hasPrevious?: boolean;
   hasMore: boolean;
 };

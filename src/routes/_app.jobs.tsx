@@ -1,14 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import { slideInRight } from "@/lib/motion";
-import {
-  Briefcase,
-  AlertTriangle,
-  WifiOff,
-  Lock,
-  ArrowLeft,
-} from "lucide-react";
+import { Briefcase, AlertTriangle, WifiOff, Lock, ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AdditionalFiltersDrawer } from "@/components/jobs/filters-pane";
 import { PrimaryFiltersBar } from "@/components/jobs/primary-filters-bar";
@@ -17,6 +11,7 @@ import { JobDetails, JobDetailsEmpty } from "@/components/jobs/job-details";
 import { JobSearch } from "@/components/jobs/job-search";
 import { Button } from "@/components/ui/button";
 import { usePersonalizedJobs, jobsQueryKeys } from "@/hooks/api/useJobs";
+import { jobsApi } from "@/api/jobs";
 import { useSaveJob } from "@/hooks/api/useSaveJob";
 import { useMatchJobs } from "@/hooks/api/useMatchJobs";
 import { getErrorMessage } from "@/utils/api-error";
@@ -219,7 +214,7 @@ function JobsPage() {
     [query, location, company, skills, remote, employmentType, experience, sort, page],
   );
 
-  const { data, isLoading, isError, error, isFetching } = usePersonalizedJobs({
+  const { data, isLoading, isError, error, isFetching, refetch } = usePersonalizedJobs({
     ...filters,
     includeAts: true,
   });
@@ -228,13 +223,63 @@ function JobsPage() {
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
+  const [pageDirection, setPageDirection] = useState<1 | -1>(1);
+  const shouldReduceMotion = useReducedMotion();
+
+  const pageVariants: Variants = {
+    enter: (direction: number) =>
+      shouldReduceMotion
+        ? { opacity: 0 }
+        : {
+            opacity: 0,
+            scale: 0.98,
+            rotateY: direction * 4,
+            z: -30,
+          },
+    center: {
+      opacity: 1,
+      scale: 1,
+      rotateY: 0,
+      z: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0.15 : 0.28,
+        ease: [0.22, 1, 0.36, 1] as const,
+      },
+    },
+    exit: (direction: number) =>
+      shouldReduceMotion
+        ? { opacity: 0 }
+        : {
+            opacity: 0,
+            scale: 0.98,
+            rotateY: -direction * 4,
+            z: -30,
+            transition: {
+              duration: shouldReduceMotion ? 0.12 : 0.22,
+              ease: [0.22, 1, 0.36, 1] as const,
+            },
+          },
+  };
+
+  const handlePrevPage = () => {
+    if (page <= 1 || isFetching) return;
+    setPageDirection(-1);
+    updateSearch({ page: page - 1 });
+  };
+
+  const handleNextPage = () => {
+    if (page >= totalPages || !data?.hasNext || isFetching) return;
+    setPageDirection(1);
+    updateSearch({ page: page + 1 });
+  };
+
   // Prefetch next page when available
   useEffect(() => {
     if (!data?.hasNext) return;
     const nextFilters = { ...filters, page: page + 1, includeAts: true };
     queryClient.prefetchQuery({
       queryKey: jobsQueryKeys.personalized(nextFilters),
-      queryFn: () => import("@/api/jobs").then((m) => m.jobsApi.getPersonalizedJobs(nextFilters)),
+      queryFn: () => jobsApi.getPersonalizedJobs(nextFilters),
     });
   }, [data?.hasNext, filters, page, queryClient]);
 
@@ -243,11 +288,17 @@ function JobsPage() {
     [jobs, selectedId],
   );
 
+  // When jobs change (page switch or filter change), sync selectedId to the valid job on current page
   useEffect(() => {
-    if (!selected && jobs.length > 0) {
-      setSelectedId(jobs[0].id);
+    if (jobs.length > 0) {
+      const existsOnPage = jobs.some((j) => j.id === selectedId);
+      if (!existsOnPage) {
+        setSelectedId(jobs[0].id);
+      }
+    } else {
+      setSelectedId(null);
     }
-  }, [selected, jobs]);
+  }, [jobs, selectedId]);
 
   const { saveJob, unsaveJob } = useSaveJob();
   const { matchJobAsync, isMatching, matchResult } = useMatchJobs();
@@ -293,9 +344,7 @@ function JobsPage() {
 
   // Compute active counts for badges
   const activeAdditionalCount =
-    (company.trim() ? 1 : 0) +
-    skills.length +
-    (sort && sort !== "best-match" ? 1 : 0);
+    (company.trim() ? 1 : 0) + skills.length + (sort && sort !== "best-match" ? 1 : 0);
 
   const totalActiveCount =
     activeAdditionalCount +
@@ -305,8 +354,7 @@ function JobsPage() {
     (experience ? 1 : 0) +
     (employmentType ? 1 : 0);
 
-  const currentWorkMode =
-    remote === true ? "Remote" : remote === false ? "On-site" : "All";
+  const currentWorkMode = remote === true ? "Remote" : remote === false ? "On-site" : "All";
 
   return (
     <div className="flex h-[calc(100dvh-56px)] flex-col bg-background">
@@ -352,9 +400,30 @@ function JobsPage() {
         totalActiveCount={totalActiveCount}
       />
 
-      {/* Error state if query fails */}
-      {isError ? (
-        <ErrorState error={error} onRetry={() => window.location.reload()} />
+      {/* Recoverable inline error when query fails but previous jobs exist */}
+      {isError && jobs.length > 0 && (
+        <div className="border-b border-destructive/30 bg-destructive/10 px-4 py-2 flex items-center justify-between text-xs text-destructive">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span>
+              Failed to load requested page ({getErrorMessage(error)}). Current opportunities
+              preserved.
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-6 px-2 text-[11px] border-destructive/40 hover:bg-destructive/15 text-destructive"
+            onClick={() => refetch()}
+          >
+            Try again
+          </Button>
+        </div>
+      )}
+
+      {/* Full-screen error state only if initial query fails completely */}
+      {isError && jobs.length === 0 ? (
+        <ErrorState error={error} onRetry={() => refetch()} />
       ) : (
         /* Main 2-Zone Workspace */
         <div className="flex min-h-0 flex-1 overflow-hidden">
@@ -363,24 +432,43 @@ function JobsPage() {
             <div className="grid min-h-0 flex-1 grid-cols-[minmax(380px,430px)_1fr]">
               {/* Left Zone: Opportunities Stream */}
               <div className="min-h-0 border-r border-border/80 flex flex-col bg-background/50">
-                <div className="flex-1 min-h-0">
-                  <JobList
-                    jobs={jobs}
-                    selectedId={selected?.id ?? null}
-                    onSelect={handleSelect}
-                    loading={isLoading}
-                    onToggleBookmark={toggleBookmark}
-                    query={query}
-                    onClearFilters={handleResetAll}
-                  />
+                <div className="flex-1 min-h-0 [perspective:1200px]">
+                  <AnimatePresence mode="wait" custom={pageDirection}>
+                    <motion.div
+                      key={`desktop-page-${page}`}
+                      custom={pageDirection}
+                      variants={pageVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      className="h-full flex flex-col [transform-style:preserve-3d] will-change-[transform,opacity]"
+                    >
+                      <JobList
+                        jobs={jobs}
+                        selectedId={selected?.id ?? null}
+                        onSelect={handleSelect}
+                        loading={isLoading}
+                        onToggleBookmark={toggleBookmark}
+                        query={query}
+                        onClearFilters={handleResetAll}
+                        page={page}
+                        total={total}
+                        pageSize={PAGE_SIZE}
+                        isFetching={isFetching}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
                 {!isLoading && totalPages > 1 && (
                   <Pagination
                     page={page}
                     totalPages={totalPages}
                     total={total}
-                    onPrev={() => updateSearch({ page: Math.max(1, page - 1) })}
-                    onNext={() => updateSearch({ page: Math.min(totalPages, page + 1) })}
+                    onPrev={handlePrevPage}
+                    onNext={handleNextPage}
+                    isFetching={isFetching}
+                    hasNext={data?.hasNext}
+                    hasPrevious={data?.hasPrevious}
                   />
                 )}
               </div>
@@ -452,24 +540,43 @@ function JobsPage() {
                 </div>
               ) : (
                 <div className="flex min-h-0 flex-1 flex-col">
-                  <div className="flex-1 min-h-0">
-                    <JobList
-                      jobs={jobs}
-                      selectedId={selected?.id ?? null}
-                      onSelect={handleSelect}
-                      loading={isLoading}
-                      onToggleBookmark={toggleBookmark}
-                      query={query}
-                      onClearFilters={handleResetAll}
-                    />
+                  <div className="flex-1 min-h-0 [perspective:1200px]">
+                    <AnimatePresence mode="wait" custom={pageDirection}>
+                      <motion.div
+                        key={`mobile-page-${page}`}
+                        custom={pageDirection}
+                        variants={pageVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        className="h-full flex flex-col [transform-style:preserve-3d] will-change-[transform,opacity]"
+                      >
+                        <JobList
+                          jobs={jobs}
+                          selectedId={selected?.id ?? null}
+                          onSelect={handleSelect}
+                          loading={isLoading}
+                          onToggleBookmark={toggleBookmark}
+                          query={query}
+                          onClearFilters={handleResetAll}
+                          page={page}
+                          total={total}
+                          pageSize={PAGE_SIZE}
+                          isFetching={isFetching}
+                        />
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
                   {!isLoading && totalPages > 1 && (
                     <Pagination
                       page={page}
                       totalPages={totalPages}
                       total={total}
-                      onPrev={() => updateSearch({ page: Math.max(1, page - 1) })}
-                      onNext={() => updateSearch({ page: Math.min(totalPages, page + 1) })}
+                      onPrev={handlePrevPage}
+                      onNext={handleNextPage}
+                      isFetching={isFetching}
+                      hasNext={data?.hasNext}
+                      hasPrevious={data?.hasPrevious}
                     />
                   )}
                 </div>
@@ -513,23 +620,35 @@ function Pagination({
   total,
   onPrev,
   onNext,
+  isFetching,
+  hasNext,
+  hasPrevious,
 }: {
   page: number;
   totalPages: number;
   total: number;
   onPrev: () => void;
   onNext: () => void;
+  isFetching?: boolean;
+  hasNext?: boolean;
+  hasPrevious?: boolean;
 }) {
+  const canPrev = (hasPrevious ?? page > 1) && !isFetching;
+  const canNext = (hasNext ?? page < totalPages) && !isFetching;
+
   return (
     <div className="flex items-center justify-between gap-2 border-t border-border/70 px-4 py-2 text-xs text-muted-foreground font-mono bg-surface/30">
-      <span>{total.toLocaleString()} total</span>
-      <div className="flex items-center gap-1.5">
+      <span className="truncate">
+        Page {page} of {totalPages} ({total.toLocaleString()} total)
+      </span>
+      <div className="flex items-center gap-1.5 shrink-0">
         <Button
           variant="ghost"
           size="sm"
           className="h-6.5 px-2 text-xs"
           onClick={onPrev}
-          disabled={page <= 1}
+          disabled={!canPrev}
+          aria-label="Previous page"
         >
           Prev
         </Button>
@@ -541,7 +660,8 @@ function Pagination({
           size="sm"
           className="h-6.5 px-2 text-xs"
           onClick={onNext}
-          disabled={page >= totalPages}
+          disabled={!canNext}
+          aria-label="Next page"
         >
           Next
         </Button>
@@ -571,12 +691,7 @@ function ErrorState({ error, onRetry }: { error: unknown; onRetry: () => void })
         </div>
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         <p className="text-xs text-muted-foreground leading-relaxed">{message}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-2 rounded-lg text-xs"
-          onClick={onRetry}
-        >
+        <Button variant="outline" size="sm" className="mt-2 rounded-lg text-xs" onClick={onRetry}>
           Try again
         </Button>
       </div>

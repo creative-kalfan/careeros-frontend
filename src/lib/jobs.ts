@@ -85,15 +85,15 @@ function parseSalary(salary?: string | null): {
   return { min, max, currency };
 }
 
-function daysAgoFromDate(date?: string | null): number {
-  if (!date) return -1;
+export function daysAgoFromDate(date?: string | null): number {
+  if (!date || date === "null" || date === "undefined") return -1;
   const parsed = new Date(date);
   if (Number.isNaN(parsed.getTime())) return -1;
   const diff = Date.now() - parsed.getTime();
   return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
 }
 
-function humanPostedDate(date?: string | null): string {
+export function humanPostedDate(date?: string | null): string {
   const days = daysAgoFromDate(date);
   if (days < 0) return "Date unavailable";
   if (days === 0) return "Today";
@@ -137,6 +137,16 @@ function pick(raw: Raw, snake: string, camel: string): unknown {
 function pickStr(raw: Raw, snake: string, camel: string): string | undefined {
   const v = pick(raw, snake, camel);
   return typeof v === "string" ? v : undefined;
+}
+
+function pickDate(raw: Raw, ...keys: string[]): string | undefined {
+  for (const key of keys) {
+    const v = raw[key];
+    if (typeof v === "string" && v.trim() && v !== "null" && v !== "undefined") {
+      return v.trim();
+    }
+  }
+  return undefined;
 }
 
 // Strip HTML tags when a plain text representation is required (e.g. text summaries)
@@ -188,7 +198,7 @@ export function sanitizeDescription(value?: string | null): string {
 // Resolve user-friendly provenance from backend source_platform or applyUrl
 export function resolveSourceProvenance(
   sourcePlatform?: string | null,
-  applyUrl?: string | null
+  applyUrl?: string | null,
 ): {
   label: string;
   verified: boolean;
@@ -197,7 +207,14 @@ export function resolveSourceProvenance(
   const p = (sourcePlatform ?? "").toLowerCase();
   const url = (applyUrl ?? "").toLowerCase();
 
-  if (p.includes("firecrawl") || p.includes("career_page") || p.includes("careers") || p.includes("ashby") || p.includes("greenhouse") || p.includes("lever")) {
+  if (
+    p.includes("firecrawl") ||
+    p.includes("career_page") ||
+    p.includes("careers") ||
+    p.includes("ashby") ||
+    p.includes("greenhouse") ||
+    p.includes("lever")
+  ) {
     return { label: "Official Career Site", verified: true, type: "career_site" };
   }
   if (p.includes("yc") || p.includes("ycombinator") || url.includes("ycombinator.com")) {
@@ -303,7 +320,7 @@ export function adaptJob(raw: RawJobWithScores, overrides: Partial<Job> = {}): J
     pickStr(r, "company_name", "companyName") || pickStr(r, "company", "company") || "Unknown";
   const brand = BRAND_GRADIENTS[hashString(company) % BRAND_GRADIENTS.length];
   const salary = parseSalary(pickStr(r, "salary", "salary"));
-  const postedRaw = pickStr(r, "posted_date", "postedDate");
+  const postedRaw = pickDate(r, "posted_at", "postedAt", "posted_date", "postedDate");
   const postedDaysAgo = daysAgoFromDate(postedRaw);
   // Match/ATS scores come from the backend (personalized endpoint returns
   // match.overall (or match_overall) and ats_score). Default to 0.

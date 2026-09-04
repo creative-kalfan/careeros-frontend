@@ -69,6 +69,7 @@ function mapSearchResult(
     pageSize: meta?.pageSize ?? 20,
     totalPages,
     hasNext: meta?.hasNext ?? false,
+    hasPrevious: meta?.hasPrevious ?? (meta ? meta.page > 1 : false),
     hasMore: meta?.hasNext ?? false,
   };
 }

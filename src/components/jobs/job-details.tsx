@@ -17,6 +17,8 @@ import {
   Clock,
   ArrowRight,
   Layers,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,7 @@ export function JobDetails({
   const [logoFailed, setLogoFailed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"brief" | "fit">("brief");
+  const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
 
   const showRealLogo = Boolean(job.companyLogoUrl) && !logoFailed;
   const status = statusMeta(job.status);
@@ -63,19 +66,19 @@ export function JobDetails({
   return (
     <div className="flex h-full flex-col bg-surface/30 select-text">
       {/* Top Opportunity Header */}
-      <div className="sticky top-0 z-10 border-b border-border/80 bg-background/90 backdrop-blur-md px-6 py-4 space-y-3.5">
+      <div className="sticky top-0 z-10 border-b border-border/80 bg-background/90 backdrop-blur-md px-5 py-3 space-y-2.5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0">
             {/* Company Logo / Avatar */}
             <div
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-sm font-bold text-foreground/80 shadow-2xs overflow-hidden border border-border/60 bg-surface-elevated"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold text-foreground/80 shadow-2xs overflow-hidden border border-border/60 bg-surface-elevated"
               aria-hidden
             >
               {showRealLogo ? (
                 <img
                   src={job.companyLogoUrl}
                   alt={`${job.company} logo`}
-                  className="h-8 w-8 object-contain"
+                  className="h-7 w-7 object-contain"
                   loading="lazy"
                   referrerPolicy="no-referrer"
                   onError={() => setLogoFailed(true)}
@@ -87,9 +90,7 @@ export function JobDetails({
 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-foreground/90">
-                  {job.company}
-                </span>
+                <span className="text-xs font-semibold text-foreground/90">{job.company}</span>
 
                 {provenance?.verified && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success">
@@ -108,7 +109,7 @@ export function JobDetails({
                 )}
               </div>
 
-              <h2 className="mt-0.5 text-base sm:text-lg font-bold tracking-tight text-foreground leading-snug truncate">
+              <h2 className="mt-0.5 text-base sm:text-lg font-bold tracking-tight text-foreground leading-snug break-words">
                 {job.role}
               </h2>
 
@@ -124,7 +125,9 @@ export function JobDetails({
                   {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}
                 </span>
                 <span>·</span>
-                <span className="font-mono text-[11px] text-muted-foreground/80">{job.postedAt}</span>
+                <span className="font-mono text-[11px] text-muted-foreground/80">
+                  {job.postedAt}
+                </span>
               </div>
             </div>
           </div>
@@ -189,10 +192,7 @@ export function JobDetails({
             }`}
             onClick={onToggleBookmark}
           >
-            <Bookmark
-              className="h-3.5 w-3.5"
-              fill={job.bookmarked ? "currentColor" : "none"}
-            />
+            <Bookmark className="h-3.5 w-3.5" fill={job.bookmarked ? "currentColor" : "none"} />
             <span>{job.bookmarked ? "Saved" : "Save"}</span>
           </Button>
 
@@ -246,22 +246,63 @@ export function JobDetails({
 
       {/* Main Tabbed Content Area */}
       <ScrollArea className="flex-1">
-        <div className="p-6 space-y-6 max-w-4xl">
+        <div className="p-4 sm:p-5 space-y-4 max-w-4xl">
           {activeTab === "brief" ? (
             <>
               {/* Role Overview & Sanitized Description */}
-              <section className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Building2 className="h-3.5 w-3.5 text-primary" />
-                  Role Overview
-                </h3>
-                <div className="rounded-xl border border-border/80 bg-surface-elevated/20 p-4 sm:p-5">
-                  <JobDescriptionRenderer description={job.overview} />
+              <section className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                    Role Overview
+                  </h3>
+                  {(job.overview?.length ?? 0) > 420 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsOverviewExpanded((prev) => !prev)}
+                      className="h-6 px-2 text-[11px] font-medium text-primary hover:text-primary/80 gap-1"
+                    >
+                      <span>{isOverviewExpanded ? "Show less" : "Show more"}</span>
+                      {isOverviewExpanded ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <div className="relative rounded-xl border border-border/80 bg-surface-elevated/20 p-3.5 sm:p-4">
+                  <div
+                    className={
+                      (job.overview?.length ?? 0) > 420 && !isOverviewExpanded
+                        ? "max-h-[260px] overflow-hidden relative transition-all duration-200"
+                        : "relative transition-all duration-200"
+                    }
+                  >
+                    <JobDescriptionRenderer description={job.overview} />
+                    {(job.overview?.length ?? 0) > 420 && !isOverviewExpanded && (
+                      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-elevated via-surface-elevated/80 to-transparent pointer-events-none" />
+                    )}
+                  </div>
+                  {(job.overview?.length ?? 0) > 420 && !isOverviewExpanded && (
+                    <div className="pt-2 flex justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsOverviewExpanded(true)}
+                        className="h-6.5 text-[11px] font-medium gap-1 rounded-full px-3 border-border/80 bg-surface shadow-2xs hover:bg-surface-elevated"
+                      >
+                        <span>Read full job description</span>
+                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </section>
 
               {/* Core Parameters Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <ParamCard
                   icon={Briefcase}
                   label="Employment"
@@ -286,13 +327,13 @@ export function JobDetails({
 
               {/* Responsibilities list if structured array is available */}
               {job.responsibilities && job.responsibilities.length > 0 && (
-                <section className="space-y-3">
+                <section className="space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <Users className="h-3.5 w-3.5 text-primary" />
                     Key Responsibilities
                   </h3>
-                  <div className="rounded-xl border border-border/80 bg-surface-elevated/20 p-4">
-                    <ul className="space-y-2 text-xs leading-relaxed text-foreground/85">
+                  <div className="rounded-xl border border-border/80 bg-surface-elevated/20 p-3.5">
+                    <ul className="space-y-1.5 text-[12.5px] leading-normal text-foreground/85">
                       {job.responsibilities.map((r, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
@@ -306,13 +347,13 @@ export function JobDetails({
 
               {/* Requirements list if structured array is available */}
               {job.requirements && job.requirements.length > 0 && (
-                <section className="space-y-3">
+                <section className="space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                     Qualifications & Requirements
                   </h3>
-                  <div className="rounded-xl border border-border/80 bg-surface-elevated/20 p-4">
-                    <ul className="space-y-2 text-xs leading-relaxed text-foreground/85">
+                  <div className="rounded-xl border border-border/80 bg-surface-elevated/20 p-3.5">
+                    <ul className="space-y-1.5 text-[12.5px] leading-normal text-foreground/85">
                       {job.requirements.map((r, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
@@ -396,7 +437,8 @@ export function JobDetailsEmpty() {
         <div>
           <h3 className="text-sm font-semibold text-foreground">Select an opportunity</h3>
           <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-            Choose a job from the list to view the full brief, qualifications, and instant resume fit analysis.
+            Choose a job from the list to view the full brief, qualifications, and instant resume
+            fit analysis.
           </p>
         </div>
       </div>

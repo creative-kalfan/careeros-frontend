@@ -24,6 +24,10 @@ export function JobList({
   onToggleBookmark,
   query,
   onClearFilters,
+  page = 1,
+  total,
+  pageSize = 20,
+  isFetching,
 }: {
   jobs: Job[];
   selectedId: string | null;
@@ -32,22 +36,46 @@ export function JobList({
   onToggleBookmark: (id: string) => void;
   query?: string;
   onClearFilters?: () => void;
+  page?: number;
+  total?: number;
+  pageSize?: number;
+  isFetching?: boolean;
 }) {
+  const startIdx = (page - 1) * pageSize + 1;
+  const endIdx = total !== undefined ? Math.min(startIdx + jobs.length - 1, total) : jobs.length;
+  const hasRange = total !== undefined && total > jobs.length && jobs.length > 0;
+
+  const countLabel = loading
+    ? "Searching opportunities..."
+    : isFetching
+      ? "Updating..."
+      : hasRange
+        ? `Showing ${startIdx.toLocaleString()}–${endIdx.toLocaleString()} of ${total.toLocaleString()} opportunities`
+        : total !== undefined
+          ? `${total.toLocaleString()} ${total === 1 ? "opportunity" : "opportunities"}`
+          : `${jobs.length.toLocaleString()} opportunities`;
+
   return (
     <div className="flex h-full flex-col select-none">
       {/* Header bar: count + status */}
       <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-2.5 bg-surface/40">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold tracking-tight text-foreground">
-            {loading ? "Searching..." : `${jobs.length.toLocaleString()} opportunities`}
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs font-semibold tracking-tight text-foreground truncate">
+            {countLabel}
           </span>
+          {isFetching && !loading && (
+            <span
+              className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-primary"
+              aria-label="Updating page"
+            />
+          )}
           {query && (
-            <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+            <span className="text-[11px] text-muted-foreground truncate max-w-[130px]">
               for &ldquo;{query}&rdquo;
             </span>
           )}
         </div>
-        <span className="text-[10.5px] font-mono text-muted-foreground/80">
+        <span className="text-[10.5px] font-mono text-muted-foreground/80 shrink-0">
           Ranked by match
         </span>
       </div>
@@ -208,15 +236,12 @@ function JobCard({
               }`}
               aria-label={job.bookmarked ? "Unsave job" : "Save job"}
             >
-              <Bookmark
-                className="h-3.5 w-3.5"
-                fill={job.bookmarked ? "currentColor" : "none"}
-              />
+              <Bookmark className="h-3.5 w-3.5" fill={job.bookmarked ? "currentColor" : "none"} />
             </button>
           </div>
 
           {/* Job Title */}
-          <h3 className="truncate text-[13.5px] font-semibold tracking-tight text-foreground mt-0.5 leading-snug">
+          <h3 className="line-clamp-2 break-words text-[13.5px] font-semibold tracking-tight text-foreground mt-0.5 leading-snug">
             {job.role}
           </h3>
 
@@ -247,9 +272,7 @@ function JobCard({
               </span>
             </div>
 
-            <span className="text-[10px] text-muted-foreground/80 font-mono">
-              {job.postedAt}
-            </span>
+            <span className="text-[10px] text-muted-foreground/80 font-mono">{job.postedAt}</span>
           </div>
         </div>
       </div>

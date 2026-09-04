@@ -45,7 +45,10 @@ describe("Job Intelligence Redesign - Sanitization & Helpers", () => {
     });
 
     it("identifies YC startup opportunities", () => {
-      const res = resolveSourceProvenance("yc_ingest", "https://ycombinator.com/companies/stripe/jobs");
+      const res = resolveSourceProvenance(
+        "yc_ingest",
+        "https://ycombinator.com/companies/stripe/jobs",
+      );
       expect(res.verified).toBe(true);
       expect(res.label).toBe("YC Opportunity");
     });
@@ -125,6 +128,44 @@ describe("Job Intelligence Redesign - Sanitization & Helpers", () => {
       expect(job.matchedSkills).toContain("TypeScript");
       expect(job.missingSkills).toContain("Rust");
       expect(formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)).toBe("$180k – $240k");
+    });
+
+    it("prioritizes posted_at over posted_date and formats valid dates", () => {
+      const yesterday = new Date(Date.now() - 86400000).toISOString();
+      const job = adaptJob({
+        title: "Staff Engineer",
+        company: "Stripe",
+        posted_at: yesterday,
+        posted_date: "2020-01-01T00:00:00Z",
+      } as never);
+
+      expect(job.postedAt).toBe("1d ago");
+      expect(job.postedDaysAgo).toBe(1);
+    });
+
+    it("displays Date unavailable only when genuine null, empty, or unparseable", () => {
+      const jobWithNull = adaptJob({
+        title: "Staff Engineer",
+        company: "Stripe",
+        posted_at: null,
+        posted_date: null,
+      } as never);
+      expect(jobWithNull.postedAt).toBe("Date unavailable");
+      expect(jobWithNull.postedDaysAgo).toBe(-1);
+
+      const jobWithEmpty = adaptJob({
+        title: "Staff Engineer",
+        company: "Stripe",
+        posted_at: "   ",
+      } as never);
+      expect(jobWithEmpty.postedAt).toBe("Date unavailable");
+
+      const jobWithInvalid = adaptJob({
+        title: "Staff Engineer",
+        company: "Stripe",
+        posted_at: "not-a-date",
+      } as never);
+      expect(jobWithInvalid.postedAt).toBe("Date unavailable");
     });
   });
 });
