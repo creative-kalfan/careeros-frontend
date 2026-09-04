@@ -15,6 +15,7 @@ import {
   Trash2,
   PlusCircle,
   GripVertical,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -120,6 +121,12 @@ interface PreviewPaneProps {
     targetId?: string,
   ) => void;
   selectedVersion?: ResumeVersion | null;
+  /** Canonical storage path resolved by the route (version → resume fallback). */
+  activeStoragePath?: string | null;
+  /** Error raised while resolving the signed URL for the original PDF. */
+  originalPdfError?: string | null;
+  /** Retry callback for the signed-URL resolution. */
+  onRetryOriginalPdf?: () => void;
   originalPdfUrl?: string | null;
   geometryMap?: DocumentGeometryMap | null;
   onMutateBlock?: (pageIndex: number, block: GeometryBlock, text: string) => Promise<void>;
@@ -142,16 +149,34 @@ export function PreviewPane({
   onUpdateResume,
   onDropSuggestion,
   selectedVersion,
+  activeStoragePath: activeStoragePathProp,
+  originalPdfError,
+  onRetryOriginalPdf,
   originalPdfUrl,
   geometryMap,
   onMutateBlock,
 }: PreviewPaneProps) {
   const [zoom, setZoom] = useState(100);
 
+  // Single source of truth: the route resolves the canonical storage path
+  // (selected version meta → resume meta → resume record column). Do NOT
+  // re-derive it here from the projected `resume` object, which does not
+  // carry the storage path — that divergence is what previously caused the
+  // synthetic A4Page fallback to render instead of the original PDF.
   const activeStoragePath =
-    selectedVersion?.meta?.storage_path || resume.meta?.storage_path || resume.storage_path || null;
+    activeStoragePathProp ??
+    selectedVersion?.meta?.storage_path ??
+    resume.meta?.storage_path ??
+    resume.storage_path ??
+    null;
 
-  const isAwaitingPdf = Boolean(activeStoragePath && !originalPdfUrl && !templateSlug);
+  // A resume backed by an uploaded file must NEVER silently fall back to a
+  // synthetic resume. While the signed URL resolves we show a loading
+  // skeleton; if resolution fails we show a real error with retry.
+  const isAwaitingPdf = Boolean(
+    activeStoragePath && !originalPdfUrl && !originalPdfError && !templateSlug,
+  );
+  const isPdfFailed = Boolean(activeStoragePath && originalPdfError && !templateSlug);
   const isCanvasMode = Boolean(activeStoragePath && originalPdfUrl && !templateSlug);
 
   const change = (dir: 1 | -1) => {
@@ -292,6 +317,33 @@ export function PreviewPane({
               }}
             >
               <A4DocumentSkeleton />
+            </div>
+          </div>
+        ) : isPdfFailed ? (
+          <div className="flex min-h-full items-start justify-center p-6 sm:p-10">
+            <div
+              className="flex flex-col items-center gap-4 rounded-lg border border-destructive/40 bg-destructive/5 px-8 py-10 text-center"
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: "top center",
+              }}
+              role="alert"
+            >
+              <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Unable to load original resume
+                </p>
+                <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                  The original uploaded document could not be opened. Your resume file is intact —
+                  retry loading it.
+                </p>
+              </div>
+              {onRetryOriginalPdf && (
+                <Button size="sm" variant="outline" onClick={onRetryOriginalPdf}>
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Retry
+                </Button>
+              )}
             </div>
           </div>
         ) : isCanvasMode ? (
