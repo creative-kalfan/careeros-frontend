@@ -197,7 +197,11 @@ function ResumeWorkspace() {
     );
   }, [selectedVersion, record]);
 
-  const { signedUrl: originalPdfUrl, generateSignedUrl } = useOriginalResumeFile();
+  const {
+    signedUrl: originalPdfUrl,
+    error: originalPdfError,
+    generateSignedUrl,
+  } = useOriginalResumeFile();
 
   useEffect(() => {
     if (activeStoragePath) {
@@ -1003,6 +1007,9 @@ function ResumeWorkspace() {
               onUpdateResume={handleUpdateResume}
               onDropSuggestion={handleDropSuggestion}
               selectedVersion={selectedVersion}
+              activeStoragePath={activeStoragePath}
+              originalPdfError={originalPdfError}
+              onRetryOriginalPdf={() => void generateSignedUrl(activeStoragePath)}
               originalPdfUrl={originalPdfUrl}
               geometryMap={geometryMap}
               onMutateBlock={handleMutateBlock}
