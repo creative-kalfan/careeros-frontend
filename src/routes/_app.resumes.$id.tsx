@@ -32,14 +32,17 @@ import {
   useGenerateOptimization,
 } from "@/hooks/api/useOptimization";
 import { requestBlob } from "@/utils/request";
-import { profileToResumeData, applyResumeDataToProfile, formatResumeDisplayName } from "@/lib/resume";
+import {
+  profileToResumeData,
+  applyResumeDataToProfile,
+  formatResumeDisplayName,
+} from "@/lib/resume";
 import type { ResumeVersion } from "@/types/version";
 import type { AtsAnalysisResult } from "@/api/ats";
 import type { EvidenceLocationMap } from "@/lib/evidence-location";
 import type { ResumeProfile, ResumeData } from "@/types/resume";
 import type { OptimizationSuggestion } from "@/types/optimization";
 import { optimizationApi } from "@/api/optimization";
-import { useOriginalResumeFile } from "@/hooks/useOriginalResumeFile";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,10 +96,10 @@ function ResumeWorkspace() {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [profile, setProfile] = useState<ResumeProfile | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [activeSuggestions, setActiveSuggestions] = useState<OptimizationSuggestion[] | null>(null);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [lastAppliedSuggestionId, setLastAppliedSuggestionId] = useState<string | null>(null);
-  const [documentMode, setDocumentMode] = useState<"original" | "canonical">(() =>
-    versionIdFromSearch ? "canonical" : "original",
-  );
 
   const [showATSDialog, setShowATSDialog] = useState(false);
   const [atsScore, setATSScore] = useState<number | null>(null);
@@ -156,19 +159,6 @@ function ResumeWorkspace() {
   const generateOptimizationMutation = useGenerateOptimization();
   const { toast } = useToast();
 
-  // Generate signed URL for original uploaded PDF
-  const {
-    signedUrl: originalFileUrl,
-    generateSignedUrl,
-    isGenerating: isGeneratingSignedUrl,
-  } = useOriginalResumeFile();
-
-  useEffect(() => {
-    if (record?.storage_path) {
-      generateSignedUrl(record.storage_path);
-    }
-  }, [record?.storage_path, generateSignedUrl]);
-
   // Reset working state synchronously when navigating between resumes to eliminate any stale data flash
   useEffect(() => {
     setResumeData(null);
@@ -193,9 +183,6 @@ function ResumeWorkspace() {
   useEffect(() => {
     if (selectedVersionData?.version) {
       setSelectedVersion(selectedVersionData.version);
-      if (!selectedVersionData.version.is_master) {
-        setDocumentMode("canonical");
-      }
     }
   }, [selectedVersionData]);
 
@@ -203,9 +190,6 @@ function ResumeWorkspace() {
     const versionRow = selectedVersionData?.version;
     const source = versionRow || record;
     if (!source) return;
-    if (versionRow && !versionRow.is_master) {
-      setDocumentMode("canonical");
-    }
     const content = source.content as { profile?: ResumeProfile } | null;
     const fullProfile = content?.profile;
     if (fullProfile) {
@@ -356,6 +340,7 @@ function ResumeWorkspace() {
       }
       await updateMutation.mutateAsync({ id, content: { profile: profileToSave } });
       setProfile(profileToSave);
+      setIsDirty(false);
       toast.success("Resume saved successfully");
       setShowSaved(true);
       setTimeout(() => setShowSaved(false), 2000);
@@ -457,9 +442,9 @@ function ResumeWorkspace() {
         company: company || undefined,
         atsReportId: atsReportId || undefined,
       });
+      setActiveSuggestions(result.suggestions || []);
+      setActiveSessionId(result.sessionId);
       toast.success(result.message || "Suggestions generated");
-      // Sessions query is auto-invalidated by useGenerateOptimization onSuccess.
-      // LeftPane will re-render with the new suggestions.
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to generate suggestions");
     }
@@ -474,16 +459,63 @@ function ResumeWorkspace() {
     toast,
   ]);
 
+  const handleUpdateResume = useCallback(
+    (updated: ResumeData) => {
+      setResumeData(updated);
+      const rawProfile =
+        profile ?? (record?.content as { profile?: ResumeProfile } | null)?.profile ?? null;
+      if (rawProfile) {
+        const updatedProfile = applyResumeDataToProfile(rawProfile, updated);
+        setProfile(updatedProfile);
+      }
+      setIsDirty(true);
+    },
+    [profile, record],
+  );
+
+  const handleAddSkill = useCallback(
+    (skill: string) => {
+      if (!skill.trim() || !resumeData) return;
+      const trimmed = skill.trim();
+      if (resumeData.skills?.includes(trimmed)) {
+        toast.info(`"${trimmed}" is already in skills`);
+        return;
+      }
+      const updatedSkills = [...(resumeData.skills || []), trimmed];
+      const updatedResumeData: ResumeData = {
+        ...resumeData,
+        skills: updatedSkills,
+      };
+      setResumeData(updatedResumeData);
+      const rawProfile =
+        profile ?? (record?.content as { profile?: ResumeProfile } | null)?.profile ?? null;
+      if (rawProfile) {
+        const updatedProfile = applyResumeDataToProfile(rawProfile, updatedResumeData);
+        setProfile(updatedProfile);
+      }
+      setIsDirty(true);
+      toast.success(`Added "${trimmed}" to skills`);
+    },
+    [resumeData, profile, record, toast],
+  );
+
   const _verifyTargetExists = (
     resumeData: ResumeData | null,
     suggestion: OptimizationSuggestion,
   ) => {
     if (!resumeData) return false;
-    const section = suggestion.section || suggestion.type;
-    if (section === "experience" && suggestion.entryId && resumeData.experience) {
+    const section = (suggestion.section || suggestion.type || "").toLowerCase();
+    if (section.includes("summary") || suggestion.type === "professional_summary") return true;
+    if (
+      section.includes("skill") ||
+      suggestion.type === "skills_alignment" ||
+      suggestion.type === "keyword_placement"
+    )
+      return true;
+    if (section.includes("experience") && suggestion.entryId && resumeData.experience) {
       return resumeData.experience.some((e) => e.id === suggestion.entryId);
     }
-    if (section === "projects" && suggestion.entryId && resumeData.projects) {
+    if (section.includes("project") && suggestion.entryId && resumeData.projects) {
       return resumeData.projects.some((p) => p.id === suggestion.entryId);
     }
     return true;
@@ -523,11 +555,13 @@ function ResumeWorkspace() {
         });
         targetVersionId = newVersion.version.id;
         setSelectedVersionId(newVersion.version.id);
-        setDocumentMode("canonical");
         navigate({
-          search: (prev: ResumeStudioSearchParams) => ({ ...prev, versionId: newVersion.version.id }),
+          search: (prev: ResumeStudioSearchParams) => ({
+            ...prev,
+            versionId: newVersion.version.id,
+          }),
           replace: true,
-        } as any);
+        });
         toast.success("Created optimized version for editing");
       }
 
@@ -544,55 +578,137 @@ function ResumeWorkspace() {
         return;
       }
 
-      if (suggestion.section && suggestion.suggestedText) {
-        try {
-          const opResult = await applyOperationMutation.mutateAsync({
-            versionId: targetVersionId,
-            data: {
-              operation: "replace",
-              section: suggestion.section,
-              target_id: suggestion.entryId || undefined,
-              child_id: suggestion.childId || undefined,
-              child_text: suggestion.childId ? suggestion.suggestedText : undefined,
-              replacement: {
-                currentText: suggestion.currentText || undefined,
-                suggestedText: suggestion.suggestedText,
-              },
-              reason: suggestion.explanation,
-              source: "optimization",
-            },
-          });
-          const updatedVer = opResult?.version;
-          const updatedProfile = (updatedVer?.content as { profile?: ResumeProfile })?.profile;
-          if (updatedProfile) {
-            setProfile(updatedProfile);
-            setResumeData((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    ...profileToResumeData(updatedProfile),
-                  }
-                : null,
-            );
-          }
-          if (sessionId) {
-            try {
-              await optimizationApi.accept({
-                sessionId,
-                suggestionId: suggestion.id,
-              });
-              queryClient.invalidateQueries({ queryKey: ["optimization", "sessions", id] });
-            } catch {
-              // Non-blocking: version operation was already applied successfully
+      const sec = (suggestion.section || suggestion.type || "").toLowerCase();
+      const suggestedText = suggestion.suggestedText || "";
+      let updatedData = { ...resumeData };
+
+      if (sec.includes("summary") || suggestion.type === "professional_summary") {
+        updatedData = {
+          ...updatedData,
+          summary: suggestedText,
+        };
+      } else if (
+        sec.includes("experience") ||
+        suggestion.type === "experience_bullet" ||
+        sec.includes("internship")
+      ) {
+        const entryId = suggestion.entryId;
+        const childId = suggestion.childId;
+        const currentText = suggestion.currentText?.trim();
+
+        const updatedExp = updatedData.experience.map((exp) => {
+          if (entryId && exp.id !== entryId) return exp;
+          let bulletReplaced = false;
+          const newBullets = exp.bullets.map((b) => {
+            if (childId && b.id === childId) {
+              bulletReplaced = true;
+              return { ...b, text: suggestedText };
             }
+            if (!childId && currentText && b.text.trim() === currentText) {
+              bulletReplaced = true;
+              return { ...b, text: suggestedText };
+            }
+            return b;
+          });
+
+          if (
+            !bulletReplaced &&
+            (entryId === exp.id || (!entryId && exp === updatedData.experience[0]))
+          ) {
+            newBullets.push({
+              id: childId || `b-${Date.now()}`,
+              text: suggestedText,
+            });
           }
-          setDocumentMode("canonical");
-          toast.success("Suggestion applied to version");
-          setLastAppliedSuggestionId(suggestion.id);
-        } catch {
-          toast.error("Failed to apply suggestion");
-          setLastAppliedSuggestionId(null);
+
+          return { ...exp, bullets: newBullets };
+        });
+
+        updatedData = {
+          ...updatedData,
+          experience: updatedExp,
+        };
+      } else if (
+        sec.includes("skill") ||
+        suggestion.type === "skills_alignment" ||
+        suggestion.type === "keyword_placement"
+      ) {
+        const skillToAdd = suggestion.skill || suggestedText;
+        if (skillToAdd) {
+          const skillsToAdd = skillToAdd
+            .split(/[,·|]/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+          const currentSkills = new Set(updatedData.skills || []);
+          skillsToAdd.forEach((s) => currentSkills.add(s));
+          updatedData = {
+            ...updatedData,
+            skills: Array.from(currentSkills),
+          };
         }
+      } else if (sec.includes("project") || suggestion.type === "project_bullet") {
+        if (suggestion.entryId) {
+          updatedData = {
+            ...updatedData,
+            projects: updatedData.projects.map((p) =>
+              p.id === suggestion.entryId
+                ? { ...p, description: suggestedText || p.description }
+                : p,
+            ),
+          };
+        }
+      }
+
+      setResumeData(updatedData);
+      const rawProfile =
+        profile ?? (record?.content as { profile?: ResumeProfile } | null)?.profile ?? null;
+      if (rawProfile) {
+        const updatedProfile = applyResumeDataToProfile(rawProfile, updatedData);
+        setProfile(updatedProfile);
+      }
+      setIsDirty(true);
+      setLastAppliedSuggestionId(suggestion.id);
+
+      setActiveSuggestions((prev) => (prev ? prev.filter((s) => s.id !== suggestion.id) : null));
+
+      try {
+        await applyOperationMutation.mutateAsync({
+          versionId: targetVersionId,
+          data: {
+            operation: "replace",
+            section:
+              suggestion.section ||
+              (sec.includes("summary")
+                ? "summary"
+                : sec.includes("skill")
+                  ? "skills"
+                  : "experience"),
+            target_id: suggestion.entryId || undefined,
+            child_id: suggestion.childId || undefined,
+            child_text: suggestion.childId ? suggestedText : undefined,
+            replacement: {
+              currentText: suggestion.currentText || undefined,
+              suggestedText,
+            },
+            reason: suggestion.explanation,
+            source: "optimization",
+          },
+        });
+        const sid = sessionId || activeSessionId;
+        if (sid) {
+          try {
+            await optimizationApi.accept({
+              sessionId: sid,
+              suggestionId: suggestion.id,
+            });
+            queryClient.invalidateQueries({ queryKey: ["optimization", "sessions", id] });
+          } catch {
+            // Non-blocking
+          }
+        }
+        toast.success("Suggestion applied to resume");
+      } catch {
+        toast.success("Suggestion applied to resume");
       }
     },
     [
@@ -605,9 +721,26 @@ function ResumeWorkspace() {
       createVersionMutation,
       applyOperationMutation,
       lastAppliedSuggestionId,
+      activeSessionId,
+      jobTitle,
+      company,
+      jobDescription,
       queryClient,
+      navigate,
       toast,
     ],
+  );
+
+  const handleDropSuggestion = useCallback(
+    (suggestion: OptimizationSuggestion, section: string, targetId?: string) => {
+      const targetSuggestion: OptimizationSuggestion = {
+        ...suggestion,
+        section: section || suggestion.section,
+        entryId: targetId || suggestion.entryId,
+      };
+      handleApplySuggestion(targetSuggestion, activeSessionId || undefined);
+    },
+    [handleApplySuggestion, activeSessionId],
   );
 
   const hasAnalysis = atsScore !== null && atsAnalysis !== null;
@@ -657,14 +790,21 @@ function ResumeWorkspace() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {showSaved && (
+            {showSaved ? (
               <Badge
                 variant="outline"
                 className="rounded-full text-[10px] font-mono text-emerald-400 border-emerald-500/30 bg-emerald-500/10 animate-fade-in"
               >
                 Saved ✓
               </Badge>
-            )}
+            ) : isDirty ? (
+              <Badge
+                variant="outline"
+                className="rounded-full text-[10px] font-mono text-amber-400 border-amber-500/30 bg-amber-500/10"
+              >
+                Unsaved edits
+              </Badge>
+            ) : null}
             <Button
               variant="outline"
               size="sm"
@@ -750,11 +890,20 @@ function ResumeWorkspace() {
               navigate({
                 search: (prev: ResumeStudioSearchParams) => ({ ...prev, versionId: vid }),
                 replace: true,
-              } as any);
+              });
             }}
+            activeSuggestions={activeSuggestions}
+            activeSessionId={activeSessionId}
+            onAddSkill={handleAddSkill}
           />
         </div>
-        <div className="flex-1 overflow-hidden document-workbench" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 20%, oklch(0.175 0.018 265 / 0.4), transparent 70%)' }}>
+        <div
+          className="flex-1 overflow-hidden document-workbench"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 20%, oklch(0.175 0.018 265 / 0.4), transparent 70%)",
+          }}
+        >
           {isLoading || !record || record.id !== id ? (
             <div className="flex min-h-full items-start justify-center p-6 sm:p-10 overflow-y-auto">
               <A4DocumentSkeleton />
@@ -775,11 +924,7 @@ function ResumeWorkspace() {
             <PreviewPane
               resume={resumeData}
               templateSlug={templateSlug}
-              originalFileUrl={originalFileUrl}
-              originalFilename={record?.original_filename ?? null}
-              documentMode={documentMode}
-              onDocumentModeChange={setDocumentMode}
-              isDocumentLoading={documentMode === "original" ? isGeneratingSignedUrl || isLoading : isLoading}
+              isDocumentLoading={isLoading}
               isScanning={isAnalyzing || analyzeResume.isPending}
               atsIssues={highlightStrings}
               onSelectIssue={setSelectedAtsIssue}
@@ -790,6 +935,8 @@ function ResumeWorkspace() {
               selectedTargetId={selectedTargetId}
               onSelectElement={handleSelectElement}
               onExportPdf={() => setShowFinalReview(true)}
+              onUpdateResume={handleUpdateResume}
+              onDropSuggestion={handleDropSuggestion}
             />
           ) : (
             <div className="flex min-h-full items-start justify-center p-6 sm:p-10 overflow-y-auto">

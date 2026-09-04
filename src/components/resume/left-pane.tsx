@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { staggerContainer, staggerItem, fadeOnly } from '@/lib/motion';
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 import {
   Sparkles,
   Target,
@@ -10,6 +10,9 @@ import {
   XCircle,
   ListChecks,
   Gauge,
+  Loader2,
+  GripVertical,
+  Plus,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,14 +22,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-tooltip";
 import { useVersions } from "@/hooks/api/useVersions";
-import { useResumeCompleteness } from "@/hooks/api/useResumes";
 import { optimizationApi } from "@/api/optimization";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useGenerateSkillsOptimization,
   useGenerateSummaryOptimization,
 } from "@/hooks/api/useOptimization";
-import type { OptimizationSession, OptimizationSuggestion } from "@/types/optimization";
+import type { OptimizationSuggestion } from "@/types/optimization";
 import type { AtsAnalysisResult } from "@/api/ats";
 import { buildAtsRequirementViews, atsRequirementDomId } from "@/lib/ats-evidence-view";
 import { interpretAtsScore, summarizeRequirementCoverage } from "@/lib/ats-evidence-view";
@@ -46,11 +48,7 @@ function PaneSection({
   children: React.ReactNode;
 }) {
   return (
-    <motion.section
-      variants={staggerItem}
-      initial="hidden"
-      animate="show"
-    >
+    <motion.section variants={staggerItem} initial="hidden" animate="show">
       <div className="mb-2.5 flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <Icon className="h-3.5 w-3.5 text-primary" />
@@ -76,17 +74,23 @@ function SuggestionCard({
   onReject: () => void;
   isPending: boolean;
 }) {
-  const [state, setState] = useState<'idle' | 'accepting' | 'rejecting'>('idle');
+  const [state, setState] = useState<"idle" | "accepting" | "rejecting">("idle");
   const reducedMotion = useReducedMotion();
 
   const handleAccept = () => {
-    if (reducedMotion) { onAccept(); return; }
-    setState('accepting');
+    if (reducedMotion) {
+      onAccept();
+      return;
+    }
+    setState("accepting");
     setTimeout(() => onAccept(), 220);
   };
   const handleReject = () => {
-    if (reducedMotion) { onReject(); return; }
-    setState('rejecting');
+    if (reducedMotion) {
+      onReject();
+      return;
+    }
+    setState("rejecting");
     setTimeout(() => onReject(), 220);
   };
 
@@ -100,106 +104,145 @@ function SuggestionCard({
     ? suggestion.affectedKeywords.filter(Boolean)
     : [];
 
+  // Determine action button label
+  const section = (suggestion.section || suggestion.type || "").toLowerCase();
+  const isSummary = section.includes("summary") || suggestion.type === "professional_summary";
+  const isBullet =
+    section.includes("experience") ||
+    suggestion.type === "experience_bullet" ||
+    section.includes("internship");
+  const isSkills =
+    section.includes("skill") ||
+    suggestion.type === "skills_alignment" ||
+    suggestion.type === "keyword_placement";
+
+  const actionLabel = isSummary
+    ? "Replace Summary"
+    : isBullet
+      ? "Replace Bullet"
+      : isSkills
+        ? "Add to Skills"
+        : "Apply";
+
   return (
     <motion.div
-      className="space-y-2.5 p-3 text-left transition-colors hover:bg-surface-elevated/40 rounded-lg"
       animate={{
-        opacity: state === 'idle' ? 1 : 0,
-        x: state === 'accepting' ? 20 : state === 'rejecting' ? -20 : 0,
-        scale: state === 'idle' ? 1 : 0.96,
+        opacity: state === "idle" ? 1 : 0,
+        x: state === "accepting" ? 20 : state === "rejecting" ? -20 : 0,
+        scale: state === "idle" ? 1 : 0.96,
       }}
       transition={{ duration: 0.2, ease: [0.45, 0, 0.55, 1] }}
     >
-      <div className="flex items-center justify-between gap-2">
-        <Badge
-          variant="outline"
-          className="rounded-md border-border/60 bg-background/50 px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wider text-primary"
-        >
-          {suggestion.section || suggestion.type}
-        </Badge>
-        <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {suggestion.priority} priority
-        </span>
-      </div>
-
-      {suggestion.currentText && (
-        <div className="space-y-0.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Current / Weak
+      <div
+        draggable={true}
+        onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
+          const payload = JSON.stringify(suggestion);
+          e.dataTransfer.setData("application/json", payload);
+          e.dataTransfer.setData("text/plain", suggestion.suggestedText || "");
+          e.dataTransfer.effectAllowed = "copy";
+        }}
+        className="space-y-2.5 p-3 text-left transition-all hover:bg-surface-elevated/50 rounded-lg border border-border/50 bg-surface/40 cursor-grab active:cursor-grabbing hover:border-primary/40 shadow-2xs"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+            <Badge
+              variant="outline"
+              className="rounded-md border-border/60 bg-background/60 px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wider text-primary"
+            >
+              {suggestion.section || suggestion.type}
+            </Badge>
+          </div>
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {suggestion.priority} priority
           </span>
-          <div className="text-xs text-muted-foreground/85 line-through decoration-destructive/60 rounded bg-destructive/5 border border-destructive/15 p-2">
-            {suggestion.currentText}
+        </div>
+
+        {suggestion.currentText && (
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Current / Weak
+            </span>
+            <div className="text-xs text-muted-foreground/85 line-through decoration-destructive/60 rounded bg-destructive/5 border border-destructive/15 p-2 leading-relaxed">
+              {suggestion.currentText}
+            </div>
+          </div>
+        )}
+
+        {suggestion.suggestedText && (
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              Proposed Improvement
+            </span>
+            <div className="text-xs font-medium text-foreground rounded bg-emerald-500/10 border border-emerald-500/20 p-2 leading-relaxed">
+              {suggestion.suggestedText}
+            </div>
+          </div>
+        )}
+
+        {suggestion.explanation && (
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Why It Matters
+            </span>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              {suggestion.explanation}
+            </p>
+          </div>
+        )}
+
+        {evidenceList && (
+          <div className="rounded bg-surface-elevated/50 border border-border/50 p-2 text-[10.5px] text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-foreground/90">Resume Evidence: </span>
+            {evidenceList}
+          </div>
+        )}
+
+        {keywords.length > 0 && (
+          <div className="space-y-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Target Keywords
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {keywords.map((kw) => (
+                <Badge
+                  key={kw}
+                  variant="secondary"
+                  className="rounded text-[9.5px] font-normal px-1.5 py-0 border border-border/60"
+                >
+                  {kw}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="pt-1 flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 flex-1 rounded-md text-xs font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+              onClick={handleAccept}
+              disabled={isPending}
+            >
+              {actionLabel}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-16 rounded-md text-xs font-medium text-destructive hover:bg-destructive/10"
+              onClick={handleReject}
+              disabled={isPending}
+            >
+              Reject
+            </Button>
+          </div>
+          <div className="text-[9.5px] text-muted-foreground/70 flex items-center justify-center gap-1 italic select-none">
+            <GripVertical className="h-2.5 w-2.5" />
+            <span>Drag to section or click {actionLabel}</span>
           </div>
         </div>
-      )}
-
-      {suggestion.suggestedText && (
-        <div className="space-y-0.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            Proposed Improvement
-          </span>
-          <div className="text-xs font-medium text-foreground rounded bg-emerald-500/10 border border-emerald-500/20 p-2 leading-relaxed">
-            {suggestion.suggestedText}
-          </div>
-        </div>
-      )}
-
-      {suggestion.explanation && (
-        <div className="space-y-0.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Why It Matters
-          </span>
-          <p className="text-[11px] leading-relaxed text-muted-foreground">
-            {suggestion.explanation}
-          </p>
-        </div>
-      )}
-
-      {evidenceList && (
-        <div className="rounded bg-surface-elevated/50 border border-border/50 p-2 text-[10.5px] text-muted-foreground leading-relaxed">
-          <span className="font-semibold text-foreground/90">Resume Evidence: </span>
-          {evidenceList}
-        </div>
-      )}
-
-      {keywords.length > 0 && (
-        <div className="space-y-1">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Target Keywords
-          </span>
-          <div className="flex flex-wrap gap-1">
-            {keywords.map((kw) => (
-              <Badge
-                key={kw}
-                variant="secondary"
-                className="rounded text-[9.5px] font-normal px-1.5 py-0 border border-border/60"
-              >
-                {kw}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex items-center gap-2 pt-1">
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 flex-1 rounded-md text-xs font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-          onClick={handleAccept}
-          disabled={isPending}
-        >
-          Apply
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 flex-1 rounded-md text-xs font-medium text-destructive hover:bg-destructive/10"
-          onClick={handleReject}
-          disabled={isPending}
-        >
-          Reject
-        </Button>
       </div>
     </motion.div>
   );
@@ -222,10 +265,12 @@ function ChipList({
   items,
   tone,
   empty,
+  onAddSkill,
 }: {
   items: string[] | undefined;
   tone: "positive" | "negative" | "neutral";
   empty: string;
+  onAddSkill?: (skill: string) => void;
 }) {
   const list = items ?? [];
   if (list.length === 0) {
@@ -243,9 +288,22 @@ function ChipList({
         <Badge
           key={item}
           variant="outline"
-          className={`rounded-md border px-2 py-0.5 text-[10px] font-medium ${toneClass}`}
+          className={`rounded-md border px-2 py-0.5 text-[10px] font-medium flex items-center gap-1 ${toneClass}`}
         >
-          {item}
+          <span>{item}</span>
+          {onAddSkill && tone === "negative" && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddSkill(item);
+              }}
+              title={`Add "${item}" to resume skills`}
+              className="ml-0.5 rounded-full hover:bg-rose-500/20 p-0.5 text-rose-700 dark:text-rose-300 transition-colors"
+            >
+              <Plus className="h-2.5 w-2.5" />
+            </button>
+          )}
         </Badge>
       ))}
     </div>
@@ -259,6 +317,7 @@ function AtsAnalysisSummary({
   evidenceLocations,
   resumeId,
   reportId,
+  onAddSkill,
 }: {
   analysis: AtsAnalysisResult;
   selectedAtsIssue?: string | null;
@@ -266,6 +325,7 @@ function AtsAnalysisSummary({
   evidenceLocations?: EvidenceLocationMap | null;
   resumeId?: string;
   reportId?: string | null;
+  onAddSkill?: (skill: string) => void;
 }) {
   const views = useMemo(() => buildAtsRequirementViews(analysis), [analysis]);
   const overall = Math.round(analysis.overall_score ?? 0);
@@ -278,8 +338,6 @@ function AtsAnalysisSummary({
   const missingSkills = analysis.missing_skills ?? [];
   const partialSkills = analysis.partial_skills ?? [];
 
-  // Target 4.6: only recommendations NOT confidently attached to a requirement
-  // card remain in the general list — no false attachment duplication.
   const { general: generalRecs } = useMemo(
     () => partitionRecommendations(analysis, views),
     [analysis, views],
@@ -306,12 +364,9 @@ function AtsAnalysisSummary({
             {overall}%
           </span>
         </div>
-        {/* Target 4.6: interpretation of alignment with the supplied job
-            description only — never a hiring-probability claim. */}
         <p className="mb-2 text-[11px] font-semibold text-foreground/90">{scoreBand.label}</p>
         <Progress value={overall} className="h-2 bg-muted/80" />
         {coverage.importantTotal > 0 && (
-          // Real counts from requirement_coverage — no static numbers.
           <p className="mt-2 text-[11px] text-muted-foreground font-medium">
             {coverage.importantAddressed} of {coverage.importantTotal} key requirements addressed
           </p>
@@ -333,14 +388,11 @@ function AtsAnalysisSummary({
         <ScoreCell label="Keywords" score={analysis.keyword_match_score} />
         <ScoreCell label="Skills" score={analysis.skills_match_score} />
         <ScoreCell label="Experience" score={analysis.experience_relevance_score} />
-        <ScoreCell label="Qualification" score={analysis.qualification_match_score} />
+        <ScoreCell label="Qualifications" score={analysis.qualification_match_score} />
         <ScoreCell label="Structure" score={analysis.structure_format_score} />
       </div>
 
       {views.length > 0 ? (
-        // Target 4.4 / 5.2 — interactive requirement cards when requirement_coverage
-        // is available from the current ATS pipeline. Keyed by requirement set
-        // so a fresh analysis re-seeds the default expansion state.
         <AtsEvidenceList
           key={views.map((v) => v.id).join("|")}
           views={views}
@@ -352,7 +404,6 @@ function AtsAnalysisSummary({
         />
       ) : (
         <>
-          {/* Target 4.6 empty state: the JD yielded no structured requirements. */}
           <p className="rounded-xl border border-border/40 p-2.5 text-[11px] text-muted-foreground">
             Not enough structured requirements were detected.
           </p>
@@ -383,6 +434,7 @@ function AtsAnalysisSummary({
                   items={missingKw}
                   tone="negative"
                   empty="No missing keywords — great match."
+                  onAddSkill={onAddSkill}
                 />
               </div>
             </div>
@@ -415,7 +467,12 @@ function AtsAnalysisSummary({
                   <XCircle className="h-3 w-3 text-rose-500" />
                   <span>Missing Skills ({missingSkills.length})</span>
                 </div>
-                <ChipList items={missingSkills} tone="negative" empty="No missing skills." />
+                <ChipList
+                  items={missingSkills}
+                  tone="negative"
+                  empty="No missing skills."
+                  onAddSkill={onAddSkill}
+                />
               </div>
             </div>
           )}
@@ -506,6 +563,9 @@ export function LeftPane({
   isGeneratingOptimization,
   generateOptimizationError,
   onSelectVersion,
+  activeSuggestions,
+  activeSessionId,
+  onAddSkill,
 }: {
   currentId: string;
   currentVersionId: string | null;
@@ -526,6 +586,9 @@ export function LeftPane({
   isGeneratingOptimization?: boolean;
   generateOptimizationError?: string | null;
   onSelectVersion?: (versionId: string) => void;
+  activeSuggestions?: OptimizationSuggestion[] | null;
+  activeSessionId?: string | null;
+  onAddSkill?: (skill: string) => void;
 }) {
   const { data: versionsData, isLoading: versionsLoading } = useVersions(currentId);
   const { toast } = useToast();
@@ -557,23 +620,57 @@ export function LeftPane({
     return sessionsData.sessions[0];
   }, [sessionsData]);
 
-  const suggestions = useMemo(() => latestSession?.suggestions ?? [], [latestSession]);
-
-  const suggestionsBySection = useMemo(() => {
-    const grouped: Record<string, OptimizationSuggestion[]> = {};
-    for (const record of suggestions) {
-      const s = record.suggestion;
-      const section = s.section || s.type || "other";
-      if (!grouped[section]) grouped[section] = [];
-      grouped[section].push(s);
+  // Combine active suggestions passed directly from mutation with session query suggestions
+  const effectiveSuggestions: OptimizationSuggestion[] = useMemo(() => {
+    if (activeSuggestions && activeSuggestions.length > 0) {
+      return activeSuggestions;
     }
-    return grouped;
-  }, [suggestions]);
+    return latestSession?.suggestions?.map((s) => s.suggestion) ?? [];
+  }, [activeSuggestions, latestSession]);
+
+  const effectiveSessionId = activeSessionId || latestSession?.id;
+
+  // Clear grouping: Summary, Experience bullets, Skills & Keywords, Other
+  const groupedSuggestions = useMemo(() => {
+    const summary: OptimizationSuggestion[] = [];
+    const experience: OptimizationSuggestion[] = [];
+    const skills: OptimizationSuggestion[] = [];
+    const other: OptimizationSuggestion[] = [];
+
+    for (const s of effectiveSuggestions) {
+      const sec = (s.section || s.type || "").toLowerCase();
+      if (sec.includes("summary") || s.type === "professional_summary") {
+        summary.push(s);
+      } else if (
+        sec.includes("experience") ||
+        s.type === "experience_bullet" ||
+        sec.includes("internship")
+      ) {
+        experience.push(s);
+      } else if (
+        sec.includes("skill") ||
+        s.type === "skills_alignment" ||
+        s.type === "keyword_placement"
+      ) {
+        skills.push(s);
+      } else {
+        other.push(s);
+      }
+    }
+
+    return { summary, experience, skills, other };
+  }, [effectiveSuggestions]);
+
+  // State machine for Run Optimization button: IDLE -> GENERATING -> RESULTS_AVAILABLE
+  type OptimizationStatus = "IDLE" | "GENERATING" | "RESULTS_AVAILABLE";
+  const optimizationStatus: OptimizationStatus = useMemo(() => {
+    if (isGeneratingOptimization) return "GENERATING";
+    if (effectiveSuggestions.length > 0) return "RESULTS_AVAILABLE";
+    return "IDLE";
+  }, [isGeneratingOptimization, effectiveSuggestions.length]);
 
   const hasJobContext = Boolean(targetJobTitle && targetJobDescription?.trim());
 
-  // PDF → ATS panel link: when a requirement is selected (from the panel or by
-  // clicking a highlight in the original PDF), bring its card into view.
   useEffect(() => {
     if (!selectedAtsIssue) return;
     const frame = requestAnimationFrame(() => {
@@ -643,12 +740,26 @@ export function LeftPane({
             {onRunOptimization && (
               <Button
                 size="sm"
-                className="w-full h-8 rounded-lg text-xs font-medium shadow-xs"
+                className="w-full h-8 rounded-lg text-xs font-semibold shadow-xs"
                 onClick={onRunOptimization}
-                disabled={isGeneratingOptimization}
+                disabled={optimizationStatus === "GENERATING"}
               >
-                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                {isGeneratingOptimization ? "Generating..." : "Run Optimization"}
+                {optimizationStatus === "GENERATING" ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Generating Suggestions...
+                  </>
+                ) : optimizationStatus === "RESULTS_AVAILABLE" ? (
+                  <>
+                    <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" />
+                    Re-run Optimization ({effectiveSuggestions.length} available)
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                    Run Optimization
+                  </>
+                )}
               </Button>
             )}
             {generateOptimizationError && (
@@ -731,7 +842,6 @@ export function LeftPane({
           <PaneSection icon={Gauge} title="ATS Analysis">
             {isAnalyzing ? (
               <div className="space-y-2">
-                {/* Target 4.6: name what is happening, no fake progress. */}
                 <p className="text-[11px] text-muted-foreground" aria-live="polite">
                   {targetJobTitle?.trim()
                     ? `Analyzing your resume against ${targetJobTitle.trim()}${
@@ -783,6 +893,7 @@ export function LeftPane({
                 evidenceLocations={evidenceLocations}
                 resumeId={currentId}
                 reportId={reportId}
+                onAddSkill={onAddSkill}
               />
             ) : (
               <Card className="glass rounded-2xl border-border/60 p-4 text-center">
@@ -804,7 +915,6 @@ export function LeftPane({
             )}
           </PaneSection>
         ) : (
-          // Target 4.6 empty state: no job context yet — say what to do next.
           <PaneSection icon={Gauge} title="ATS Analysis">
             <Card className="glass rounded-2xl border-border/60 p-4 text-center">
               <div className="text-xs text-muted-foreground">
@@ -824,49 +934,54 @@ export function LeftPane({
           </PaneSection>
         )}
 
+        {/* AI Suggestions Section with Clear Groupings */}
         {hasAnalysis && (
           <PaneSection
             icon={Sparkles}
             title="AI Suggestions"
             action={
               <Badge variant="secondary" className="rounded-full text-[10px]">
-                {suggestions.length}
+                {effectiveSuggestions.length}
               </Badge>
             }
           >
-            {sessionsLoading ? (
+            {sessionsLoading && !activeSuggestions ? (
               <div className="space-y-2">
                 {Array.from({ length: 2 }).map((_, i) => (
                   <Skeleton key={i} className="h-20 w-full rounded-xl" />
                 ))}
               </div>
-            ) : suggestions.length === 0 ? (
+            ) : effectiveSuggestions.length === 0 ? (
               <Card className="glass rounded-2xl border-border/60 p-4 text-center">
                 <div className="text-xs text-muted-foreground">
                   Run optimization to get AI-powered suggestions.
                 </div>
               </Card>
             ) : (
-              <div className="space-y-3">
-                {Object.entries(suggestionsBySection).map(([section, items]) => (
-                  <div key={section} className="space-y-1.5">
-                    <div className="px-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      {section}
+              <div className="space-y-4">
+                {/* 1. Summary Suggestions */}
+                {groupedSuggestions.summary.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
+                      <span>Summary Improvements</span>
+                      <span className="font-mono text-[9px] text-muted-foreground">
+                        {groupedSuggestions.summary.length}
+                      </span>
                     </div>
-                    <div className="divide-y divide-border/40 overflow-hidden rounded-xl border border-border/60 bg-surface-elevated/20">
-                      {items.map((suggestion) => (
+                    <div className="space-y-2">
+                      {groupedSuggestions.summary.map((suggestion) => (
                         <SuggestionCard
                           key={suggestion.id}
                           suggestion={suggestion}
                           isPending={rejectMutation.isPending}
                           onAccept={() => {
-                            if (!latestSession || !onApplySuggestion) return;
-                            onApplySuggestion(suggestion, latestSession.id);
+                            if (!onApplySuggestion) return;
+                            onApplySuggestion(suggestion, effectiveSessionId);
                           }}
                           onReject={() => {
-                            if (!latestSession) return;
+                            if (!effectiveSessionId) return;
                             rejectMutation.mutate({
-                              sessionId: latestSession.id,
+                              sessionId: effectiveSessionId,
                               suggestionId: suggestion.id,
                             });
                           }}
@@ -874,7 +989,103 @@ export function LeftPane({
                       ))}
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* 2. Experience Bullet Suggestions */}
+                {groupedSuggestions.experience.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
+                      <span>Experience Bullet Rewrites</span>
+                      <span className="font-mono text-[9px] text-muted-foreground">
+                        {groupedSuggestions.experience.length}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {groupedSuggestions.experience.map((suggestion) => (
+                        <SuggestionCard
+                          key={suggestion.id}
+                          suggestion={suggestion}
+                          isPending={rejectMutation.isPending}
+                          onAccept={() => {
+                            if (!onApplySuggestion) return;
+                            onApplySuggestion(suggestion, effectiveSessionId);
+                          }}
+                          onReject={() => {
+                            if (!effectiveSessionId) return;
+                            rejectMutation.mutate({
+                              sessionId: effectiveSessionId,
+                              suggestionId: suggestion.id,
+                            });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Skills & Keywords Suggestions */}
+                {groupedSuggestions.skills.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
+                      <span>Skills & Keyword Additions</span>
+                      <span className="font-mono text-[9px] text-muted-foreground">
+                        {groupedSuggestions.skills.length}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {groupedSuggestions.skills.map((suggestion) => (
+                        <SuggestionCard
+                          key={suggestion.id}
+                          suggestion={suggestion}
+                          isPending={rejectMutation.isPending}
+                          onAccept={() => {
+                            if (!onApplySuggestion) return;
+                            onApplySuggestion(suggestion, effectiveSessionId);
+                          }}
+                          onReject={() => {
+                            if (!effectiveSessionId) return;
+                            rejectMutation.mutate({
+                              sessionId: effectiveSessionId,
+                              suggestionId: suggestion.id,
+                            });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Other Suggestions */}
+                {groupedSuggestions.other.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground flex items-center justify-between">
+                      <span>Other Suggestions</span>
+                      <span className="font-mono text-[9px] text-muted-foreground">
+                        {groupedSuggestions.other.length}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {groupedSuggestions.other.map((suggestion) => (
+                        <SuggestionCard
+                          key={suggestion.id}
+                          suggestion={suggestion}
+                          isPending={rejectMutation.isPending}
+                          onAccept={() => {
+                            if (!onApplySuggestion) return;
+                            onApplySuggestion(suggestion, effectiveSessionId);
+                          }}
+                          onReject={() => {
+                            if (!effectiveSessionId) return;
+                            rejectMutation.mutate({
+                              sessionId: effectiveSessionId,
+                              suggestionId: suggestion.id,
+                            });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </PaneSection>

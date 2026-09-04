@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   Minus,
   Plus,
@@ -8,17 +8,29 @@ import {
   FileText,
   AlertTriangle,
   Loader2,
-  Eye,
-  FileCode2,
+  Sparkles,
+  Check,
+  X,
+  Pencil,
+  Trash2,
+  PlusCircle,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { ResumeData, ResumeProfile } from "@/types/resume";
+import { cn } from "@/lib/utils";
+import type {
+  ResumeData,
+  ResumeProfile,
+  ResumeContact,
+  ExperienceItem,
+  BulletItem,
+} from "@/types/resume";
+import type { OptimizationSuggestion } from "@/types/optimization";
 import { TemplatePreview } from "@/components/resume/templates/template-preview";
-import { PdfCanvasPreview } from "@/components/resume/pdf-canvas-preview";
 import type { AtsRequirementCoverage } from "@/api/ats";
 import type { EvidenceLocationMap } from "@/lib/evidence-location";
 import { motion, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
@@ -65,7 +77,12 @@ function SpatialDocumentStage({ children }: { children: React.ReactNode }) {
           transformStyle: "preserve-3d",
         }}
         initial={{ opacity: 0, y: 24, rotateX: 3 }}
-        animate={{ opacity: 1, y: 0, rotateX: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          rotateX: 0,
+          transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+        }}
       >
         {children}
       </motion.div>
@@ -77,13 +94,11 @@ const ZOOM_MIN = 50;
 const ZOOM_MAX = 200;
 const ZOOM_STEP = 10;
 
-export type DocumentPreviewMode = "original" | "canonical";
+export type DocumentPreviewMode = "canonical";
 
 interface PreviewPaneProps {
   resume: ResumeData;
   templateSlug?: string;
-  originalFileUrl?: string | null;
-  originalFilename?: string | null;
   isScanning?: boolean;
   atsIssues?: string[];
   onSelectIssue?: (issue: string) => void;
@@ -94,16 +109,18 @@ interface PreviewPaneProps {
   selectedTargetId?: string | null;
   onSelectElement?: (elementId: string, section: string) => void;
   onExportPdf?: () => void;
-  documentMode?: DocumentPreviewMode;
-  onDocumentModeChange?: (mode: DocumentPreviewMode) => void;
   isDocumentLoading?: boolean;
+  onUpdateResume?: (updated: ResumeData) => void;
+  onDropSuggestion?: (
+    suggestion: OptimizationSuggestion,
+    section: string,
+    targetId?: string,
+  ) => void;
 }
 
 export function PreviewPane({
   resume,
   templateSlug,
-  originalFileUrl,
-  originalFilename,
   isScanning = false,
   atsIssues = [],
   onSelectIssue,
@@ -114,23 +131,15 @@ export function PreviewPane({
   selectedTargetId,
   onSelectElement,
   onExportPdf,
-  documentMode = "original",
-  onDocumentModeChange,
   isDocumentLoading = false,
+  onUpdateResume,
+  onDropSuggestion,
 }: PreviewPaneProps) {
   const [zoom, setZoom] = useState(100);
-  const [previewError, setPreviewError] = useState(false);
-
-  const isPdf = originalFilename?.toLowerCase().endsWith(".pdf") ?? false;
-  const isOriginalPdfExpected = Boolean(isPdf && !previewError && !templateSlug);
 
   const change = (dir: 1 | -1) => {
     setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + dir * ZOOM_STEP)));
   };
-
-  const handlePreviewError = useCallback(() => {
-    setPreviewError(true);
-  }, []);
 
   const handlePrint = useCallback(() => {
     window.print();
@@ -158,18 +167,9 @@ export function PreviewPane({
     }
   }, [selectedTargetId, selectedRequirementId]);
 
-  const activeMode: DocumentPreviewMode = templateSlug || previewError ? "canonical" : documentMode;
-  const showOriginalPdf = Boolean(
-    activeMode === "original" && originalFileUrl && isPdf && !previewError,
-  );
-  const isAwaitingPdf = Boolean(
-    activeMode === "original" && isOriginalPdfExpected && !originalFileUrl && !previewError,
-  );
-  const scanActive = isScanning && showOriginalPdf;
-
   return (
     <div className="flex h-full flex-col bg-background select-none">
-      {/* Professional Workspace Toolbar */}
+      {/* Professional Canonical Workspace Toolbar */}
       <div className="workstation-panel flex items-center gap-2 border-b border-border/80 px-4 py-2 shrink-0 z-10 shadow-xs">
         {/* Zoom Controls */}
         <div className="flex items-center gap-0.5 rounded-lg border border-border/80 bg-surface-instrument/80 p-0.5 shadow-inner-recessed">
@@ -216,48 +216,16 @@ export function PreviewPane({
 
         <Separator orientation="vertical" className="mx-1 h-5 bg-border/60" />
 
-        {/* Mode Switcher / Format Indicator */}
-        {isPdf && !previewError && !templateSlug && onDocumentModeChange ? (
-          <div className="flex items-center rounded-lg border border-border/70 bg-surface-elevated/50 p-0.5 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => onDocumentModeChange("original")}
-              className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
-                activeMode === "original"
-                  ? "bg-background text-foreground shadow-xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Eye className="h-3 w-3" />
-              Original PDF
-            </button>
-            <button
-              type="button"
-              onClick={() => onDocumentModeChange("canonical")}
-              className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
-                activeMode === "canonical"
-                  ? "bg-background text-foreground shadow-xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <FileCode2 className="h-3 w-3" />
-              Live Resume
-            </button>
-          </div>
-        ) : (
-          <Badge
-            variant="outline"
-            className="rounded-md border-border/80 bg-surface-elevated/40 px-2 py-0.5 text-[10.5px] font-normal text-muted-foreground"
-          >
-            {showOriginalPdf
-              ? "Original PDF Document"
-              : templateSlug
-                ? `Template: ${templateSlug}`
-                : "A4 · Recruiter Standard"}
-          </Badge>
-        )}
+        {/* Canonical Document Identifier */}
+        <Badge
+          variant="outline"
+          className="rounded-md border-border/80 bg-surface-elevated/40 px-2.5 py-0.5 text-[10.5px] font-medium text-foreground flex items-center gap-1.5"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          {templateSlug ? `Template: ${templateSlug}` : "Canonical Resume Document · Editable"}
+        </Badge>
 
-        {scanActive && (
+        {isScanning && (
           <span
             role="status"
             className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[10.5px] font-medium text-primary shadow-2xs"
@@ -293,8 +261,7 @@ export function PreviewPane({
 
       {/* Neutral Dark Document Workbench Canvas */}
       <ScrollArea className="flex-1 bg-zinc-950/95 dark:bg-[#090a0d] bg-cockpit-grid">
-        {isAwaitingPdf || isDocumentLoading ? (
-          // Stable loading state — NEVER flashes raw/stale text while PDF or profile is resolving
+        {isDocumentLoading ? (
           <div className="flex min-h-full items-start justify-center p-6 sm:p-10">
             <div
               className="transition-transform duration-100 ease-out origin-top flex flex-col items-center"
@@ -308,62 +275,25 @@ export function PreviewPane({
           </div>
         ) : (
           <SpatialDocumentStage>
-            {showOriginalPdf && originalFileUrl ? (
-              // Original-PDF branch: PDF.js renders the actual uploaded document bytes.
-              <div className="w-full flex justify-center">
-                <PdfCanvasPreview
-                  url={originalFileUrl}
-                  zoom={zoom / 100}
-                  onError={handlePreviewError}
-                  isScanning={scanActive}
-                  highlightStrings={atsIssues}
-                  onSelectIssue={onSelectIssue}
-                  requirementCoverage={requirementCoverage}
-                  evidenceLocations={evidenceLocations}
-                  onEvidenceLocationsChange={onEvidenceLocationsChange}
-                  selectedRequirementId={selectedRequirementId}
+            <div
+              className="transition-transform duration-100 ease-out origin-top flex flex-col items-center"
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: "top center",
+              }}
+            >
+              {templateSlug ? (
+                <TemplatePreviewWrapper resume={resume} templateSlug={templateSlug} />
+              ) : (
+                <A4Page
+                  resume={resume}
+                  selectedTargetId={selectedTargetId}
+                  onSelectElement={onSelectElement}
+                  onUpdateResume={onUpdateResume}
+                  onDropSuggestion={onDropSuggestion}
                 />
-              </div>
-            ) : originalFileUrl && !isPdf ? (
-              <Card className="mx-auto w-[794px] min-h-[1123px] bg-white text-slate-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.65)] ring-1 ring-black/15 flex items-center justify-center p-8">
-                <div className="text-center">
-                  <FileText className="h-12 w-12 mx-auto text-muted-foreground/50" />
-                  <p className="mt-4 text-sm font-medium">Original document: {originalFilename}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    DOCX preview not available in browser. Showing reconstructed recruiter view below.
-                  </p>
-                </div>
-              </Card>
-            ) : (
-              <div
-                className="transition-transform duration-100 ease-out origin-top flex flex-col items-center"
-                style={{
-                  transform: `scale(${zoom / 100})`,
-                  transformOrigin: "top center",
-                }}
-              >
-                {previewError && originalFileUrl && isPdf && (
-                  <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-center max-w-md">
-                    <AlertTriangle className="h-5 w-5 mx-auto text-destructive" />
-                    <p className="mt-2 text-xs font-semibold text-destructive">
-                      Could not render original PDF
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      Displaying reconstructed document representation.
-                    </p>
-                  </div>
-                )}
-                {templateSlug ? (
-                  <TemplatePreviewWrapper resume={resume} templateSlug={templateSlug} />
-                ) : (
-                  <A4Page
-                    resume={resume}
-                    selectedTargetId={selectedTargetId}
-                    onSelectElement={onSelectElement}
-                  />
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </SpatialDocumentStage>
         )}
       </ScrollArea>
@@ -371,34 +301,197 @@ export function PreviewPane({
   );
 }
 
+interface A4PageProps {
+  resume: ResumeData;
+  selectedTargetId?: string | null;
+  onSelectElement?: (elementId: string, section: string) => void;
+  onUpdateResume?: (updated: ResumeData) => void;
+  onDropSuggestion?: (
+    suggestion: OptimizationSuggestion,
+    section: string,
+    targetId?: string,
+  ) => void;
+}
+
 // 794 × 1123 px ≈ A4 at 96dpi
 export function A4Page({
   resume,
   selectedTargetId,
   onSelectElement,
-}: {
-  resume: ResumeData;
-  selectedTargetId?: string | null;
-  onSelectElement?: (elementId: string, section: string) => void;
-}) {
+  onUpdateResume,
+  onDropSuggestion,
+}: A4PageProps) {
+  const [editingTarget, setEditingTarget] = useState<string | null>(null);
+  const [dragOverSection, setDragOverSection] = useState<string | null>(null);
+  const [newSkillText, setNewSkillText] = useState("");
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
+
   const contact = resume.contact;
 
-  const hasContactInfo = Boolean(
-    contact.fullName ||
-    contact.headline ||
-    contact.email ||
-    contact.phone ||
-    contact.location ||
-    contact.website ||
-    contact.linkedin ||
-    contact.github,
-  );
+  const handleUpdateContact = (field: keyof ResumeContact, value: string) => {
+    if (!onUpdateResume) return;
+    onUpdateResume({
+      ...resume,
+      contact: {
+        ...resume.contact,
+        [field]: value,
+      },
+    });
+  };
 
-  const hasSummary = Boolean(resume.summary?.trim());
+  const handleUpdateSummary = (text: string) => {
+    if (!onUpdateResume) return;
+    onUpdateResume({
+      ...resume,
+      summary: text,
+    });
+  };
+
+  const handleUpdateExperienceItem = (expId: string, updates: Partial<ExperienceItem>) => {
+    if (!onUpdateResume) return;
+    onUpdateResume({
+      ...resume,
+      experience: resume.experience.map((exp) => (exp.id === expId ? { ...exp, ...updates } : exp)),
+    });
+  };
+
+  const handleUpdateBullet = (expId: string, bulletId: string, newText: string) => {
+    if (!onUpdateResume) return;
+    onUpdateResume({
+      ...resume,
+      experience: resume.experience.map((exp) => {
+        if (exp.id !== expId) return exp;
+        return {
+          ...exp,
+          bullets: exp.bullets.map((b) => (b.id === bulletId ? { ...b, text: newText } : b)),
+        };
+      }),
+    });
+  };
+
+  const handleAddBullet = (expId: string) => {
+    if (!onUpdateResume) return;
+    const newBulletId = `b-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    onUpdateResume({
+      ...resume,
+      experience: resume.experience.map((exp) => {
+        if (exp.id !== expId) return exp;
+        return {
+          ...exp,
+          bullets: [...exp.bullets, { id: newBulletId, text: "New achievement or responsibility" }],
+        };
+      }),
+    });
+    setEditingTarget(`bullet-${newBulletId}`);
+  };
+
+  const handleDeleteBullet = (expId: string, bulletId: string) => {
+    if (!onUpdateResume) return;
+    onUpdateResume({
+      ...resume,
+      experience: resume.experience.map((exp) => {
+        if (exp.id !== expId) return exp;
+        return {
+          ...exp,
+          bullets: exp.bullets.filter((b) => b.id !== bulletId),
+        };
+      }),
+    });
+  };
+
+  const handleUpdateSkill = (index: number, newSkill: string) => {
+    if (!onUpdateResume) return;
+    const trimmed = newSkill.trim();
+    if (!trimmed) {
+      handleRemoveSkill(index);
+      return;
+    }
+    const updated = [...(resume.skills || [])];
+    updated[index] = trimmed;
+    onUpdateResume({
+      ...resume,
+      skills: updated,
+    });
+  };
+
+  const handleAddSkill = (skill: string) => {
+    const trimmed = skill.trim();
+    if (!trimmed || !onUpdateResume) return;
+    if (!resume.skills.includes(trimmed)) {
+      onUpdateResume({
+        ...resume,
+        skills: [...(resume.skills || []), trimmed],
+      });
+    }
+    setNewSkillText("");
+    setIsAddingSkill(false);
+  };
+
+  const handleRemoveSkill = (index: number) => {
+    if (!onUpdateResume) return;
+    const updated = [...(resume.skills || [])];
+    updated.splice(index, 1);
+    onUpdateResume({
+      ...resume,
+      skills: updated,
+    });
+  };
+
+  const handleUpdateEducationItem = (
+    eduId: string,
+    updates: Partial<ResumeData["education"][0]>,
+  ) => {
+    if (!onUpdateResume) return;
+    onUpdateResume({
+      ...resume,
+      education: resume.education.map((edu) => (edu.id === eduId ? { ...edu, ...updates } : edu)),
+    });
+  };
+
+  const handleUpdateProjectItem = (projId: string, updates: Partial<ResumeData["projects"][0]>) => {
+    if (!onUpdateResume) return;
+    onUpdateResume({
+      ...resume,
+      projects: resume.projects.map((proj) =>
+        proj.id === projId ? { ...proj, ...updates } : proj,
+      ),
+    });
+  };
+
+  // Drag & drop handlers
+  const handleDragOver = (e: React.DragEvent, section: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    if (dragOverSection !== section) {
+      setDragOverSection(section);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent, section: string) => {
+    if (dragOverSection === section) {
+      setDragOverSection(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, section: string, targetId?: string) => {
+    e.preventDefault();
+    setDragOverSection(null);
+    try {
+      const dataStr = e.dataTransfer.getData("application/json");
+      if (dataStr) {
+        const suggestion: OptimizationSuggestion = JSON.parse(dataStr);
+        onDropSuggestion?.(suggestion, section, targetId);
+      }
+    } catch (err) {
+      console.error("Failed to parse dropped suggestion:", err);
+    }
+  };
+
+  const hasSummary = Boolean(resume.summary?.trim() || editingTarget === "summary");
   const hasExperience = Boolean(resume.experience?.length > 0);
   const hasInternships = Boolean(resume.internships?.length > 0);
   const hasEducation = Boolean(resume.education?.length > 0);
-  const hasSkills = Boolean(resume.skills?.length > 0);
+  const hasSkills = Boolean(resume.skills?.length > 0 || isAddingSkill);
   const hasProjects = Boolean(resume.projects?.length > 0);
   const hasCertifications = Boolean(resume.certifications?.length > 0);
   const hasAchievements = Boolean(resume.achievements?.length > 0);
@@ -419,199 +512,710 @@ export function A4Page({
       }}
     >
       {/* Header & Contact Information */}
-      {hasContactInfo && (
-        <header
-          id="resume-section-contact"
-          data-resume-section="contact"
-          onClick={() => onSelectElement?.("contact", "contact")}
-          className={`border-b border-slate-200 pb-4 mb-5 transition-colors rounded p-1 -m-1 ${
-            selectedTargetId === "contact"
-              ? "ring-2 ring-primary/60 bg-primary/[0.04]"
-              : "hover:bg-slate-50/50 cursor-pointer"
-          }`}
-        >
-          <h1 className="text-[26px] font-bold tracking-tight text-slate-900">
-            {contact.fullName || "Resume"}
-          </h1>
-          {contact.headline && (
-            <p className="mt-0.5 text-[13px] font-medium text-slate-600">{contact.headline}</p>
-          )}
-
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-slate-600">
-            {contact.email && <span>{contact.email}</span>}
-            {contact.phone && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span>{contact.phone}</span>
-              </>
-            )}
-            {contact.location && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span>{contact.location}</span>
-              </>
-            )}
-            {contact.website && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span className="text-blue-700">{contact.website}</span>
-              </>
-            )}
-            {contact.linkedin && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span className="text-blue-700">{contact.linkedin}</span>
-              </>
-            )}
-            {contact.github && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span className="text-blue-700">{contact.github}</span>
-              </>
-            )}
-          </div>
-        </header>
-      )}
-
-      <div className="space-y-5">
-        {/* Professional Summary */}
-        {hasSummary && (
-          <section
-            id="resume-section-summary"
-            data-resume-section="summary"
-            onClick={() => onSelectElement?.("summary", "summary")}
-            className={`transition-colors rounded p-1.5 -m-1.5 ${
-              selectedTargetId === "summary"
-                ? "ring-2 ring-primary/60 bg-primary/[0.04]"
-                : "hover:bg-slate-50/50 cursor-pointer"
-            }`}
+      <header
+        id="resume-section-contact"
+        data-resume-section="contact"
+        onClick={() => onSelectElement?.("contact", "contact")}
+        className={`border-b border-slate-200 pb-4 mb-5 transition-colors rounded p-1 -m-1 relative ${
+          selectedTargetId === "contact"
+            ? "ring-2 ring-primary/60 bg-primary/[0.04]"
+            : "hover:bg-slate-50/50"
+        }`}
+      >
+        {/* Full Name */}
+        {editingTarget === "contact-fullName" ? (
+          <input
+            type="text"
+            autoFocus
+            defaultValue={contact.fullName || ""}
+            onBlur={(e) => {
+              handleUpdateContact("fullName", e.target.value);
+              setEditingTarget(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleUpdateContact("fullName", e.currentTarget.value);
+                setEditingTarget(null);
+              }
+              if (e.key === "Escape") setEditingTarget(null);
+            }}
+            className="w-full text-[26px] font-bold tracking-tight text-slate-900 border border-primary/50 rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white"
+          />
+        ) : (
+          <h1
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingTarget("contact-fullName");
+            }}
+            className="group text-[26px] font-bold tracking-tight text-slate-900 cursor-pointer hover:bg-slate-100/60 rounded px-1 -mx-1 inline-flex items-center gap-1.5"
+            title="Click to edit name"
           >
-            <SectionTitle>Professional Summary</SectionTitle>
-            <p className="text-[12px] leading-relaxed text-slate-700">{resume.summary}</p>
-          </section>
+            <span>{contact.fullName || "Your Name"}</span>
+            <Pencil className="h-3.5 w-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </h1>
         )}
 
-        {/* Experience */}
+        {/* Headline / Target Role */}
+        <div className="mt-0.5">
+          {editingTarget === "contact-headline" ? (
+            <input
+              type="text"
+              autoFocus
+              defaultValue={contact.headline || ""}
+              placeholder="e.g. Senior Full Stack Engineer"
+              onBlur={(e) => {
+                handleUpdateContact("headline", e.target.value);
+                setEditingTarget(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleUpdateContact("headline", e.currentTarget.value);
+                  setEditingTarget(null);
+                }
+                if (e.key === "Escape") setEditingTarget(null);
+              }}
+              className="w-full text-[13px] font-medium text-slate-700 border border-primary/50 rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white"
+            />
+          ) : (
+            <p
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTarget("contact-headline");
+              }}
+              className="group text-[13px] font-medium text-slate-600 cursor-pointer hover:bg-slate-100/60 rounded px-1 -mx-1 inline-flex items-center gap-1.5"
+              title="Click to edit headline"
+            >
+              <span>{contact.headline || "Click to add professional headline"}</span>
+              <Pencil className="h-3 w-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </p>
+          )}
+        </div>
+
+        {/* Contact Links & Info Row */}
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-slate-600">
+          {/* Email */}
+          {editingTarget === "contact-email" ? (
+            <input
+              type="email"
+              autoFocus
+              defaultValue={contact.email || ""}
+              placeholder="email@example.com"
+              onBlur={(e) => {
+                handleUpdateContact("email", e.target.value);
+                setEditingTarget(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleUpdateContact("email", e.currentTarget.value);
+                  setEditingTarget(null);
+                }
+                if (e.key === "Escape") setEditingTarget(null);
+              }}
+              className="text-[11.5px] border border-primary/50 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary/40 bg-white"
+            />
+          ) : (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTarget("contact-email");
+              }}
+              className="cursor-pointer hover:underline hover:text-slate-900"
+              title="Click to edit email"
+            >
+              {contact.email || "add email"}
+            </span>
+          )}
+
+          <span className="text-slate-300">·</span>
+
+          {/* Phone */}
+          {editingTarget === "contact-phone" ? (
+            <input
+              type="text"
+              autoFocus
+              defaultValue={contact.phone || ""}
+              placeholder="+1 555-0100"
+              onBlur={(e) => {
+                handleUpdateContact("phone", e.target.value);
+                setEditingTarget(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleUpdateContact("phone", e.currentTarget.value);
+                  setEditingTarget(null);
+                }
+                if (e.key === "Escape") setEditingTarget(null);
+              }}
+              className="text-[11.5px] border border-primary/50 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary/40 bg-white"
+            />
+          ) : (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTarget("contact-phone");
+              }}
+              className="cursor-pointer hover:underline hover:text-slate-900"
+              title="Click to edit phone"
+            >
+              {contact.phone || "add phone"}
+            </span>
+          )}
+
+          <span className="text-slate-300">·</span>
+
+          {/* Location */}
+          {editingTarget === "contact-location" ? (
+            <input
+              type="text"
+              autoFocus
+              defaultValue={contact.location || ""}
+              placeholder="City, State"
+              onBlur={(e) => {
+                handleUpdateContact("location", e.target.value);
+                setEditingTarget(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleUpdateContact("location", e.currentTarget.value);
+                  setEditingTarget(null);
+                }
+                if (e.key === "Escape") setEditingTarget(null);
+              }}
+              className="text-[11.5px] border border-primary/50 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary/40 bg-white"
+            />
+          ) : (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTarget("contact-location");
+              }}
+              className="cursor-pointer hover:underline hover:text-slate-900"
+              title="Click to edit location"
+            >
+              {contact.location || "add location"}
+            </span>
+          )}
+
+          {contact.website && (
+            <>
+              <span className="text-slate-300">·</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingTarget("contact-website");
+                }}
+                className="text-blue-700 cursor-pointer hover:underline"
+              >
+                {contact.website}
+              </span>
+            </>
+          )}
+
+          {contact.linkedin && (
+            <>
+              <span className="text-slate-300">·</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingTarget("contact-linkedin");
+                }}
+                className="text-blue-700 cursor-pointer hover:underline"
+              >
+                {contact.linkedin}
+              </span>
+            </>
+          )}
+
+          {contact.github && (
+            <>
+              <span className="text-slate-300">·</span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingTarget("contact-github");
+                }}
+                className="text-blue-700 cursor-pointer hover:underline"
+              >
+                {contact.github}
+              </span>
+            </>
+          )}
+        </div>
+      </header>
+
+      <div className="space-y-5">
+        {/* Professional Summary Section (with In-Place Editing & Drag-and-Drop) */}
+        <section
+          id="resume-section-summary"
+          data-resume-section="summary"
+          onDragOver={(e) => handleDragOver(e, "summary")}
+          onDragLeave={(e) => handleDragLeave(e, "summary")}
+          onDrop={(e) => handleDrop(e, "summary")}
+          onClick={() => onSelectElement?.("summary", "summary")}
+          className={`transition-all rounded p-2 -m-2 relative ${
+            dragOverSection === "summary"
+              ? "ring-2 ring-emerald-500 bg-emerald-500/10 border-2 border-dashed border-emerald-500/60"
+              : selectedTargetId === "summary"
+                ? "ring-2 ring-primary/60 bg-primary/[0.04]"
+                : "hover:bg-slate-50/50"
+          }`}
+        >
+          <SectionTitle>Professional Summary</SectionTitle>
+
+          {dragOverSection === "summary" && (
+            <div className="mb-2 py-1.5 text-center text-xs font-semibold text-emerald-700 bg-emerald-500/15 rounded border border-emerald-500/30 animate-pulse">
+              📥 Drop summary suggestion here to replace
+            </div>
+          )}
+
+          {editingTarget === "summary" ? (
+            <div className="space-y-2">
+              <textarea
+                autoFocus
+                defaultValue={resume.summary || ""}
+                rows={4}
+                onBlur={(e) => {
+                  handleUpdateSummary(e.target.value);
+                  setEditingTarget(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setEditingTarget(null);
+                }}
+                className="w-full text-[12px] leading-relaxed text-slate-800 border border-primary/60 rounded p-2 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white"
+                placeholder="Write your professional summary..."
+              />
+              <div className="flex justify-end gap-1.5 text-[11px] text-muted-foreground">
+                <span>Click outside to save · Esc to cancel</span>
+              </div>
+            </div>
+          ) : (
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTarget("summary");
+              }}
+              className="group cursor-pointer rounded p-1 -m-1 hover:bg-slate-100/70 transition-colors"
+              title="Click to edit summary directly"
+            >
+              <p className="text-[12px] leading-relaxed text-slate-700 whitespace-pre-line">
+                {resume.summary || (
+                  <span className="text-slate-400 italic">
+                    Click here to write your professional summary or drag a summary suggestion...
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* Experience Section (with In-Place Editing & Drag-and-Drop) */}
         {hasExperience && (
-          <section id="resume-section-experience" data-resume-section="experience">
+          <section
+            id="resume-section-experience"
+            data-resume-section="experience"
+            onDragOver={(e) => handleDragOver(e, "experience")}
+            onDragLeave={(e) => handleDragLeave(e, "experience")}
+            onDrop={(e) => handleDrop(e, "experience")}
+            className={`transition-all rounded p-2 -m-2 ${
+              dragOverSection === "experience"
+                ? "ring-2 ring-primary bg-primary/[0.05] border-2 border-dashed border-primary/50"
+                : ""
+            }`}
+          >
             <SectionTitle>Professional Experience</SectionTitle>
-            <div className="space-y-3.5">
+
+            {dragOverSection === "experience" && (
+              <div className="mb-2 py-1.5 text-center text-xs font-semibold text-primary bg-primary/10 rounded border border-primary/30 animate-pulse">
+                📥 Drop bullet suggestion here to add or replace
+              </div>
+            )}
+
+            <div className="space-y-4">
               {resume.experience.map((e) => (
                 <div
                   key={e.id}
                   id={`resume-item-${e.id}`}
                   data-resume-item-id={e.id}
-                  className={`space-y-1 rounded p-1 -m-1 transition-colors ${
-                    selectedTargetId === e.id ? "ring-2 ring-primary/60 bg-primary/[0.04]" : ""
+                  onDragOver={(evt) => {
+                    evt.stopPropagation();
+                    handleDragOver(evt, `experience-${e.id}`);
+                  }}
+                  onDragLeave={(evt) => {
+                    evt.stopPropagation();
+                    handleDragLeave(evt, `experience-${e.id}`);
+                  }}
+                  onDrop={(evt) => {
+                    evt.stopPropagation();
+                    handleDrop(evt, "experience", e.id);
+                  }}
+                  className={`space-y-1.5 rounded p-1.5 -m-1.5 transition-colors ${
+                    dragOverSection === `experience-${e.id}`
+                      ? "ring-2 ring-primary bg-primary/[0.06] border border-dashed border-primary"
+                      : selectedTargetId === e.id
+                        ? "ring-2 ring-primary/60 bg-primary/[0.04]"
+                        : "hover:bg-slate-50/40"
                   }`}
                 >
+                  {/* Role Header */}
                   <div
-                    className="flex items-baseline justify-between gap-4 cursor-pointer hover:bg-slate-50/50 rounded px-1"
+                    className="flex items-baseline justify-between gap-4 cursor-pointer rounded px-1"
                     onClick={() => onSelectElement?.(e.id, "experience")}
                   >
-                    <div>
-                      <span className="text-[12.5px] font-bold text-slate-900">{e.role}</span>
-                      {e.company && (
-                        <span className="text-[12px] font-semibold text-slate-700">
-                          {" "}
-                          — {e.company}
+                    <div className="flex items-baseline flex-wrap gap-x-1.5">
+                      {/* Role Title */}
+                      {editingTarget === `exp-role-${e.id}` ? (
+                        <input
+                          type="text"
+                          autoFocus
+                          defaultValue={e.role}
+                          onBlur={(evt) => {
+                            handleUpdateExperienceItem(e.id, { role: evt.target.value });
+                            setEditingTarget(null);
+                          }}
+                          onKeyDown={(evt) => {
+                            if (evt.key === "Enter") {
+                              handleUpdateExperienceItem(e.id, { role: evt.currentTarget.value });
+                              setEditingTarget(null);
+                            }
+                            if (evt.key === "Escape") setEditingTarget(null);
+                          }}
+                          className="text-[12.5px] font-bold text-slate-900 border border-primary/50 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary/40 bg-white"
+                        />
+                      ) : (
+                        <span
+                          onClick={(evt) => {
+                            evt.stopPropagation();
+                            setEditingTarget(`exp-role-${e.id}`);
+                          }}
+                          className="text-[12.5px] font-bold text-slate-900 cursor-pointer hover:underline"
+                          title="Click to edit role title"
+                        >
+                          {e.role || "Job Title"}
                         </span>
                       )}
+
+                      {/* Company Name */}
+                      <span className="text-[12px] font-semibold text-slate-700"> — </span>
+                      {editingTarget === `exp-company-${e.id}` ? (
+                        <input
+                          type="text"
+                          autoFocus
+                          defaultValue={e.company}
+                          onBlur={(evt) => {
+                            handleUpdateExperienceItem(e.id, { company: evt.target.value });
+                            setEditingTarget(null);
+                          }}
+                          onKeyDown={(evt) => {
+                            if (evt.key === "Enter") {
+                              handleUpdateExperienceItem(e.id, {
+                                company: evt.currentTarget.value,
+                              });
+                              setEditingTarget(null);
+                            }
+                            if (evt.key === "Escape") setEditingTarget(null);
+                          }}
+                          className="text-[12px] font-semibold text-slate-700 border border-primary/50 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary/40 bg-white"
+                        />
+                      ) : (
+                        <span
+                          onClick={(evt) => {
+                            evt.stopPropagation();
+                            setEditingTarget(`exp-company-${e.id}`);
+                          }}
+                          className="text-[12px] font-semibold text-slate-700 cursor-pointer hover:underline"
+                          title="Click to edit company"
+                        >
+                          {e.company || "Company"}
+                        </span>
+                      )}
+
+                      {/* Location */}
                       {e.location && (
                         <span className="text-[11px] text-slate-500"> · {e.location}</span>
                       )}
                     </div>
+
+                    {/* Dates */}
                     {(e.start || e.end) && (
                       <div className="shrink-0 font-mono text-[10.5px] text-slate-500">
                         {e.start} {e.start && e.end ? "—" : ""} {e.end}
                       </div>
                     )}
                   </div>
-                  {e.bullets && e.bullets.length > 0 && (
-                    <ul className="mt-1 space-y-1 pl-4 list-disc marker:text-slate-400">
-                      {e.bullets.map((b) => (
+
+                  {/* Experience Bullets with In-Place Editing */}
+                  <ul className="mt-1 space-y-1.5 pl-4 list-disc marker:text-slate-400">
+                    {e.bullets &&
+                      e.bullets.map((b) => (
                         <li
                           key={b.id}
                           id={`resume-bullet-${b.id}`}
                           data-resume-bullet-id={b.id}
-                          onClick={(evt) => {
-                            evt.stopPropagation();
-                            onSelectElement?.(b.id, "experience");
-                          }}
-                          className={`text-[11.5px] leading-relaxed text-slate-700 pl-0.5 rounded transition-colors cursor-pointer ${
+                          className={`text-[11.5px] leading-relaxed text-slate-700 pl-0.5 rounded transition-colors group relative ${
                             selectedTargetId === b.id
                               ? "ring-2 ring-primary/70 bg-primary/[0.08] font-medium text-slate-900 px-1 -mx-1"
-                              : "hover:bg-slate-50 hover:text-slate-900"
+                              : "hover:bg-slate-50/80"
                           }`}
                         >
-                          {b.text}
+                          {editingTarget === `bullet-${b.id}` ? (
+                            <div className="py-0.5">
+                              <textarea
+                                autoFocus
+                                defaultValue={b.text}
+                                rows={2}
+                                onBlur={(evt) => {
+                                  handleUpdateBullet(e.id, b.id, evt.target.value);
+                                  setEditingTarget(null);
+                                }}
+                                onKeyDown={(evt) => {
+                                  if (evt.key === "Enter" && !evt.shiftKey) {
+                                    evt.preventDefault();
+                                    handleUpdateBullet(e.id, b.id, evt.currentTarget.value);
+                                    setEditingTarget(null);
+                                  }
+                                  if (evt.key === "Escape") setEditingTarget(null);
+                                }}
+                                className="w-full text-[11.5px] leading-relaxed text-slate-800 border border-primary/60 rounded p-1.5 focus:outline-none focus:ring-1 focus:ring-primary/40 bg-white"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-between gap-2">
+                              <span
+                                onClick={(evt) => {
+                                  evt.stopPropagation();
+                                  onSelectElement?.(b.id, "experience");
+                                  setEditingTarget(`bullet-${b.id}`);
+                                }}
+                                className="cursor-pointer hover:text-slate-900 flex-1"
+                                title="Click to edit bullet directly"
+                              >
+                                {b.text}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(evt) => {
+                                  evt.stopPropagation();
+                                  handleDeleteBullet(e.id, b.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-destructive transition-opacity shrink-0"
+                                title="Delete bullet"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
                         </li>
                       ))}
-                    </ul>
-                  )}
+                  </ul>
+
+                  {/* Add bullet trigger */}
+                  <div className="pl-4 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => handleAddBullet(e.id)}
+                      className="text-[11px] font-medium text-primary/80 hover:text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      <Plus className="h-3 w-3" /> Add bullet
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </section>
         )}
 
-        {/* Internships */}
-        {hasInternships && (
-          <section id="resume-section-internships" data-resume-section="internships">
-            <SectionTitle>Internships</SectionTitle>
-            <div className="space-y-3">
-              {resume.internships.map((e) => (
+        {/* Skills Section (with In-Place Editing, Chip Removal & Drag-and-Drop) */}
+        {hasSkills && (
+          <section
+            id="resume-section-skills"
+            data-resume-section="skills"
+            onDragOver={(e) => handleDragOver(e, "skills")}
+            onDragLeave={(e) => handleDragLeave(e, "skills")}
+            onDrop={(e) => handleDrop(e, "skills")}
+            onClick={() => onSelectElement?.("skills", "skills")}
+            className={`transition-all rounded p-2 -m-2 ${
+              dragOverSection === "skills"
+                ? "ring-2 ring-emerald-500 bg-emerald-500/10 border-2 border-dashed border-emerald-500/60"
+                : selectedTargetId === "skills"
+                  ? "ring-2 ring-primary/60 bg-primary/[0.04]"
+                  : "hover:bg-slate-50/50"
+            }`}
+          >
+            <SectionTitle>Skills & Technical Competencies</SectionTitle>
+
+            {dragOverSection === "skills" && (
+              <div className="mb-2 py-1.5 text-center text-xs font-semibold text-emerald-700 bg-emerald-500/15 rounded border border-emerald-500/30 animate-pulse">
+                📥 Drop skill suggestion here to add to resume
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-relaxed text-slate-700 items-center">
+              {resume.skills.map((skill, idx) => {
+                const normId = skill.toLowerCase().replace(/[^a-z0-9]/g, "-");
+                const isSelected =
+                  selectedTargetId === skill ||
+                  selectedTargetId === normId ||
+                  selectedTargetId === `skill-${idx}`;
+
+                return (
+                  <span
+                    key={idx}
+                    id={`resume-skill-${normId}`}
+                    data-resume-skill={skill}
+                    className={`group rounded px-2 py-0.5 transition-all inline-flex items-center gap-1 ${
+                      isSelected
+                        ? "ring-2 ring-primary bg-primary/15 text-slate-900 font-semibold shadow-xs"
+                        : "bg-slate-100/90 hover:bg-slate-200/80 text-slate-800"
+                    }`}
+                  >
+                    {editingTarget === `skill-${idx}` ? (
+                      <input
+                        type="text"
+                        autoFocus
+                        defaultValue={skill}
+                        onBlur={(evt) => {
+                          handleUpdateSkill(idx, evt.target.value);
+                          setEditingTarget(null);
+                        }}
+                        onKeyDown={(evt) => {
+                          if (evt.key === "Enter") {
+                            handleUpdateSkill(idx, evt.currentTarget.value);
+                            setEditingTarget(null);
+                          }
+                          if (evt.key === "Escape") setEditingTarget(null);
+                        }}
+                        className="text-[11.5px] border border-primary/50 rounded px-1 py-0 bg-white focus:outline-none"
+                      />
+                    ) : (
+                      <>
+                        <span
+                          onClick={(evt) => {
+                            evt.stopPropagation();
+                            onSelectElement?.(skill, "skills");
+                            setEditingTarget(`skill-${idx}`);
+                          }}
+                          className="cursor-pointer hover:underline"
+                          title="Click to edit skill"
+                        >
+                          {skill}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(evt) => {
+                            evt.stopPropagation();
+                            handleRemoveSkill(idx);
+                          }}
+                          className="opacity-40 group-hover:opacity-100 hover:text-destructive transition-opacity"
+                          title="Remove skill"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </>
+                    )}
+                  </span>
+                );
+              })}
+
+              {/* Add Skill Button / Input */}
+              {isAddingSkill ? (
+                <div className="inline-flex items-center gap-1">
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Type skill..."
+                    value={newSkillText}
+                    onChange={(e) => setNewSkillText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleAddSkill(newSkillText);
+                      if (e.key === "Escape") setIsAddingSkill(false);
+                    }}
+                    onBlur={() => {
+                      if (newSkillText.trim()) handleAddSkill(newSkillText);
+                      else setIsAddingSkill(false);
+                    }}
+                    className="text-[11.5px] border border-primary/50 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-primary/40"
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsAddingSkill(true);
+                  }}
+                  className="rounded border border-dashed border-slate-300 hover:border-primary hover:text-primary px-2 py-0.5 text-[11px] font-medium text-slate-500 transition-colors inline-flex items-center gap-1"
+                >
+                  <Plus className="h-3 w-3" /> Add skill
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Education Section */}
+        {hasEducation && (
+          <section id="resume-section-education" data-resume-section="education">
+            <SectionTitle>Education</SectionTitle>
+            <div className="space-y-2">
+              {resume.education.map((ed) => (
                 <div
-                  key={e.id}
-                  id={`resume-item-${e.id}`}
-                  data-resume-item-id={e.id}
-                  className={`space-y-1 rounded p-1 -m-1 transition-colors ${
-                    selectedTargetId === e.id ? "ring-2 ring-primary/60 bg-primary/[0.04]" : ""
+                  key={ed.id}
+                  id={`resume-item-${ed.id}`}
+                  data-resume-item-id={ed.id}
+                  onClick={() => onSelectElement?.(ed.id, "education")}
+                  className={`flex items-baseline justify-between gap-4 rounded p-1 -m-1 transition-colors cursor-pointer ${
+                    selectedTargetId === ed.id
+                      ? "ring-2 ring-primary/60 bg-primary/[0.04]"
+                      : "hover:bg-slate-50/50"
                   }`}
                 >
-                  <div
-                    className="flex items-baseline justify-between gap-4 cursor-pointer hover:bg-slate-50/50 rounded px-1"
-                    onClick={() => onSelectElement?.(e.id, "internships")}
-                  >
-                    <div>
-                      <span className="text-[12.5px] font-bold text-slate-900">{e.role}</span>
-                      {e.company && (
-                        <span className="text-[12px] font-semibold text-slate-700">
-                          {" "}
-                          — {e.company}
-                        </span>
-                      )}
-                      {e.location && (
-                        <span className="text-[11px] text-slate-500"> · {e.location}</span>
-                      )}
-                    </div>
-                    {(e.start || e.end) && (
-                      <div className="shrink-0 font-mono text-[10.5px] text-slate-500">
-                        {e.start} {e.start && e.end ? "—" : ""} {e.end}
-                      </div>
+                  <div className="flex items-baseline flex-wrap gap-x-1.5">
+                    {/* School Name */}
+                    {editingTarget === `edu-school-${ed.id}` ? (
+                      <input
+                        type="text"
+                        autoFocus
+                        defaultValue={ed.school}
+                        onBlur={(evt) => {
+                          handleUpdateEducationItem(ed.id, { school: evt.target.value });
+                          setEditingTarget(null);
+                        }}
+                        onKeyDown={(evt) => {
+                          if (evt.key === "Enter") {
+                            handleUpdateEducationItem(ed.id, { school: evt.currentTarget.value });
+                            setEditingTarget(null);
+                          }
+                          if (evt.key === "Escape") setEditingTarget(null);
+                        }}
+                        className="text-[12px] font-bold text-slate-900 border border-primary/50 rounded px-1 py-0.5 bg-white"
+                      />
+                    ) : (
+                      <span
+                        onClick={(evt) => {
+                          evt.stopPropagation();
+                          setEditingTarget(`edu-school-${ed.id}`);
+                        }}
+                        className="text-[12px] font-bold text-slate-900 hover:underline"
+                        title="Click to edit institution"
+                      >
+                        {ed.school}
+                      </span>
                     )}
+
+                    {/* Degree */}
+                    {ed.degree && (
+                      <span className="text-[11.5px] text-slate-600"> — {ed.degree}</span>
+                    )}
+                    {ed.location && (
+                      <span className="text-[11px] text-slate-500"> · {ed.location}</span>
+                    )}
+                    {ed.gpa && <span className="text-[11px] text-slate-500"> · GPA: {ed.gpa}</span>}
                   </div>
-                  {e.bullets && e.bullets.length > 0 && (
-                    <ul className="mt-1 space-y-1 pl-4 list-disc marker:text-slate-400">
-                      {e.bullets.map((b) => (
-                        <li
-                          key={b.id}
-                          id={`resume-bullet-${b.id}`}
-                          data-resume-bullet-id={b.id}
-                          onClick={(evt) => {
-                            evt.stopPropagation();
-                            onSelectElement?.(b.id, "internships");
-                          }}
-                          className={`text-[11.5px] leading-relaxed text-slate-700 pl-0.5 rounded transition-colors cursor-pointer ${
-                            selectedTargetId === b.id
-                              ? "ring-2 ring-primary/70 bg-primary/[0.08] font-medium text-slate-900 px-1 -mx-1"
-                              : "hover:bg-slate-50 hover:text-slate-900"
-                          }`}
-                        >
-                          {b.text}
-                        </li>
-                      ))}
-                    </ul>
+
+                  {(ed.start || ed.end) && (
+                    <div className="shrink-0 font-mono text-[10.5px] text-slate-500">
+                      {ed.start} {ed.start && ed.end ? "—" : ""} {ed.end}
+                    </div>
                   )}
                 </div>
               ))}
@@ -619,7 +1223,7 @@ export function A4Page({
           </section>
         )}
 
-        {/* Projects */}
+        {/* Projects Section */}
         {hasProjects && (
           <section id="resume-section-projects" data-resume-section="projects">
             <SectionTitle>Projects</SectionTitle>
@@ -640,87 +1244,6 @@ export function A4Page({
                   {p.description && (
                     <div className="text-[11.5px] leading-relaxed text-slate-700">
                       {p.description}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Skills */}
-        {hasSkills && (
-          <section
-            id="resume-section-skills"
-            data-resume-section="skills"
-            onClick={() => onSelectElement?.("skills", "skills")}
-            className={`transition-colors rounded p-1.5 -m-1.5 cursor-pointer ${
-              selectedTargetId === "skills"
-                ? "ring-2 ring-primary/60 bg-primary/[0.04]"
-                : "hover:bg-slate-50/50"
-            }`}
-          >
-            <SectionTitle>Skills & Technical Competencies</SectionTitle>
-            <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-relaxed text-slate-700">
-              {resume.skills.map((skill, idx) => {
-                const normId = skill.toLowerCase().replace(/[^a-z0-9]/g, "-");
-                const isSelected =
-                  selectedTargetId === skill ||
-                  selectedTargetId === normId ||
-                  selectedTargetId === `skill-${idx}`;
-                return (
-                  <span
-                    key={idx}
-                    id={`resume-skill-${normId}`}
-                    data-resume-skill={skill}
-                    onClick={(evt) => {
-                      evt.stopPropagation();
-                      onSelectElement?.(skill, "skills");
-                    }}
-                    className={`rounded px-1.5 py-0.5 transition-all cursor-pointer ${
-                      isSelected
-                        ? "ring-2 ring-primary bg-primary/15 text-slate-900 font-semibold shadow-xs"
-                        : "bg-slate-100/90 hover:bg-slate-200/80 text-slate-800"
-                    }`}
-                  >
-                    {skill}
-                  </span>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* Education */}
-        {hasEducation && (
-          <section id="resume-section-education" data-resume-section="education">
-            <SectionTitle>Education</SectionTitle>
-            <div className="space-y-2">
-              {resume.education.map((ed) => (
-                <div
-                  key={ed.id}
-                  id={`resume-item-${ed.id}`}
-                  data-resume-item-id={ed.id}
-                  onClick={() => onSelectElement?.(ed.id, "education")}
-                  className={`flex items-baseline justify-between gap-4 rounded p-1 -m-1 transition-colors cursor-pointer ${
-                    selectedTargetId === ed.id
-                      ? "ring-2 ring-primary/60 bg-primary/[0.04]"
-                      : "hover:bg-slate-50/50"
-                  }`}
-                >
-                  <div>
-                    <span className="text-[12px] font-bold text-slate-900">{ed.school}</span>
-                    {ed.degree && (
-                      <span className="text-[11.5px] text-slate-600"> — {ed.degree}</span>
-                    )}
-                    {ed.location && (
-                      <span className="text-[11px] text-slate-500"> · {ed.location}</span>
-                    )}
-                    {ed.gpa && <span className="text-[11px] text-slate-500"> · GPA: {ed.gpa}</span>}
-                  </div>
-                  {(ed.start || ed.end) && (
-                    <div className="shrink-0 font-mono text-[10.5px] text-slate-500">
-                      {ed.start} {ed.start && ed.end ? "—" : ""} {ed.end}
                     </div>
                   )}
                 </div>
@@ -898,7 +1421,7 @@ export function A4Page({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-2 border-b border-slate-200 pb-0.5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-800">
+    <h2 className="mb-2.5 border-b border-slate-200 pb-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-800">
       {children}
     </h2>
   );
