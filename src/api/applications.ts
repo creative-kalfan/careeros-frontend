@@ -2,6 +2,7 @@ import { request } from "../utils/request";
 import { API_ENDPOINTS } from "../constants/api";
 import type {
   Application,
+  ApplicationChildKind,
   ApplicationListResponse,
   ApplicationStats,
   CreateApplicationRequest,
@@ -19,6 +20,25 @@ export type ApplicationsApi = {
   updateStatus: (data: UpdateApplicationStatusRequest) => Promise<void>;
   delete: (id: string) => Promise<void>;
   getStats: () => Promise<ApplicationStats>;
+  setFavorite: (id: string, favorite: boolean) => Promise<Application>;
+  setArchived: (id: string, archived: boolean) => Promise<Application>;
+  addChild: (
+    applicationId: string,
+    kind: ApplicationChildKind,
+    data: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>;
+  updateChild: (
+    applicationId: string,
+    kind: ApplicationChildKind,
+    childId: string,
+    data: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>;
+  deleteChild: (
+    applicationId: string,
+    kind: ApplicationChildKind,
+    childId: string,
+  ) => Promise<void>;
+  applyToJob: (jobId: string) => Promise<Application>;
 };
 
 // Backend response envelope: { success, data, meta? }
@@ -64,7 +84,7 @@ export const applicationsApi: ApplicationsApi = {
   updateStatus: async ({ id, status }: UpdateApplicationStatusRequest) => {
     await request<BackendResponse<void>>({
       method: "PATCH",
-      path: API_ENDPOINTS.APPLICATIONS.UPDATE(id),
+      path: API_ENDPOINTS.APPLICATIONS.STATUS(id),
       body: { status },
     });
   },
@@ -80,6 +100,66 @@ export const applicationsApi: ApplicationsApi = {
     const res = await request<BackendResponse<ApplicationStats>>({
       method: "GET",
       path: API_ENDPOINTS.APPLICATIONS.STATS,
+    });
+    return res.data;
+  },
+
+  setFavorite: async (id: string, favorite: boolean) => {
+    const res = await request<BackendResponse<Application>>({
+      method: "POST",
+      path: API_ENDPOINTS.APPLICATIONS.FAVORITE(id),
+      body: { favorite },
+    });
+    return res.data;
+  },
+
+  setArchived: async (id: string, archived: boolean) => {
+    const res = await request<BackendResponse<Application>>({
+      method: "POST",
+      path: API_ENDPOINTS.APPLICATIONS.ARCHIVE(id),
+      body: { archived },
+    });
+    return res.data;
+  },
+
+  addChild: async (
+    applicationId: string,
+    kind: ApplicationChildKind,
+    data: Record<string, unknown>,
+  ) => {
+    const res = await request<BackendResponse<Record<string, unknown>>>({
+      method: "POST",
+      path: API_ENDPOINTS.APPLICATIONS.CHILD(applicationId, kind),
+      body: data,
+    });
+    return res.data;
+  },
+
+  updateChild: async (
+    applicationId: string,
+    kind: ApplicationChildKind,
+    childId: string,
+    data: Record<string, unknown>,
+  ) => {
+    const res = await request<BackendResponse<Record<string, unknown>>>({
+      method: "PATCH",
+      path: API_ENDPOINTS.APPLICATIONS.CHILD_ITEM(applicationId, kind, childId),
+      body: data,
+    });
+    return res.data;
+  },
+
+  deleteChild: async (applicationId: string, kind: ApplicationChildKind, childId: string) => {
+    await request<BackendResponse<void>>({
+      method: "DELETE",
+      path: API_ENDPOINTS.APPLICATIONS.CHILD_ITEM(applicationId, kind, childId),
+    });
+  },
+
+  applyToJob: async (jobId: string) => {
+    const res = await request<BackendResponse<Application>>({
+      method: "POST",
+      path: API_ENDPOINTS.JOBS.APPLY(jobId),
     });
     return res.data;
   },

@@ -33,6 +33,9 @@ export function JobDetails({
   job,
   onToggleBookmark,
   onEditResume,
+  onTrackApplication,
+  isTracked,
+  isTracking,
   matchResult,
   isMatching,
   onRunMatch,
@@ -40,6 +43,9 @@ export function JobDetails({
   job: Job;
   onToggleBookmark: () => void;
   onEditResume?: () => void;
+  onTrackApplication?: () => void;
+  isTracked?: boolean;
+  isTracking?: boolean;
   matchResult?: JobMatchResponse;
   isMatching?: boolean;
   onRunMatch?: () => void;
@@ -150,15 +156,42 @@ export function JobDetails({
 
         {/* Action Toolbar */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
+          {onTrackApplication && (
+            <Button
+              size="sm"
+              variant={isTracked ? "secondary" : "default"}
+              className={`h-8.5 px-3.5 rounded-lg text-xs font-medium gap-1.5 shadow-xs ${
+                isTracked
+                  ? "bg-success/15 text-success border border-success/30 hover:bg-success/20"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
+              }`}
+              onClick={onTrackApplication}
+              disabled={isTracking || isTracked}
+            >
+              {isTracked ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                  <span>Tracked</span>
+                </>
+              ) : (
+                <>
+                  <Briefcase className="h-3.5 w-3.5" />
+                  <span>{isTracking ? "Tracking..." : "Track Application"}</span>
+                </>
+              )}
+            </Button>
+          )}
+
           {job.applyUrl ? (
             <Button
               size="sm"
-              className="h-8.5 px-4 rounded-lg text-xs font-medium gap-1.5 shadow-xs flex-1 sm:flex-initial bg-primary hover:bg-primary/90 text-primary-foreground border-0"
+              variant="outline"
+              className="h-8.5 px-3.5 rounded-lg text-xs font-medium gap-1.5 shadow-xs bg-surface-elevated/40 hover:bg-surface-elevated text-foreground border-border"
               onClick={() => {
                 window.open(job.applyUrl as string, "_blank", "noopener,noreferrer");
               }}
             >
-              <span>Apply on Company Site</span>
+              <span>Apply on Site</span>
               <ExternalLink className="h-3.5 w-3.5" />
             </Button>
           ) : (

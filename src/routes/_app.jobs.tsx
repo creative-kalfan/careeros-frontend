@@ -14,6 +14,8 @@ import { usePersonalizedJobs, jobsQueryKeys } from "@/hooks/api/useJobs";
 import { jobsApi } from "@/api/jobs";
 import { useSaveJob } from "@/hooks/api/useSaveJob";
 import { useMatchJobs } from "@/hooks/api/useMatchJobs";
+import { useApplyToJob, useApplications } from "@/hooks/api/useApplications";
+import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/api-error";
 import { JobResumeDialog } from "@/components/jobs/job-resume-dialog";
 import type { Job, JobSearchFilters } from "@/types/jobs";
@@ -302,6 +304,46 @@ function JobsPage() {
 
   const { saveJob, unsaveJob } = useSaveJob();
   const { matchJobAsync, isMatching, matchResult } = useMatchJobs();
+  const { data: applications = [] } = useApplications();
+  const applyMutation = useApplyToJob();
+
+  const isTracked = useMemo(() => {
+    if (!selected) return false;
+    return applications.some(
+      (a) =>
+        a.id === selected.id ||
+        (a.company.toLowerCase() === selected.company.toLowerCase() &&
+          a.role.toLowerCase() === selected.role.toLowerCase()),
+    );
+  }, [applications, selected]);
+
+  const handleTrackApplication = async (jobToTrack: Job) => {
+    try {
+      await applyMutation.mutateAsync(jobToTrack.id);
+      toast.success("Application tracked in Mission Control", {
+        description: `${jobToTrack.role} at ${jobToTrack.company}`,
+        action: {
+          label: "View in Mission Control",
+          onClick: () => navigate({ to: "/applications" }),
+        },
+      });
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err);
+      if (
+        msg.toLowerCase().includes("already tracked") ||
+        (err as { status?: number })?.status === 409
+      ) {
+        toast.info("This job is already tracked in Mission Control", {
+          action: {
+            label: "Open Mission Control",
+            onClick: () => navigate({ to: "/applications" }),
+          },
+        });
+      } else {
+        toast.error("Failed to track application", { description: msg });
+      }
+    }
+  };
 
   function toggleBookmark(id: string) {
     const job = jobs.find((j) => j.id === id);
@@ -489,6 +531,9 @@ function JobsPage() {
                         job={selected}
                         onToggleBookmark={() => toggleBookmark(selected.id)}
                         onEditResume={() => setEditResumeJob(selected)}
+                        onTrackApplication={() => handleTrackApplication(selected)}
+                        isTracked={isTracked}
+                        isTracking={applyMutation.isPending}
                         matchResult={matchResult}
                         isMatching={isMatching}
                         onRunMatch={() =>
@@ -527,6 +572,9 @@ function JobsPage() {
                       job={selected}
                       onToggleBookmark={() => toggleBookmark(selected.id)}
                       onEditResume={() => setEditResumeJob(selected)}
+                      onTrackApplication={() => handleTrackApplication(selected)}
+                      isTracked={isTracked}
+                      isTracking={applyMutation.isPending}
                       matchResult={matchResult}
                       isMatching={isMatching}
                       onRunMatch={() =>

@@ -15,6 +15,8 @@ import {
   ClipboardList,
   TrendingUp,
   Bot,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -230,7 +232,13 @@ const roundStatus = {
   canceled: { icon: AlertCircle, cls: "text-destructive" },
 } as const;
 
-export function InterviewRounds({ rounds }: { rounds: ApplicationUI["interviews"] }) {
+export function InterviewRounds({
+  rounds,
+  onDelete,
+}: {
+  rounds: ApplicationUI["interviews"];
+  onDelete?: (id: string) => void;
+}) {
   if (rounds.length === 0)
     return <p className="text-xs text-muted-foreground">No interview rounds yet.</p>;
   return (
@@ -240,13 +248,25 @@ export function InterviewRounds({ rounds }: { rounds: ApplicationUI["interviews"
         return (
           <li
             key={r.id}
-            className="flex items-start gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs"
+            className="group flex items-start gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs"
           >
             <S.icon className={cn("mt-0.5 h-4 w-4 shrink-0", S.cls)} />
             <div className="min-w-0 grow">
               <div className="flex items-center justify-between gap-2">
                 <h4 className="truncate text-sm font-medium">{r.name}</h4>
-                <span className="shrink-0 text-[11px] text-muted-foreground">{r.when}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[11px] text-muted-foreground">{r.when}</span>
+                  {onDelete && (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(r.id)}
+                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition p-0.5"
+                      title="Delete round"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
               </div>
               {r.interviewer && (
                 <p className="mt-0.5 text-xs text-muted-foreground">with {r.interviewer}</p>
@@ -262,23 +282,39 @@ export function InterviewRounds({ rounds }: { rounds: ApplicationUI["interviews"
 
 /* ─────────────────────────────────────── Assessment list */
 
-export function AssessmentList({ items }: { items: ApplicationUI["assessments"] }) {
+export function AssessmentList({
+  items,
+  onDelete,
+}: {
+  items: ApplicationUI["assessments"];
+  onDelete?: (id: string) => void;
+}) {
   if (items.length === 0) return <p className="text-xs text-muted-foreground">No assessments.</p>;
   return (
     <ul className="space-y-2">
       {items.map((a) => (
         <li
           key={a.id}
-          className="flex items-center gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs"
+          className="group flex items-center gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs"
         >
           <ClipboardList className="h-4 w-4 shrink-0 text-accent" />
           <div className="min-w-0 grow">
             <h4 className="truncate text-sm font-medium">{a.label}</h4>
             <p className="text-xs text-muted-foreground">Due {a.due}</p>
           </div>
-          <Badge variant="secondary" className="rounded-full capitalize">
+          <Badge variant="secondary" className="rounded-full capitalize shrink-0">
             {a.status}
           </Badge>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(a.id)}
+              className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition p-0.5"
+              title="Delete assessment"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
         </li>
       ))}
     </ul>
@@ -294,22 +330,56 @@ const followUpIcon: Record<string, ComponentType<{ className?: string }>> = {
   task: ClipboardList,
 };
 
-export function FollowUpRow({ f }: { f: FollowUpUI }) {
+export function FollowUpRow({
+  f,
+  onToggleComplete,
+  onDelete,
+}: {
+  f: FollowUpUI;
+  onToggleComplete?: (id: string, completed: boolean) => void;
+  onDelete?: (id: string) => void;
+}) {
   const Icon = followUpIcon[f.kind] ?? MessageSquare;
+  const isDone = f.status === "completed";
+
   return (
     <div
       className={cn(
-        "flex items-start gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs",
-        f.status === "completed" && "opacity-60",
+        "group flex items-start gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs transition",
+        isDone && "opacity-60 bg-surface/20",
       )}
     >
+      <button
+        type="button"
+        onClick={() => onToggleComplete?.(f.id, !isDone)}
+        className="mt-0.5 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+        title={isDone ? "Mark pending" : "Mark completed"}
+      >
+        {isDone ? (
+          <CheckCircle2 className="h-4 w-4 text-success" />
+        ) : (
+          <Circle className="h-4 w-4 text-muted-foreground" />
+        )}
+      </button>
       <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-elevated ring-1 ring-border/80 shadow-2xs">
         <Icon className="h-4 w-4 text-foreground/80" />
       </div>
       <div className="min-w-0 grow">
         <div className="flex items-center gap-2">
-          <h4 className="truncate text-sm font-medium">{f.company}</h4>
+          <h4 className={cn("truncate text-sm font-medium", isDone && "line-through")}>
+            {f.company} {f.role ? `· ${f.role}` : ""}
+          </h4>
           <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{f.due}</span>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(f.id)}
+              className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition p-0.5"
+              title="Delete follow-up"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
         </div>
         <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{f.note}</p>
       </div>

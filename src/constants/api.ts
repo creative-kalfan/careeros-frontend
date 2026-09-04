@@ -1,3 +1,5 @@
+import type { ApplicationChildKind } from "../types/application";
+
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: "/auth/login",
@@ -33,6 +35,7 @@ export const API_ENDPOINTS = {
     UNSAVE: (id: string) => `/jobs/${id}/unsave`,
     SAVED: "/jobs/saved",
     MATCH: "/jobs/match",
+    APPLY: (id: string) => `/jobs/${id}/apply`,
     INTELLIGENCE_ANALYZE: (id: string) => `/jobs/${id}/intelligence/analyze`,
     INTELLIGENCE_GET: (id: string) => `/jobs/${id}/intelligence`,
   },
@@ -49,6 +52,13 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/applications/${id}`,
     DELETE: (id: string) => `/applications/${id}`,
     STATS: "/applications/stats",
+    STATUS: (id: string) => `/applications/${id}/status`,
+    FAVORITE: (id: string) => `/applications/${id}/favorite`,
+    ARCHIVE: (id: string) => `/applications/${id}/archive`,
+    EVENTS: (id: string) => `/applications/${id}/events`,
+    CHILD: (id: string, kind: ApplicationChildKind) => `/applications/${id}/${kind}`,
+    CHILD_ITEM: (id: string, kind: ApplicationChildKind, childId: string) =>
+      `/applications/${id}/${kind}/${childId}`,
   },
   DASHBOARD: {
     STATS: "/dashboard/stats",

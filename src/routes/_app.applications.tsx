@@ -10,7 +10,6 @@ import {
   Search,
   Filter,
   Star,
-  Bot,
   Bookmark,
   Archive,
   XCircle,
@@ -26,8 +25,8 @@ import {
   StickyNote,
   Paperclip,
   Users,
-  Loader2,
-  AlertCircle,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/app/page-header";
@@ -39,9 +38,37 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/shared/error-state";
 import { EmptyState } from "@/components/shared/empty-state";
-import { useApplications, useApplicationStats } from "@/hooks/api/useApplications";
-import { searchApplications, sidebarFilters } from "@/lib/applications";
-import type { ApplicationStage } from "@/types/application";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import {
+  useApplications,
+  useApplicationStats,
+  useCreateApplication,
+  useUpdateApplicationStatus,
+  useDeleteApplication,
+  useSetApplicationFavorite,
+  useSetApplicationArchived,
+  useAddApplicationChild,
+  useUpdateApplicationChild,
+  useDeleteApplicationChild,
+} from "@/hooks/api/useApplications";
+import { getCalendarEvents, searchApplications, sidebarFilters } from "@/lib/applications";
+import { APPLICATION_STAGES } from "@/types/application";
+import type { ApplicationStage, ApplicationStatus } from "@/types/application";
 import type { ApplicationUI } from "@/lib/applications";
 import {
   ApplicationCard,
@@ -51,10 +78,8 @@ import {
   AssessmentList,
   FollowUpRow,
   CompanyCard,
-  AiTipCard,
   SectionCard,
   StatsStrip,
-  Checklist,
   LabeledProgress,
   CompanyLogo,
   StagePill,
@@ -98,9 +123,25 @@ function MissionControl() {
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
 
+  // Dialog open states
+  const [addAppOpen, setAddAppOpen] = useState(false);
+  const [addInterviewOpen, setAddInterviewOpen] = useState(false);
+  const [addAssessmentOpen, setAddAssessmentOpen] = useState(false);
+  const [addFollowUpOpen, setAddFollowUpOpen] = useState(false);
+
   // Live backend data
   const { data: applications = [], isLoading, isError, error } = useApplications();
   const { data: stats } = useApplicationStats();
+
+  // Mutations
+  const createMutation = useCreateApplication();
+  const updateStatusMutation = useUpdateApplicationStatus();
+  const deleteMutation = useDeleteApplication();
+  const favoriteMutation = useSetApplicationFavorite();
+  const archiveMutation = useSetApplicationArchived();
+  const addChildMutation = useAddApplicationChild();
+  const updateChildMutation = useUpdateApplicationChild();
+  const deleteChildMutation = useDeleteApplicationChild();
 
   // Derive the active application from the list
   const active = useMemo(() => {
@@ -120,7 +161,7 @@ function MissionControl() {
     }
   }, [applications, activeId]);
 
-  // Get the current sidebar filter definition
+  // Get current sidebar filter definition
   const currentFilter = useMemo(() => {
     return sidebarFilters.find((s) => s.id === filterId) ?? sidebarFilters[0];
   }, [filterId]);
@@ -146,6 +187,24 @@ function MissionControl() {
     return groups;
   }, [filtered]);
 
+  // Calendar events derived from real applications
+  const calendarEvents = useMemo(() => getCalendarEvents(applications), [applications]);
+
+  // All follow-ups aggregated across applications
+  const allFollowUps = useMemo(() => {
+    return applications.flatMap((a) =>
+      (a.followUps ?? []).map((f) => ({
+        ...f,
+        applicationId: a.id,
+        company: a.company,
+        role: a.role,
+        kind: "task" as const,
+        status: (f.status === "completed" ? "completed" : "pending") as "completed" | "pending",
+        note: f.notes ?? "",
+      })),
+    );
+  }, [applications]);
+
   // Keyboard shortcuts
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -170,14 +229,81 @@ function MissionControl() {
 
   const kanbanStages: ApplicationStage[] = [
     "saved",
+    "to_apply",
     "applied",
+    "screening",
     "assessment",
     "interview",
     "offer",
     "accepted",
     "rejected",
-    "archived",
   ];
+
+  // Action handlers
+  const handleStatusChange = async (appId: string, status: ApplicationStatus) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id: appId, status });
+      toast.success(`Stage updated to ${status}`);
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to update stage");
+    }
+  };
+
+  const handleToggleFavorite = async (app: ApplicationUI) => {
+    try {
+      await favoriteMutation.mutateAsync({ id: app.id, favorite: !app.favorite });
+      toast.success(app.favorite ? "Removed from bookmarks" : "Bookmarked application");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to update bookmark");
+    }
+  };
+
+  const handleToggleArchive = async (app: ApplicationUI) => {
+    const isArchived = app.stage === "archived";
+    try {
+      await archiveMutation.mutateAsync({ id: app.id, archived: !isArchived });
+      toast.success(isArchived ? "Restored from archive" : "Application archived");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to archive application");
+    }
+  };
+
+  const handleDeleteApplication = async (appId: string) => {
+    if (!window.confirm("Are you sure you want to delete this application?")) return;
+    try {
+      await deleteMutation.mutateAsync(appId);
+      toast.success("Application deleted");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to delete application");
+    }
+  };
+
+  const handleDeleteChild = async (
+    appId: string,
+    kind: "interviews" | "assessments" | "contacts" | "follow-ups",
+    childId: string,
+  ) => {
+    try {
+      await deleteChildMutation.mutateAsync({ applicationId: appId, kind, childId });
+      toast.success("Item deleted");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to delete item");
+    }
+  };
+
+  const handleToggleFollowUp = async (appId: string, followUpId: string, completed: boolean) => {
+    try {
+      await updateChildMutation.mutateAsync({
+        applicationId: appId,
+        kind: "follow-ups",
+        childId: followUpId,
+        data: { status: completed ? "completed" : "pending" },
+      });
+      toast.success(completed ? "Follow-up completed" : "Follow-up pending");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to update follow-up");
+    }
+  };
 
   // Loading state
   if (isLoading) {
@@ -228,16 +354,31 @@ function MissionControl() {
         <EmptyState
           icon={Briefcase}
           title="No applications yet"
-          description="Start tracking your job applications by adding your first one."
-          action={<Button className="rounded-xl shadow-xs">Add your first application</Button>}
+          description="Start tracking your job applications by adding your first one or discovering roles in Job Intelligence."
+          action={
+            <Button className="rounded-xl shadow-xs" onClick={() => setAddAppOpen(true)}>
+              <Plus className="mr-1.5 h-4 w-4" /> Add your first application
+            </Button>
+          }
           className="p-16"
+        />
+        <AddApplicationDialog
+          open={addAppOpen}
+          onOpenChange={setAddAppOpen}
+          onCreate={async (data) => {
+            const res = await createMutation.mutateAsync(data);
+            setActiveId(res.id);
+            setAddAppOpen(false);
+            toast.success("Application created", { description: `${res.role} at ${res.company}` });
+          }}
+          isSubmitting={createMutation.isPending}
         />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-[1536px] mx-auto flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full max-w-[1536px] mx-auto flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6 select-text">
       <PageHeader
         eyebrow="Mission Control"
         title="Your hiring journey, orchestrated"
@@ -262,7 +403,10 @@ function MissionControl() {
             >
               <PanelRight className="h-4 w-4" />
             </Button>
-            <Button className="rounded-xl shadow-[var(--shadow-glow)]">
+            <Button
+              className="rounded-xl shadow-[var(--shadow-glow)]"
+              onClick={() => setAddAppOpen(true)}
+            >
               <Sparkles className="mr-1.5 h-4 w-4" /> Add application
             </Button>
           </>
@@ -427,7 +571,7 @@ function MissionControl() {
                   <div key={a.id} className="grid grid-cols-[minmax(0,180px)_1fr] gap-4">
                     <button
                       onClick={() => setActiveId(a.id)}
-                      className="flex items-start gap-2 text-left"
+                      className="flex items-start gap-2 text-left cursor-pointer"
                     >
                       <CompanyLogo label={a.logo} size={32} />
                       <div className="min-w-0">
@@ -466,7 +610,7 @@ function MissionControl() {
               <MonthCalendar
                 year={new Date().getFullYear()}
                 month={new Date().getMonth()}
-                events={[]}
+                events={calendarEvents}
               />
             </div>
           )}
@@ -478,7 +622,39 @@ function MissionControl() {
                 title={active.company}
                 subtitle={active.role}
                 icon={Building2}
-                action={<StagePill stage={active.stage} />}
+                action={
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFavorite(active)}
+                      className="p-1 rounded-lg text-muted-foreground hover:text-warning transition cursor-pointer"
+                      title={active.favorite ? "Bookmarked" : "Add bookmark"}
+                    >
+                      <Star
+                        className={cn(
+                          "h-4 w-4",
+                          active.favorite ? "fill-warning text-warning" : "text-muted-foreground",
+                        )}
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleArchive(active)}
+                      className="p-1 rounded-lg text-muted-foreground hover:text-foreground transition cursor-pointer"
+                      title={active.stage === "archived" ? "Unarchive" : "Archive"}
+                    >
+                      <Archive className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteApplication(active.id)}
+                      className="p-1 rounded-lg text-muted-foreground hover:text-destructive transition cursor-pointer"
+                      title="Delete application"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                }
               >
                 <div className="flex items-start gap-3">
                   <CompanyLogo label={active.logo} size={44} />
@@ -495,7 +671,27 @@ function MissionControl() {
                     )}
                   </div>
                 </div>
-                <div className="mt-4">
+
+                <div className="mt-3.5 flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+                  <span className="text-[11px] font-medium text-muted-foreground">Stage</span>
+                  <Select
+                    value={active.stage === "archived" ? "applied" : active.stage}
+                    onValueChange={(val) => handleStatusChange(active.id, val as ApplicationStatus)}
+                  >
+                    <SelectTrigger className="h-7 w-[140px] text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {APPLICATION_STAGES.filter((s) => s.id !== "archived").map((s) => (
+                        <SelectItem key={s.id} value={s.id} className="text-xs">
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="mt-3">
                   <LabeledProgress label="Pipeline progress" value={active.progress} />
                 </div>
                 {active.notes && (
@@ -520,19 +716,61 @@ function MissionControl() {
                 )}
               </SectionCard>
 
-              <SectionCard title="Interview rounds" subtitle="Schedule & notes" icon={Users}>
-                <InterviewRounds rounds={active.interviews} />
-                {active.assessments.length > 0 && (
-                  <div className="mt-4">
-                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <SectionCard
+                title="Interview rounds"
+                subtitle="Schedule & notes"
+                icon={Users}
+                action={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs gap-1"
+                    onClick={() => setAddInterviewOpen(true)}
+                  >
+                    <Plus className="h-3 w-3" /> Add round
+                  </Button>
+                }
+              >
+                <InterviewRounds
+                  rounds={active.interviews}
+                  onDelete={(id) => handleDeleteChild(active.id, "interviews", id)}
+                />
+                <div className="mt-4 border-t border-border/60 pt-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Assessments
-                    </div>
-                    <AssessmentList items={active.assessments} />
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-1.5 text-[11px] gap-1"
+                      onClick={() => setAddAssessmentOpen(true)}
+                    >
+                      <Plus className="h-3 w-3" /> Add
+                    </Button>
                   </div>
-                )}
+                  <AssessmentList
+                    items={active.assessments}
+                    onDelete={(id) => handleDeleteChild(active.id, "assessments", id)}
+                  />
+                </div>
               </SectionCard>
 
-              <SectionCard title="History" subtitle="Every touchpoint" icon={ChevronRight}>
+              <SectionCard
+                title="History"
+                subtitle="Every touchpoint"
+                icon={ChevronRight}
+                action={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs gap-1"
+                    onClick={() => setAddFollowUpOpen(true)}
+                  >
+                    <Plus className="h-3 w-3" /> Add task
+                  </Button>
+                }
+              >
                 <AppTimeline items={active.history} />
               </SectionCard>
             </div>
@@ -561,34 +799,430 @@ function MissionControl() {
 
       {/* Follow-up section */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <SectionCard title="Follow-ups" subtitle="Pending & completed" icon={MessageSquare}>
-          <p className="text-xs text-muted-foreground">
-            Follow-ups will appear here as you track your applications.
-          </p>
+        <SectionCard
+          title="Follow-ups"
+          subtitle="Pending & completed"
+          icon={MessageSquare}
+          action={
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-xs gap-1"
+              onClick={() => setAddFollowUpOpen(true)}
+            >
+              <Plus className="h-3 w-3" /> New follow-up
+            </Button>
+          }
+        >
+          {allFollowUps.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No follow-ups recorded yet. Add one to stay proactive.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {allFollowUps.map((f) => (
+                <FollowUpRow
+                  key={f.id}
+                  f={f}
+                  onToggleComplete={(_id, completed) =>
+                    f.applicationId && handleToggleFollowUp(f.applicationId, f.id, completed)
+                  }
+                  onDelete={() =>
+                    f.applicationId && handleDeleteChild(f.applicationId, "follow-ups", f.id)
+                  }
+                />
+              ))}
+            </div>
+          )}
         </SectionCard>
 
         <SectionCard
           title="Interview center"
-          subtitle="Upcoming, past & question bank"
+          subtitle="Upcoming & scheduled rounds"
           icon={Briefcase}
         >
           <div className="space-y-4">
             <div>
               <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Upcoming
+                Upcoming Rounds
               </div>
               <InterviewRounds
                 rounds={applications
                   .flatMap((a) =>
-                    a.interviews.map((r) => ({ ...r, name: `${a.company} · ${r.name}` })),
+                    a.interviews.map((r) => ({
+                      ...r,
+                      name: `${a.company} · ${r.name}`,
+                      appId: a.id,
+                    })),
                   )
-                  .filter((r) => r.status === "scheduled")
-                  .slice(0, 4)}
+                  .filter((r) => r.status === "scheduled")}
+                onDelete={(id) => {
+                  const target = applications.find((a) => a.interviews.some((iv) => iv.id === id));
+                  if (target) handleDeleteChild(target.id, "interviews", id);
+                }}
               />
             </div>
           </div>
         </SectionCard>
       </div>
+
+      {/* Add Application Dialog */}
+      <AddApplicationDialog
+        open={addAppOpen}
+        onOpenChange={setAddAppOpen}
+        onCreate={async (data) => {
+          const res = await createMutation.mutateAsync(data);
+          setActiveId(res.id);
+          setAddAppOpen(false);
+          toast.success("Application created", { description: `${res.role} at ${res.company}` });
+        }}
+        isSubmitting={createMutation.isPending}
+      />
+
+      {/* Add Interview Dialog */}
+      {active && (
+        <AddChildDialog
+          open={addInterviewOpen}
+          onOpenChange={setAddInterviewOpen}
+          title="Schedule Interview Round"
+          description={`Add an interview round for ${active.role} at ${active.company}`}
+          fields={[
+            {
+              id: "name",
+              label: "Round Name",
+              placeholder: "e.g. Technical Screen, System Design",
+              required: true,
+            },
+            { id: "scheduled_at", label: "Scheduled Date & Time", type: "datetime-local" },
+            {
+              id: "interviewer",
+              label: "Interviewer / Contact",
+              placeholder: "e.g. Jane Doe (Tech Lead)",
+            },
+            {
+              id: "notes",
+              label: "Preparation Notes",
+              placeholder: "Key topics, zoom link, questions",
+            },
+          ]}
+          onSubmit={async (data) => {
+            await addChildMutation.mutateAsync({
+              applicationId: active.id,
+              kind: "interviews",
+              data: {
+                name: data.name,
+                scheduled_at: data.scheduled_at || null,
+                interviewer: data.interviewer || null,
+                notes: data.notes || null,
+                status: "scheduled",
+              },
+            });
+            setAddInterviewOpen(false);
+            toast.success("Interview scheduled", { description: data.name });
+          }}
+          isSubmitting={addChildMutation.isPending}
+        />
+      )}
+
+      {/* Add Assessment Dialog */}
+      {active && (
+        <AddChildDialog
+          open={addAssessmentOpen}
+          onOpenChange={setAddAssessmentOpen}
+          title="Add Assessment"
+          description={`Track an assessment for ${active.role} at ${active.company}`}
+          fields={[
+            {
+              id: "name",
+              label: "Assessment Name",
+              placeholder: "e.g. Take-home project, HackerRank",
+              required: true,
+            },
+            { id: "due_at", label: "Due Date & Time", type: "datetime-local" },
+            {
+              id: "notes",
+              label: "Instructions / Link",
+              placeholder: "Requirements, submission link",
+            },
+          ]}
+          onSubmit={async (data) => {
+            await addChildMutation.mutateAsync({
+              applicationId: active.id,
+              kind: "assessments",
+              data: {
+                name: data.name,
+                due_at: data.due_at || null,
+                notes: data.notes || null,
+                status: "pending",
+              },
+            });
+            setAddAssessmentOpen(false);
+            toast.success("Assessment added", { description: data.name });
+          }}
+          isSubmitting={addChildMutation.isPending}
+        />
+      )}
+
+      {/* Add Follow-Up Dialog */}
+      {active && (
+        <AddChildDialog
+          open={addFollowUpOpen}
+          onOpenChange={setAddFollowUpOpen}
+          title="Add Follow-up Task"
+          description={`Set a reminder for ${active.role} at ${active.company}`}
+          fields={[
+            {
+              id: "title",
+              label: "Task Title",
+              placeholder: "e.g. Send thank-you note, email recruiter",
+              required: true,
+            },
+            { id: "due_at", label: "Due Date", type: "date" },
+            { id: "notes", label: "Details", placeholder: "Specific points to follow up on" },
+          ]}
+          onSubmit={async (data) => {
+            await addChildMutation.mutateAsync({
+              applicationId: active.id,
+              kind: "follow-ups",
+              data: {
+                title: data.title,
+                due_at: data.due_at || null,
+                notes: data.notes || null,
+                status: "pending",
+              },
+            });
+            setAddFollowUpOpen(false);
+            toast.success("Follow-up task created", { description: data.title });
+          }}
+          isSubmitting={addChildMutation.isPending}
+        />
+      )}
     </div>
+  );
+}
+
+// ─────────────────────────────────────── Add Application Dialog Modal
+
+function AddApplicationDialog({
+  open,
+  onOpenChange,
+  onCreate,
+  isSubmitting,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreate: (data: {
+    job_title: string;
+    company_name: string;
+    location?: string;
+    salary?: string;
+    status?: ApplicationStatus;
+    notes?: string;
+  }) => Promise<void>;
+  isSubmitting?: boolean;
+}) {
+  const [jobTitle, setJobTitle] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [location, setLocation] = useState("");
+  const [salary, setSalary] = useState("");
+  const [status, setStatus] = useState<ApplicationStatus>("applied");
+  const [notes, setNotes] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!jobTitle.trim() || !companyName.trim()) {
+      toast.error("Job title and company name are required");
+      return;
+    }
+    await onCreate({
+      job_title: jobTitle.trim(),
+      company_name: companyName.trim(),
+      location: location.trim() || undefined,
+      salary: salary.trim() || undefined,
+      status,
+      notes: notes.trim() || undefined,
+    });
+    setJobTitle("");
+    setCompanyName("");
+    setLocation("");
+    setSalary("");
+    setNotes("");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>Add New Application</DialogTitle>
+            <DialogDescription>
+              Track an opportunity directly in Mission Control with real-time lifecycle tracking.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-foreground/90">
+                Job Title <span className="text-destructive">*</span>
+              </label>
+              <Input
+                required
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                placeholder="e.g. Senior Software Engineer"
+                className="mt-1 h-9 rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground/90">
+                Company Name <span className="text-destructive">*</span>
+              </label>
+              <Input
+                required
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="e.g. Acme Corp"
+                className="mt-1 h-9 rounded-lg"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-foreground/90">Location</label>
+                <Input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Remote, San Francisco"
+                  className="mt-1 h-9 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-foreground/90">Salary</label>
+                <Input
+                  value={salary}
+                  onChange={(e) => setSalary(e.target.value)}
+                  placeholder="e.g. $140,000 - $160,000"
+                  className="mt-1 h-9 rounded-lg"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground/90">Initial Stage</label>
+              <Select value={status} onValueChange={(val) => setStatus(val as ApplicationStatus)}>
+                <SelectTrigger className="mt-1 h-9 rounded-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="saved">Saved</SelectItem>
+                  <SelectItem value="to_apply">To Apply</SelectItem>
+                  <SelectItem value="applied">Applied</SelectItem>
+                  <SelectItem value="screening">Screening</SelectItem>
+                  <SelectItem value="assessment">Assessment</SelectItem>
+                  <SelectItem value="interview">Interview</SelectItem>
+                  <SelectItem value="offer">Offer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground/90">Notes</label>
+              <Input
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Referral contact, application link, notes"
+                className="mt-1 h-9 rounded-lg"
+              />
+            </div>
+          </div>
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="rounded-lg text-xs"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="rounded-lg text-xs">
+              {isSubmitting ? "Creating..." : "Save Application"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────── Generic Add Child Entity Dialog
+
+function AddChildDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  fields,
+  onSubmit,
+  isSubmitting,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  fields: {
+    id: string;
+    label: string;
+    placeholder?: string;
+    type?: string;
+    required?: boolean;
+  }[];
+  onSubmit: (data: Record<string, string>) => Promise<void>;
+  isSubmitting?: boolean;
+}) {
+  const [form, setForm] = useState<Record<string, string>>({});
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit(form);
+    setForm({});
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {fields.map((f) => (
+              <div key={f.id}>
+                <label className="text-xs font-semibold text-foreground/90">
+                  {f.label} {f.required && <span className="text-destructive">*</span>}
+                </label>
+                <Input
+                  type={f.type || "text"}
+                  required={f.required}
+                  value={form[f.id] || ""}
+                  onChange={(e) => setForm((prev) => ({ ...prev, [f.id]: e.target.value }))}
+                  placeholder={f.placeholder}
+                  className="mt-1 h-9 rounded-lg"
+                />
+              </div>
+            ))}
+          </div>
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="rounded-lg text-xs"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="rounded-lg text-xs">
+              {isSubmitting ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

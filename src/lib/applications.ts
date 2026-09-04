@@ -1,11 +1,12 @@
 // Data transformation layer for Applications (Mission Control)
 // Maps backend API data to the UI format expected by components
 
-import type {
+import {
   Application,
   ApplicationStage,
   ApplicationStatus,
   ApplicationStats,
+  APPLICATION_STAGES,
 } from "../types/application";
 
 // Extended UI-facing Application type with all the display fields
@@ -34,8 +35,17 @@ export interface ApplicationUI {
     interviewer?: string;
     status: string;
     notes?: string;
+    scheduledAt?: string | null;
   }[];
-  assessments: { id: string; label: string; due: string; status: string }[];
+  assessments: { id: string; label: string; due: string; status: string; dueAt?: string | null }[];
+  followUps: {
+    id: string;
+    title: string;
+    due: string;
+    status: string;
+    notes?: string;
+    dueAt?: string | null;
+  }[];
   culture?: string;
   glassdoor?: number;
   progress: number;
@@ -43,12 +53,14 @@ export interface ApplicationUI {
 
 export interface FollowUpUI {
   id: string;
+  applicationId?: string;
   company: string;
   role: string;
   due: string;
   kind: "email" | "call" | "message" | "task";
   status: "pending" | "completed";
   note: string;
+  dueAt?: string | null;
 }
 
 export interface CalendarEventUI {
@@ -73,36 +85,180 @@ export interface StatsUI {
 
 // Transform backend Application to frontend ApplicationUI
 export function transformApplication(app: Application): ApplicationUI {
-  const stage = app.status as ApplicationStage;
-  const progress = getProgressForStage(stage);
+  // "archived" is a backend boolean flag mapped onto the UI's archived stage.
+  const stage = (app.archived ? "archived" : app.status) as ApplicationStage;
+  const progress = app.progress ?? getProgressForStage(stage);
+
+  // Timeline is generated from persisted application events (source of truth).
+  const history: ApplicationUI["history"] = (app.events ?? []).map((e) => ({
+    id: e.id,
+    time: timeAgo(e.created_at),
+    title: e.title,
+    detail: e.detail ?? "",
+    kind: eventKind(e.event_type),
+  }));
+  if (history.length === 0 && app.application_date) {
+    // Honest fallback for legacy rows created before the events table existed.
+    history.push({
+      id: `${app.id}-created`,
+      time: timeAgo(app.application_date),
+      title: "Applied",
+      detail: `Application for ${app.job_title} at ${app.company_name}`,
+      kind: "status",
+    });
+  }
+
+  const interviews: ApplicationUI["interviews"] = (app.interviews ?? []).map((i) => ({
+    id: i.id,
+    name: i.name,
+    when: i.scheduled_at ? formatDate(i.scheduled_at) : "Unscheduled",
+    interviewer: i.interviewer ?? undefined,
+    status: i.status,
+    notes: i.notes ?? undefined,
+    scheduledAt: i.scheduled_at,
+  }));
+
+  const assessments: ApplicationUI["assessments"] = (app.assessments ?? []).map((a) => ({
+    id: a.id,
+    label: a.name,
+    due: a.due_at ? formatDate(a.due_at) : "No due date",
+    status: a.status,
+    dueAt: a.due_at,
+  }));
+
+  const followUps: ApplicationUI["followUps"] = (app.follow_ups ?? []).map((f) => ({
+    id: f.id,
+    title: f.title,
+    due: f.due_at ? formatDate(f.due_at) : "No due date",
+    status: f.status,
+    notes: f.notes ?? undefined,
+    dueAt: f.due_at,
+  }));
+
+  const contacts: ApplicationUI["contacts"] = (app.contacts ?? []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    role: c.role ?? "Contact",
+    last: c.email ?? undefined,
+  }));
+
+  const attachments: ApplicationUI["attachments"] = (app.attachments ?? []).map((a) => ({
+    id: a.id,
+    name: a.name,
+    kind: a.kind,
+    size: "",
+  }));
+
+  const nextAction = app.next_action
+    ? {
+        label: app.next_action.label,
+        when: urgencyLabel(app.next_action.urgency),
+        urgency: app.next_action.urgency,
+      }
+    : undefined;
 
   return {
     id: app.id,
     company: app.company_name,
     logo: app.company_name.charAt(0).toUpperCase(),
     role: app.job_title,
-    location: "",
-    salary: "",
+    location: app.location ?? "",
+    salary: app.salary ?? "",
     stage,
-    match: 0,
+    match: app.match_score ?? 0,
+    favorite: Boolean(app.favorite),
     postedAt: app.application_date ? formatDate(app.application_date) : "",
     updatedAt: app.updated_at ? timeAgo(app.updated_at) : "",
+    nextAction,
+    recruiter: contacts[0]
+      ? {
+          id: contacts[0].id,
+          name: contacts[0].name,
+          role: contacts[0].role,
+          last: contacts[0].last,
+        }
+      : undefined,
+    contacts,
     notes: app.notes ?? "",
-    contacts: [],
-    attachments: [],
-    history: [
-      {
-        id: `${app.id}-history-1`,
-        time: timeAgo(app.application_date),
-        title: "Applied",
-        detail: `Application submitted for ${app.job_title} at ${app.company_name}`,
-        kind: "status",
-      },
-    ],
-    interviews: [],
-    assessments: [],
+    attachments,
+    history,
+    interviews,
+    assessments,
+    followUps,
     progress,
   };
+}
+
+export function getCalendarEvents(apps: ApplicationUI[]): CalendarEventUI[] {
+  const events: CalendarEventUI[] = [];
+  apps.forEach((app) => {
+    (app.interviews ?? []).forEach((iv) => {
+      if (iv.scheduledAt) {
+        const d = new Date(iv.scheduledAt);
+        if (!Number.isNaN(d.getTime())) {
+          events.push({
+            id: `iv-${iv.id}`,
+            day: d.getDate(),
+            month: d.getMonth(),
+            year: d.getFullYear(),
+            hour: d.getHours(),
+            title: iv.name,
+            company: app.company,
+            kind: "interview",
+          });
+        }
+      }
+    });
+    (app.assessments ?? []).forEach((as) => {
+      if (as.dueAt) {
+        const d = new Date(as.dueAt);
+        if (!Number.isNaN(d.getTime())) {
+          events.push({
+            id: `as-${as.id}`,
+            day: d.getDate(),
+            month: d.getMonth(),
+            year: d.getFullYear(),
+            hour: d.getHours(),
+            title: as.label,
+            company: app.company,
+            kind: "assessment",
+          });
+        }
+      }
+    });
+    (app.followUps ?? []).forEach((fu) => {
+      if (fu.dueAt) {
+        const d = new Date(fu.dueAt);
+        if (!Number.isNaN(d.getTime())) {
+          events.push({
+            id: `fu-${fu.id}`,
+            day: d.getDate(),
+            month: d.getMonth(),
+            year: d.getFullYear(),
+            hour: d.getHours(),
+            title: fu.title,
+            company: app.company,
+            kind: "followup",
+          });
+        }
+      }
+    });
+  });
+  return events;
+}
+
+function urgencyLabel(urgency: "today" | "soon" | "later"): string {
+  if (urgency === "today") return "Today";
+  if (urgency === "soon") return "Soon";
+  return "Later";
+}
+
+function eventKind(eventType: string): string {
+  if (eventType.includes("interview")) return "interview";
+  if (eventType.includes("follow_up")) return "task";
+  if (eventType === "application_created") return "status";
+  if (eventType === "status_changed") return "status";
+  return "note";
 }
 
 // Transform backend Application array to ApplicationUI array
@@ -114,12 +270,15 @@ export function transformApplications(apps: Application[]): ApplicationUI[] {
 function getProgressForStage(stage: ApplicationStage): number {
   const progressMap: Record<ApplicationStage, number> = {
     saved: 5,
+    to_apply: 10,
     applied: 20,
-    assessment: 40,
+    screening: 35,
+    assessment: 45,
     interview: 60,
     offer: 85,
     accepted: 100,
     rejected: 100,
+    withdrawn: 100,
     archived: 100,
   };
   return progressMap[stage] ?? 0;
@@ -161,35 +320,40 @@ function timeAgo(dateStr: string): string {
 
 // Compute stats from applications
 export function computeStats(apps: ApplicationUI[]): StatsUI {
-  const total = apps.filter((a) => a.stage !== "saved" && a.stage !== "archived").length;
+  const total = apps.filter(
+    (a) => a.stage !== "saved" && a.stage !== "to_apply" && a.stage !== "archived",
+  ).length;
   const withInterviews = apps.filter(
     (a) => a.stage === "interview" || a.stage === "offer" || a.stage === "accepted",
   ).length;
   const withOffers = apps.filter((a) => a.stage === "offer" || a.stage === "accepted").length;
   const accepted = apps.filter((a) => a.stage === "accepted").length;
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  monday.setHours(0, 0, 0, 0);
+  const activeThisWeek = apps.filter((a) => {
+    if (!a.postedAt) return false;
+    const d = new Date(a.postedAt);
+    return !Number.isNaN(d.getTime()) && d >= monday && d <= now;
+  }).length;
 
   return {
     applications: total,
+    // Conversion rates are 0 when the sample (denominator) is zero — never a fake 100%.
     interviewRate: total > 0 ? Math.round((withInterviews / total) * 100) : 0,
     offerRate: withInterviews > 0 ? Math.round((withOffers / withInterviews) * 100) : 0,
     acceptanceRate: withOffers > 0 ? Math.round((accepted / withOffers) * 100) : 0,
     streakDays: 0,
-    activeThisWeek: 0,
+    activeThisWeek,
   };
 }
 
 // Group applications by stage
 export function groupByStage(apps: ApplicationUI[]): Record<ApplicationStage, ApplicationUI[]> {
-  const groups: Record<ApplicationStage, ApplicationUI[]> = {
-    saved: [],
-    applied: [],
-    assessment: [],
-    interview: [],
-    offer: [],
-    accepted: [],
-    rejected: [],
-    archived: [],
-  };
+  const groups = Object.fromEntries(
+    APPLICATION_STAGES.map((s) => [s.id, [] as ApplicationUI[]]),
+  ) as Record<ApplicationStage, ApplicationUI[]>;
   apps.forEach((app) => {
     if (groups[app.stage]) {
       groups[app.stage].push(app);
@@ -238,13 +402,22 @@ export const sidebarFilters: SidebarFilter[] = [
   {
     id: "all",
     label: "All applications",
-    stages: ["applied", "assessment", "interview", "offer", "accepted", "rejected"],
+    stages: [
+      "applied",
+      "screening",
+      "assessment",
+      "interview",
+      "offer",
+      "accepted",
+      "rejected",
+      "withdrawn",
+    ],
   },
   { id: "interviews", label: "Interviews", stages: ["interview"] },
   { id: "assessments", label: "Assessments", stages: ["assessment"] },
   { id: "offers", label: "Offers", stages: ["offer", "accepted"] },
-  { id: "rejected", label: "Rejected", stages: ["rejected"] },
+  { id: "rejected", label: "Rejected", stages: ["rejected", "withdrawn"] },
   { id: "archived", label: "Archived", stages: ["archived"] },
-  { id: "saved", label: "Saved", stages: ["saved"] },
+  { id: "saved", label: "Saved", stages: ["saved", "to_apply"] },
   { id: "bookmarks", label: "Bookmarks", stages: [], favorites: true },
 ];
