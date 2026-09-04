@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/use-tooltip";
 import {
   useVersions,
   useCreateVersion,
+  useUpdateVersion,
   useDeleteVersion,
   useDuplicateVersion,
   useVersionDiff,
@@ -45,6 +46,7 @@ export function VersionManager({
   const { toast } = useToast();
   const { data: versionsData } = useVersions(resumeId);
   const createVersion = useCreateVersion(resumeId);
+  const updateVersion = useUpdateVersion(showRename?.id || "", resumeId);
   const deleteVersion = useDeleteVersion(resumeId);
   const duplicateVersion = useDuplicateVersion(resumeId);
   const diffQuery = useVersionDiff(selectedVersionId || "");
@@ -111,11 +113,12 @@ export function VersionManager({
   const handleRename = async () => {
     if (!showRename || !newVersionName.trim()) return;
     try {
-      await createVersion.mutateAsync({
+      await updateVersion.mutateAsync({
         version_name: newVersionName.trim(),
       });
       toast.success("Renamed");
       setShowRename(null);
+      setNewVersionName("");
     } catch {
       toast.error("Failed to rename");
     }
@@ -236,7 +239,12 @@ export function VersionManager({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setShowRename(version)}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setShowRename(version);
+                    setNewVersionName(version.version_name);
+                  }}
+                >
                   <Pencil className="h-3.5 w-3.5 mr-2" /> Rename
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleDuplicate(version)}>

@@ -26,6 +26,7 @@ import {
   useCreateVersion,
   useApplyVersionOperation,
   useVersion,
+  versionQueryKeys,
 } from "@/hooks/api/useVersions";
 import {
   useGenerateExperienceBulletOptimization,
@@ -161,6 +162,13 @@ function ResumeWorkspace() {
   const generateOptimizationMutation = useGenerateOptimization();
   const { toast } = useToast();
 
+  const {
+    signedUrl: originalPdfUrl,
+    error: originalPdfError,
+    generateSignedUrl,
+    clearSignedUrl,
+  } = useOriginalResumeFile();
+
   // Reset working state synchronously when navigating between resumes to eliminate any stale data flash
   useEffect(() => {
     setResumeData(null);
@@ -173,8 +181,9 @@ function ResumeWorkspace() {
     setATSScore(null);
     setATSAnalysis(null);
     setAtsReportId(null);
+    clearSignedUrl();
     lastAutoAnalyzedRef.current = null;
-  }, [id]);
+  }, [id, clearSignedUrl]);
 
   useEffect(() => {
     if (versionIdFromSearch && (!selectedVersionId || selectedVersionId !== versionIdFromSearch)) {
@@ -196,12 +205,6 @@ function ResumeWorkspace() {
       null
     );
   }, [selectedVersion, record]);
-
-  const {
-    signedUrl: originalPdfUrl,
-    error: originalPdfError,
-    generateSignedUrl,
-  } = useOriginalResumeFile();
 
   useEffect(() => {
     if (activeStoragePath) {
@@ -236,7 +239,8 @@ function ResumeWorkspace() {
         });
 
         if (res?.data) {
-          await queryClient.invalidateQueries({ queryKey: ["resume-versions", id] });
+          await queryClient.invalidateQueries({ queryKey: versionQueryKeys.list(id) });
+          await queryClient.invalidateQueries({ queryKey: versionQueryKeys.get(res.data.id) });
           await queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
           setSelectedVersionId(res.data.id);
           toast.success("PDF updated successfully");
@@ -770,9 +774,9 @@ function ResumeWorkspace() {
             // Non-blocking
           }
         }
-        await queryClient.invalidateQueries({ queryKey: ["resume-versions", id] });
+        await queryClient.invalidateQueries({ queryKey: versionQueryKeys.list(id) });
         if (targetVersionId) {
-          await queryClient.invalidateQueries({ queryKey: ["resume-version", targetVersionId] });
+          await queryClient.invalidateQueries({ queryKey: versionQueryKeys.get(targetVersionId) });
         }
         await queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
         toast.success("Suggestion applied to resume");
