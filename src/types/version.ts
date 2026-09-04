@@ -1,3 +1,5 @@
+import type { ResumeRecordMeta } from "./resume";
+
 export type ResumeVersion = {
   id: string;
   resume_id: string;
@@ -13,7 +15,7 @@ export type ResumeVersion = {
   status: string;
   is_master: boolean;
   parent_version_id?: string | null;
-  meta?: Record<string, unknown>;
+  meta?: ResumeRecordMeta | null;
   last_ats_score?: number | null;
   last_analyzed_at?: string | null;
   sections_config?: Record<string, unknown>;

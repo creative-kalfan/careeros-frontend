@@ -9,6 +9,8 @@ import {
   pdfIssueToPageHighlights,
   type EvidenceHighlight,
 } from "@/components/resume/pdf-issue-overlay";
+import { PdfGeometryOverlay } from "@/components/resume/pdf-geometry-overlay";
+import type { DocumentGeometryMap, GeometryBlock } from "@/types/geometry";
 import type { AtsRequirementCoverage } from "@/api/ats";
 import {
   mapEvidenceToLocations,
@@ -49,6 +51,10 @@ export function PdfCanvasPreview({
   evidenceLocations: externalEvidenceLocations,
   onEvidenceLocationsChange,
   selectedRequirementId,
+  geometryMap,
+  selectedTargetId,
+  onSelectElement,
+  onMutateBlock,
 }: {
   url: string;
   zoom: number;
@@ -60,6 +66,10 @@ export function PdfCanvasPreview({
   evidenceLocations?: EvidenceLocationMap | null;
   onEvidenceLocationsChange?: (locations: EvidenceLocationMap | null) => void;
   selectedRequirementId?: string | null;
+  geometryMap?: DocumentGeometryMap | null;
+  selectedTargetId?: string | null;
+  onSelectElement?: (id: string, section?: string) => void;
+  onMutateBlock?: (pageIndex: number, block: GeometryBlock, text: string) => Promise<void>;
 }) {
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const docRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null);
@@ -325,6 +335,16 @@ export function PdfCanvasPreview({
                   zoom={zoom}
                   selectedRequirementId={selectedRequirementId}
                   onSelectHighlight={onSelectIssue}
+                />
+              )}
+              {geometryMap?.pages?.[i]?.blocks && (
+                <PdfGeometryOverlay
+                  pageIndex={i}
+                  blocks={geometryMap.pages[i].blocks}
+                  zoom={zoom}
+                  selectedTargetId={selectedTargetId}
+                  onSelectElement={onSelectElement}
+                  onMutateBlock={onMutateBlock}
                 />
               )}
             </div>

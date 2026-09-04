@@ -31,8 +31,11 @@ import type {
 } from "@/types/resume";
 import type { OptimizationSuggestion } from "@/types/optimization";
 import { TemplatePreview } from "@/components/resume/templates/template-preview";
+import { PdfCanvasPreview } from "@/components/resume/pdf-canvas-preview";
 import type { AtsRequirementCoverage } from "@/api/ats";
 import type { EvidenceLocationMap } from "@/lib/evidence-location";
+import type { DocumentGeometryMap, GeometryBlock } from "@/types/geometry";
+import type { ResumeVersion } from "@/types/version";
 import { motion, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
 
 /** Adds subtle perspective tilt to the document — degrades gracefully on mobile/reduced-motion. */
@@ -107,7 +110,7 @@ interface PreviewPaneProps {
   onEvidenceLocationsChange?: (locations: EvidenceLocationMap | null) => void;
   selectedRequirementId?: string | null;
   selectedTargetId?: string | null;
-  onSelectElement?: (elementId: string, section: string) => void;
+  onSelectElement?: (elementId: string, section?: string) => void;
   onExportPdf?: () => void;
   isDocumentLoading?: boolean;
   onUpdateResume?: (updated: ResumeData) => void;
@@ -116,6 +119,10 @@ interface PreviewPaneProps {
     section: string,
     targetId?: string,
   ) => void;
+  selectedVersion?: ResumeVersion | null;
+  originalPdfUrl?: string | null;
+  geometryMap?: DocumentGeometryMap | null;
+  onMutateBlock?: (pageIndex: number, block: GeometryBlock, text: string) => Promise<void>;
 }
 
 export function PreviewPane({
@@ -134,8 +141,20 @@ export function PreviewPane({
   isDocumentLoading = false,
   onUpdateResume,
   onDropSuggestion,
+  selectedVersion,
+  originalPdfUrl,
+  geometryMap,
+  onMutateBlock,
 }: PreviewPaneProps) {
   const [zoom, setZoom] = useState(100);
+
+  const activeStoragePath =
+    selectedVersion?.meta?.storage_path ||
+    resume.meta?.storage_path ||
+    resume.storage_path ||
+    null;
+
+  const isCanvasMode = Boolean(activeStoragePath && originalPdfUrl && !templateSlug);
 
   const change = (dir: 1 | -1) => {
     setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + dir * ZOOM_STEP)));
@@ -222,7 +241,11 @@ export function PreviewPane({
           className="rounded-md border-border/80 bg-surface-elevated/40 px-2.5 py-0.5 text-[10.5px] font-medium text-foreground flex items-center gap-1.5"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          {templateSlug ? `Template: ${templateSlug}` : "Canonical Resume Document · Editable"}
+          {isCanvasMode
+            ? "Original PDF Stage · Interactive Geometry"
+            : templateSlug
+            ? `Template: ${templateSlug}`
+            : "Canonical Resume Document · Editable"}
         </Badge>
 
         {isScanning && (
@@ -273,6 +296,24 @@ export function PreviewPane({
               <A4DocumentSkeleton />
             </div>
           </div>
+        ) : isCanvasMode ? (
+          <SpatialDocumentStage>
+            <PdfCanvasPreview
+              url={originalPdfUrl!}
+              zoom={zoom / 100}
+              isScanning={isScanning}
+              highlightStrings={atsIssues}
+              onSelectIssue={onSelectIssue}
+              requirementCoverage={requirementCoverage}
+              evidenceLocations={evidenceLocations}
+              onEvidenceLocationsChange={onEvidenceLocationsChange}
+              selectedRequirementId={selectedRequirementId}
+              geometryMap={geometryMap}
+              selectedTargetId={selectedTargetId}
+              onSelectElement={onSelectElement}
+              onMutateBlock={onMutateBlock}
+            />
+          </SpatialDocumentStage>
         ) : (
           <SpatialDocumentStage>
             <div
@@ -304,7 +345,7 @@ export function PreviewPane({
 interface A4PageProps {
   resume: ResumeData;
   selectedTargetId?: string | null;
-  onSelectElement?: (elementId: string, section: string) => void;
+  onSelectElement?: (elementId: string, section?: string) => void;
   onUpdateResume?: (updated: ResumeData) => void;
   onDropSuggestion?: (
     suggestion: OptimizationSuggestion,

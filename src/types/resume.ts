@@ -1,3 +1,5 @@
+import type { DocumentGeometryMap } from "./geometry";
+
 // ---------------------------------------------------------------------------
 // UI-facing resume types (consumed by Resume workspace components)
 // ---------------------------------------------------------------------------
@@ -82,11 +84,19 @@ export interface ResumeData {
   languages: LanguageEntry[];
   links: LinkEntry[];
   additional: AdditionalEntry[];
+  storage_path?: string | null;
+  meta?: ResumeRecordMeta | null;
 }
 
 // ---------------------------------------------------------------------------
 // Backend DTOs (response shapes from backend)
 // ---------------------------------------------------------------------------
+
+export type ResumeRecordMeta = {
+  storage_path?: string | null;
+  geometry?: DocumentGeometryMap | null;
+  [key: string]: unknown;
+};
 
 /** The resume row in the database. */
 export type ResumeRecord = {
@@ -98,7 +108,7 @@ export type ResumeRecord = {
   storage_path?: string | null;
   parse_status: "pending" | "processing" | "completed" | "failed";
   content?: Record<string, unknown> | null;
-  meta?: Record<string, unknown> | null;
+  meta?: ResumeRecordMeta | null;
   created_at: string;
   updated_at: string;
 };

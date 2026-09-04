@@ -31,7 +31,9 @@ import {
   useGenerateExperienceBulletOptimization,
   useGenerateOptimization,
 } from "@/hooks/api/useOptimization";
-import { requestBlob } from "@/utils/request";
+import { request, requestBlob } from "@/utils/request";
+import { useOriginalResumeFile } from "@/hooks/useOriginalResumeFile";
+import type { DocumentGeometryMap, GeometryBlock } from "@/types/geometry";
 import {
   profileToResumeData,
   applyResumeDataToProfile,
@@ -185,6 +187,68 @@ function ResumeWorkspace() {
       setSelectedVersion(selectedVersionData.version);
     }
   }, [selectedVersionData]);
+
+  const activeStoragePath = useMemo(() => {
+    return (
+      selectedVersion?.meta?.storage_path ||
+      record?.meta?.storage_path ||
+      record?.storage_path ||
+      null
+    );
+  }, [selectedVersion, record]);
+
+  const { signedUrl: originalPdfUrl, generateSignedUrl } = useOriginalResumeFile();
+
+  useEffect(() => {
+    if (activeStoragePath) {
+      void generateSignedUrl(activeStoragePath);
+    }
+  }, [activeStoragePath, generateSignedUrl]);
+
+  const geometryMap = useMemo(() => {
+    return (
+      selectedVersion?.meta?.geometry ||
+      record?.meta?.geometry ||
+      null
+    );
+  }, [selectedVersion, record]);
+
+  const handleMutateBlock = useCallback(
+    async (pageIndex: number, block: GeometryBlock, newText: string) => {
+      const vid = activeVersionId || record?.id;
+      if (!vid) {
+        toast.error("No active version found to edit");
+        return;
+      }
+
+      try {
+        const res = await request<{ data: ResumeVersion; success: boolean }>({
+          method: "POST",
+          path: `/api/resumes/${id}/versions/${vid}/mutate-pdf`,
+          body: {
+            page_index: pageIndex,
+            block_id: block.id,
+            bbox: block.bbox,
+            replacement_text: newText,
+            section: block.section || undefined,
+            item_id: block.item_id || undefined,
+          },
+        });
+
+        if (res?.data) {
+          await queryClient.invalidateQueries({ queryKey: ["resume-versions", id] });
+          await queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
+          setSelectedVersionId(res.data.id);
+          toast.success("PDF updated successfully");
+        }
+      } catch (err) {
+        console.error("Failed to mutate PDF:", err);
+        toast.error(getErrorMessage(err) || "Failed to update PDF");
+        throw err;
+      }
+    },
+    [id, activeVersionId, record?.id, queryClient, toast]
+  );
 
   useEffect(() => {
     const versionRow = selectedVersionData?.version;
@@ -362,7 +426,7 @@ function ResumeWorkspace() {
     ),
   );
 
-  const handleSelectElement = useCallback((elementId: string, _section: string) => {
+  const handleSelectElement = useCallback((elementId: string, _section?: string) => {
     setSelectedTargetId((prev) => (prev === elementId ? null : elementId));
   }, []);
 
@@ -706,6 +770,11 @@ function ResumeWorkspace() {
             // Non-blocking
           }
         }
+        await queryClient.invalidateQueries({ queryKey: ["resume-versions", id] });
+        if (targetVersionId) {
+          await queryClient.invalidateQueries({ queryKey: ["resume-version", targetVersionId] });
+        }
+        await queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
         toast.success("Suggestion applied to resume");
       } catch {
         toast.success("Suggestion applied to resume");
@@ -937,6 +1006,10 @@ function ResumeWorkspace() {
               onExportPdf={() => setShowFinalReview(true)}
               onUpdateResume={handleUpdateResume}
               onDropSuggestion={handleDropSuggestion}
+              selectedVersion={selectedVersion}
+              originalPdfUrl={originalPdfUrl}
+              geometryMap={geometryMap}
+              onMutateBlock={handleMutateBlock}
             />
           ) : (
             <div className="flex min-h-full items-start justify-center p-6 sm:p-10 overflow-y-auto">
@@ -1006,7 +1079,7 @@ function ResumeWorkspace() {
               onExportPdf={async () => {
                 setIsExporting(true);
                 try {
-                  const vid = selectedVersionId || record?.id;
+                  const vid = selectedVersionId || activeVersionId || masterVersion?.id;
                   if (!vid) throw new Error("No version selected");
                   const blob = await requestBlob({
                     method: "GET",
@@ -1028,7 +1101,7 @@ function ResumeWorkspace() {
               onExportDocx={async () => {
                 setIsExporting(true);
                 try {
-                  const vid = selectedVersionId || record?.id;
+                  const vid = selectedVersionId || activeVersionId || masterVersion?.id;
                   if (!vid) throw new Error("No version selected");
                   const blob = await requestBlob({
                     method: "GET",
