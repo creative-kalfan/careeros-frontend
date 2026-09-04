@@ -51,7 +51,9 @@ function ForgotPasswordPage() {
               <Compass className="w-4 h-4" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold tracking-tight text-[#F3F0E8]">CareerOS</span>
+              <span className="text-base font-semibold tracking-tight text-[#F3F0E8]">
+                CareerOS
+              </span>
               <span className="hidden sm:inline text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#1A1916] border border-[#302E29] text-[#A8A49A]">
                 Career Intelligence
               </span>
@@ -72,7 +74,9 @@ function ForgotPasswordPage() {
         <div className="w-full max-w-md">
           <div className="rounded-2xl border border-[#302E29] bg-[#1A1916]/90 p-6 sm:p-8 backdrop-blur-sm shadow-2xl shadow-black/50">
             <div className="mb-6 text-left">
-              <h1 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">Reset password</h1>
+              <h1 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">
+                Reset password
+              </h1>
               <p className="mt-1 text-xs text-[#A8A49A]">
                 Enter your account email and we'll send you a secure reset link.
               </p>
@@ -143,7 +147,10 @@ function ForgotPasswordPage() {
 
             <div className="mt-6 pt-5 border-t border-[#302E29]/80 text-center text-xs text-[#A8A49A]">
               Remember your password?{" "}
-              <Link to="/login" className="font-medium text-[#F3F0E8] hover:text-[#315CFF] transition-colors">
+              <Link
+                to="/login"
+                className="font-medium text-[#F3F0E8] hover:text-[#315CFF] transition-colors"
+              >
                 Sign in
               </Link>
             </div>

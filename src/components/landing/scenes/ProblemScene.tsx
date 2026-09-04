@@ -21,7 +21,8 @@ export function ProblemScene() {
       </h1>
 
       <p className="text-sm sm:text-base lg:text-lg text-[#A8A49A] leading-relaxed max-w-xl mt-5 sm:mt-6">
-        Every posting has distinct technical weights and evaluation priorities. Applying with one generic resume leaves your strongest relevant proof buried.
+        Every posting has distinct technical weights and evaluation priorities. Applying with one
+        generic resume leaves your strongest relevant proof buried.
       </p>
 
       {/* Subtle secondary anchor */}
@@ -37,5 +38,3 @@ export function ProblemScene() {
     </div>
   );
 }
-
-

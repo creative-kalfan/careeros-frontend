@@ -93,7 +93,12 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    let camera: THREE.PerspectiveCamera | null = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
+    let camera: THREE.PerspectiveCamera | null = new THREE.PerspectiveCamera(
+      42,
+      width / height,
+      0.1,
+      100,
+    );
     camera.position.set(0, 0.5, 9.5);
 
     let renderer: THREE.WebGLRenderer | null = null;
@@ -234,8 +239,6 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
     const particlePoints = new THREE.Points(particleGeo, particleMat);
     scene.add(particlePoints);
 
-
-
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2(-100, -100);
     const targetCameraPos = new THREE.Vector3(0, 0.5, 9.5);
@@ -282,12 +285,12 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
       ([entry]) => {
         isVisible = entry.isIntersecting;
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     observer.observe(container);
 
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
@@ -397,11 +400,15 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
       <div className="absolute top-3 left-4 right-4 z-10 flex items-center justify-between text-[11px] font-mono text-muted-foreground border-b border-border/40 pb-2">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-foreground/90 font-semibold tracking-wider">CAREEROS FLIGHT VECTOR</span>
+          <span className="text-foreground/90 font-semibold tracking-wider">
+            CAREEROS FLIGHT VECTOR
+          </span>
           <span className="text-muted-foreground/60 hidden sm:inline">| REALTIME_TOPOLOGY</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline text-muted-foreground/80">INTERACTIVE 3D WEBGL NODE MAP</span>
+          <span className="hidden md:inline text-muted-foreground/80">
+            INTERACTIVE 3D WEBGL NODE MAP
+          </span>
           <span className="px-2 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium text-[10px]">
             ACTIVE: {NODES_DATA[activeNode].tag}
           </span>
@@ -456,7 +463,9 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
                 {NODES_DATA[activeNode].tag}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">{NODES_DATA[activeNode].sublabel}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {NODES_DATA[activeNode].sublabel}
+            </p>
           </div>
         </div>
 

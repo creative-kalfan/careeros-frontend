@@ -19,12 +19,14 @@ test.describe("CareerOS Interactive Flagship Verification", () => {
     await expect(page.locator("header").first()).toBeVisible({ timeout: 20000 });
 
     // Verify 3D Career Vector & Skill Topology is rendered
-    await expect(page.getByText("3D Career Vector & Skill Topology")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("3D Career Vector & Skill Topology")).toBeVisible({
+      timeout: 15000,
+    });
 
     // Verify toggle button
     const switchBtn = page.getByRole("button", { name: /Switch to (2D Matrix|3D Sphere)/i });
     await expect(switchBtn).toBeVisible({ timeout: 15000 });
-    
+
     // Toggle mode
     await switchBtn.click();
     await page.waitForTimeout(800);
@@ -64,9 +66,9 @@ test.describe("CareerOS Interactive Flagship Verification", () => {
       await page.goto("/resumes/setup");
       await page.waitForLoadState("domcontentloaded");
       await expect(page.locator("header").first()).toBeVisible({ timeout: 20000 });
-      await expect(
-        page.getByRole("heading", { name: /Create Your Resume Document/i })
-      ).toBeVisible({ timeout: 15000 });
+      await expect(page.getByRole("heading", { name: /Create Your Resume Document/i })).toBeVisible(
+        { timeout: 15000 },
+      );
       return;
     }
 
@@ -78,11 +80,15 @@ test.describe("CareerOS Interactive Flagship Verification", () => {
     await page.screenshot({ path: path.join(outputDir, "02_resume_studio_initial.png") });
 
     // Test Right -> Left interaction: Click a resume section / element in PreviewPane
-    const summarySection = page.locator('[data-resume-section="summary"], #resume-section-summary').first();
+    const summarySection = page
+      .locator('[data-resume-section="summary"], #resume-section-summary')
+      .first();
     if (await summarySection.isVisible()) {
       await summarySection.click();
       await page.waitForTimeout(400);
-      await page.screenshot({ path: path.join(outputDir, "03_resume_studio_section_selected.png") });
+      await page.screenshot({
+        path: path.join(outputDir, "03_resume_studio_section_selected.png"),
+      });
     }
 
     // Test Left -> Right interaction: Click on ATS requirement or AI skills optimization if present

@@ -95,7 +95,9 @@ test.describe("Job Intelligence Redesign Verification", () => {
     await expect(page.getByRole("button", { name: /Filters/i })).toBeVisible();
 
     // 3. Verify opportunity card rendered with provenance & match
-    await expect(page.getByRole("heading", { name: "Staff Infrastructure Engineer" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Staff Infrastructure Engineer" }).first(),
+    ).toBeVisible();
     await expect(page.getByText("94% match").first()).toBeVisible();
 
     // 4. Verify Action toolbar

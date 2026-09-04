@@ -23,13 +23,12 @@ export function ExecuteScene() {
       <h2 className="text-2xl sm:text-4xl lg:text-5xl font-semibold text-[#F3F0E8] tracking-tight leading-[1.12]">
         Stop sending resumes into the void.
         <br />
-        <span className="text-[#315CFF]">
-          Start applying with proof.
-        </span>
+        <span className="text-[#315CFF]">Start applying with proof.</span>
       </h2>
 
       <p className="text-xs sm:text-sm lg:text-base text-[#A8A49A] max-w-xl mx-auto mt-3 sm:mt-4 leading-relaxed">
-        CareerOS transforms application guesswork into a verifiable, evidence-backed strategy. Target roles where your experience genuinely shines.
+        CareerOS transforms application guesswork into a verifiable, evidence-backed strategy.
+        Target roles where your experience genuinely shines.
       </p>
 
       {/* 5-Step Narrative Sequence */}
@@ -40,7 +39,9 @@ export function ExecuteScene() {
             className="p-2.5 sm:p-3 rounded-lg bg-[#1A1916] border border-[#302E29] flex flex-col items-center justify-center text-center shadow-xs"
           >
             <span className="text-[10px] font-mono font-medium text-[#315CFF]">{s.num}</span>
-            <div className="text-[11px] sm:text-xs font-semibold text-[#F3F0E8] mt-0.5">{s.name}</div>
+            <div className="text-[11px] sm:text-xs font-semibold text-[#F3F0E8] mt-0.5">
+              {s.name}
+            </div>
             <span className="text-[9px] sm:text-[10px] text-[#A8A49A] mt-0.5">{s.desc}</span>
           </div>
         ))}
@@ -78,5 +79,3 @@ export function ExecuteScene() {
     </div>
   );
 }
-
-

@@ -54,24 +54,46 @@ test.describe("Full Resume Studio Tailoring & AI Intelligence Journey", () => {
     await page.screenshot({ path: path.join(screenshotsDir, "01-jobs-page.png") });
 
     // Verify Jobs page is loaded
-    const jobsHeading = page.locator("h1, h2, div").filter({ hasText: /Jobs|Explore Jobs|Opportunities/i });
+    const jobsHeading = page
+      .locator("h1, h2, div")
+      .filter({ hasText: /Jobs|Explore Jobs|Opportunities/i });
     await expect(jobsHeading.first()).toBeVisible({ timeout: 10000 });
 
     // Look for a job card or tailor button
-    const tailorBtn = page.getByRole("button", { name: /Tailor Resume|Edit Resume for This Job/i }).or(page.locator("button:has-text('Tailor')"));
-    const hasTailorDirect = await tailorBtn.first().isVisible().catch(() => false);
+    const tailorBtn = page
+      .getByRole("button", { name: /Tailor Resume|Edit Resume for This Job/i })
+      .or(page.locator("button:has-text('Tailor')"));
+    const hasTailorDirect = await tailorBtn
+      .first()
+      .isVisible()
+      .catch(() => false);
 
     if (hasTailorDirect) {
       await tailorBtn.first().click();
     } else {
       // Click first job card in the list
-      const jobCards = page.locator("[data-job-id]").or(page.locator(".cursor-pointer")).or(page.getByRole("article"));
-      if (await jobCards.first().isVisible().catch(() => false)) {
+      const jobCards = page
+        .locator("[data-job-id]")
+        .or(page.locator(".cursor-pointer"))
+        .or(page.getByRole("article"));
+      if (
+        await jobCards
+          .first()
+          .isVisible()
+          .catch(() => false)
+      ) {
         await jobCards.first().click();
         await page.waitForTimeout(1000);
       }
-      const dialogTailorBtn = page.getByRole("button", { name: /Tailor Resume|Edit Resume for This Job/i });
-      if (await dialogTailorBtn.first().isVisible().catch(() => false)) {
+      const dialogTailorBtn = page.getByRole("button", {
+        name: /Tailor Resume|Edit Resume for This Job/i,
+      });
+      if (
+        await dialogTailorBtn
+          .first()
+          .isVisible()
+          .catch(() => false)
+      ) {
         await dialogTailorBtn.first().click();
       }
     }
@@ -93,7 +115,12 @@ test.describe("Full Resume Studio Tailoring & AI Intelligence Journey", () => {
 
       // Select a resume from the list
       const resumeOption = page.locator("button").filter({ hasText: /Resume|Updated|Master/i });
-      if (await resumeOption.first().isVisible().catch(() => false)) {
+      if (
+        await resumeOption
+          .first()
+          .isVisible()
+          .catch(() => false)
+      ) {
         await resumeOption.first().click();
       }
     }
@@ -106,18 +133,31 @@ test.describe("Full Resume Studio Tailoring & AI Intelligence Journey", () => {
 
     // ── 6. RIGHT PANE Verification: Canonical Resume / Document ──
     // Right pane must show the actual resume content (source of truth)
-    const rightPane = page.locator(".document-workbench").or(page.locator("article")).or(page.locator(".document-paper"));
+    const rightPane = page
+      .locator(".document-workbench")
+      .or(page.locator("article"))
+      .or(page.locator(".document-paper"));
     await expect(rightPane.first()).toBeVisible({ timeout: 10000 });
     console.log("Right pane canonical resume visible");
 
     // ── 7. LEFT PANE Verification: AI Intelligence & Suggestions ──
-    const leftPane = page.locator(".shadow-elevation-1").or(page.locator("text=ATS Analysis")).or(page.locator("text=AI Suggestions"));
+    const leftPane = page
+      .locator(".shadow-elevation-1")
+      .or(page.locator("text=ATS Analysis"))
+      .or(page.locator("text=AI Suggestions"));
     await expect(leftPane.first()).toBeVisible({ timeout: 10000 });
     console.log("Left pane AI intelligence visible");
 
     // Set job context via ATS dialog to trigger suggestions and score
-    const addJobBtn = page.getByRole("button", { name: /Add job description|Set Target Job|Change/i });
-    if (await addJobBtn.first().isVisible().catch(() => false)) {
+    const addJobBtn = page.getByRole("button", {
+      name: /Add job description|Set Target Job|Change/i,
+    });
+    if (
+      await addJobBtn
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await addJobBtn.first().click();
       await page.waitForTimeout(1000);
 
@@ -151,7 +191,9 @@ test.describe("Full Resume Studio Tailoring & AI Intelligence Journey", () => {
     await expect(proposedText.first()).toBeVisible({ timeout: 10000 });
     console.log("Targeted suggestion with proposed replacement visible");
 
-    const whyItMatters = page.locator("text=Why It Matters").or(page.locator("text=The current summary is too generic"));
+    const whyItMatters = page
+      .locator("text=Why It Matters")
+      .or(page.locator("text=The current summary is too generic"));
     await expect(whyItMatters.first()).toBeVisible({ timeout: 10000 });
     console.log("Rationale / Why it matters visible");
 
@@ -178,9 +220,11 @@ test.describe("Full Resume Studio Tailoring & AI Intelligence Journey", () => {
 
     // ── 10. Verify RIGHT pane updated deterministically ──
     // The applied summary text should now be present in the right pane preview
-    const updatedSummaryOnPreview = page.locator("article, .document-paper, .document-workbench").filter({
-      hasText: /Senior Software Engineer with 6\+ years/,
-    });
+    const updatedSummaryOnPreview = page
+      .locator("article, .document-paper, .document-workbench")
+      .filter({
+        hasText: /Senior Software Engineer with 6\+ years/,
+      });
     await expect(updatedSummaryOnPreview.first()).toBeVisible({ timeout: 10000 });
     console.log("Right pane verified: updated with proposed text");
 
@@ -195,9 +239,11 @@ test.describe("Full Resume Studio Tailoring & AI Intelligence Journey", () => {
     await page.waitForTimeout(1500);
 
     // Verify right pane contains the updated text after refresh
-    const persistedSummary = page.locator("article, .document-paper, .document-workbench, main").filter({
-      hasText: /Senior Software Engineer with 6\+ years/,
-    });
+    const persistedSummary = page
+      .locator("article, .document-paper, .document-workbench, main")
+      .filter({
+        hasText: /Senior Software Engineer with 6\+ years/,
+      });
     await expect(persistedSummary.first()).toBeVisible({ timeout: 15000 });
     console.log("State persisted after page reload: verified");
 

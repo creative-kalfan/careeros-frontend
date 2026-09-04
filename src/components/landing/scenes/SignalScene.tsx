@@ -10,12 +10,48 @@ interface ExtractedCriterion {
 }
 
 const EXTRACTED_CRITERIA: ExtractedCriterion[] = [
-  { id: "1", category: "Core Backend", label: "Python 3.11+ & AsyncIO Architecture", weight: "25%", evidenceType: "Must-Have Requirement" },
-  { id: "2", category: "Data Systems", label: "PostgreSQL Query Tuning & Indexing", weight: "20%", evidenceType: "Verified Work Experience" },
-  { id: "3", category: "Distributed", label: "Redis Caching & Queue Workers (ARQ)", weight: "15%", evidenceType: "Pipeline Evidence" },
-  { id: "4", category: "API Design", label: "High-Throughput RESTful APIs", weight: "15%", evidenceType: "Production Metrics" },
-  { id: "5", category: "Infrastructure", label: "Kubernetes Containerization", weight: "15%", evidenceType: "DevOps Competency" },
-  { id: "6", category: "Testing", label: "Pytest Integration Suites", weight: "10%", evidenceType: "Quality Standard" },
+  {
+    id: "1",
+    category: "Core Backend",
+    label: "Python 3.11+ & AsyncIO Architecture",
+    weight: "25%",
+    evidenceType: "Must-Have Requirement",
+  },
+  {
+    id: "2",
+    category: "Data Systems",
+    label: "PostgreSQL Query Tuning & Indexing",
+    weight: "20%",
+    evidenceType: "Verified Work Experience",
+  },
+  {
+    id: "3",
+    category: "Distributed",
+    label: "Redis Caching & Queue Workers (ARQ)",
+    weight: "15%",
+    evidenceType: "Pipeline Evidence",
+  },
+  {
+    id: "4",
+    category: "API Design",
+    label: "High-Throughput RESTful APIs",
+    weight: "15%",
+    evidenceType: "Production Metrics",
+  },
+  {
+    id: "5",
+    category: "Infrastructure",
+    label: "Kubernetes Containerization",
+    weight: "15%",
+    evidenceType: "DevOps Competency",
+  },
+  {
+    id: "6",
+    category: "Testing",
+    label: "Pytest Integration Suites",
+    weight: "10%",
+    evidenceType: "Quality Standard",
+  },
 ];
 
 export function SignalScene() {
@@ -33,7 +69,8 @@ export function SignalScene() {
           Deconstruct the job description first.
         </h2>
         <p className="text-[11px] sm:text-xs text-[#A8A49A] mt-1 leading-normal max-w-lg mx-auto">
-          CareerOS parses postings into structured evaluation criteria — weighting required skills, architecture patterns, and domain competencies.
+          CareerOS parses postings into structured evaluation criteria — weighting required skills,
+          architecture patterns, and domain competencies.
         </p>
       </div>
 
@@ -44,7 +81,9 @@ export function SignalScene() {
           <div>
             <div className="flex items-center justify-between border-b border-[#302E29] pb-1.5 mb-2">
               <div>
-                <span className="text-[9px] font-medium text-[#A8A49A] uppercase tracking-wider">Target Posting</span>
+                <span className="text-[9px] font-medium text-[#A8A49A] uppercase tracking-wider">
+                  Target Posting
+                </span>
                 <h3 className="text-xs font-semibold text-[#F3F0E8]">Staff Platform Engineer</h3>
               </div>
               <span className="px-1.5 py-0.2 rounded text-[9px] font-medium bg-[#11110F] text-[#A8A49A] border border-[#302E29]">
@@ -54,10 +93,13 @@ export function SignalScene() {
 
             <div className="space-y-1.5 text-xs text-[#A8A49A] leading-relaxed">
               <p className="p-2 rounded-lg bg-[#11110F] border border-[#302E29]/60 font-mono text-[10px] sm:text-[11px] text-[#A8A49A]">
-                "Looking for a Backend Platform Engineer to scale our ingestion pipeline using Python, PostgreSQL, and Redis workers..."
+                "Looking for a Backend Platform Engineer to scale our ingestion pipeline using
+                Python, PostgreSQL, and Redis workers..."
               </p>
               <div className="p-2 rounded-lg bg-[#11110F] border border-[#302E29]/60 text-[10px] sm:text-[11px]">
-                <span className="text-[#F3F0E8] font-medium block mb-0.5">Key Evaluation Priorities:</span>
+                <span className="text-[#F3F0E8] font-medium block mb-0.5">
+                  Key Evaluation Priorities:
+                </span>
                 <ul className="space-y-0.5 text-[#A8A49A]">
                   <li>• Async programming & throughput</li>
                   <li>• Query optimization & indexing</li>
@@ -125,5 +167,3 @@ export function SignalScene() {
     </div>
   );
 }
-
-

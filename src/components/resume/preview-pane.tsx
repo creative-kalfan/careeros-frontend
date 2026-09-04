@@ -149,11 +149,9 @@ export function PreviewPane({
   const [zoom, setZoom] = useState(100);
 
   const activeStoragePath =
-    selectedVersion?.meta?.storage_path ||
-    resume.meta?.storage_path ||
-    resume.storage_path ||
-    null;
+    selectedVersion?.meta?.storage_path || resume.meta?.storage_path || resume.storage_path || null;
 
+  const isAwaitingPdf = Boolean(activeStoragePath && !originalPdfUrl && !templateSlug);
   const isCanvasMode = Boolean(activeStoragePath && originalPdfUrl && !templateSlug);
 
   const change = (dir: 1 | -1) => {
@@ -244,8 +242,8 @@ export function PreviewPane({
           {isCanvasMode
             ? "Original PDF Stage · Interactive Geometry"
             : templateSlug
-            ? `Template: ${templateSlug}`
-            : "Canonical Resume Document · Editable"}
+              ? `Template: ${templateSlug}`
+              : "Canonical Resume Document · Editable"}
         </Badge>
 
         {isScanning && (
@@ -284,7 +282,7 @@ export function PreviewPane({
 
       {/* Neutral Dark Document Workbench Canvas */}
       <ScrollArea className="flex-1 bg-zinc-950/95 dark:bg-[#090a0d] bg-cockpit-grid">
-        {isDocumentLoading ? (
+        {isDocumentLoading || isAwaitingPdf ? (
           <div className="flex min-h-full items-start justify-center p-6 sm:p-10">
             <div
               className="transition-transform duration-100 ease-out origin-top flex flex-col items-center"

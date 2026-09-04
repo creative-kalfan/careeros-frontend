@@ -91,9 +91,7 @@ function SetupChoiceCard({
           </div>
         </div>
 
-        <p className="mt-3.5 text-xs text-muted-foreground leading-relaxed flex-1">
-          {description}
-        </p>
+        <p className="mt-3.5 text-xs text-muted-foreground leading-relaxed flex-1">{description}</p>
 
         <div className="mt-6 pt-4 border-t border-border/50 flex items-center justify-between">
           <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors flex items-center gap-1">

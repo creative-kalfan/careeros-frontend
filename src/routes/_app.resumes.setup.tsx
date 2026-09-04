@@ -114,7 +114,10 @@ function ResumeSetupPage() {
 
             <div className="flex-1 space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="target-job-title" className="text-[13px] font-medium text-foreground/90">
+                <Label
+                  htmlFor="target-job-title"
+                  className="text-[13px] font-medium text-foreground/90"
+                >
                   Job title
                 </Label>
                 <Input
@@ -128,7 +131,10 @@ function ResumeSetupPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="target-company" className="text-[13px] font-medium text-foreground/90">
+                <Label
+                  htmlFor="target-company"
+                  className="text-[13px] font-medium text-foreground/90"
+                >
                   Company
                 </Label>
                 <Input
@@ -142,7 +148,10 @@ function ResumeSetupPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="target-job-description" className="text-[13px] font-medium text-foreground/90">
+                <Label
+                  htmlFor="target-job-description"
+                  className="text-[13px] font-medium text-foreground/90"
+                >
                   Job description
                 </Label>
                 <Textarea

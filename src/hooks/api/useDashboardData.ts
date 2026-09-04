@@ -115,7 +115,9 @@ export function useDashboardData() {
         queryKey: ["dashboard", "applications-stats"],
         queryFn: async () => {
           try {
-            return await request<BackendResponse<{ total: number; byStatus: Record<string, number> }>>({
+            return await request<
+              BackendResponse<{ total: number; byStatus: Record<string, number> }>
+            >({
               method: "GET",
               path: API_ENDPOINTS.APPLICATIONS.STATS,
             });

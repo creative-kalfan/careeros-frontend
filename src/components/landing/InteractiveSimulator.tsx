@@ -1,5 +1,13 @@
 ﻿import { useState } from "react";
-import { CheckCircle2, AlertTriangle, Sparkles, ArrowRight, ShieldCheck, RefreshCw, Layers } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  RefreshCw,
+  Layers,
+} from "lucide-react";
 
 interface RoleScenario {
   id: string;
@@ -22,14 +30,17 @@ const SCENARIOS: RoleScenario[] = [
     id: "fullstack",
     roleTitle: "Staff Full-Stack Architect",
     companyTier: "High-Growth Fintech / Series B+",
-    jdSnippet: "Seeking a Staff Architect with deep expertise in distributed event-driven systems, Next.js/TanStack state orchestration, PostgreSQL RLS, and high-throughput Redis queues.",
+    jdSnippet:
+      "Seeking a Staff Architect with deep expertise in distributed event-driven systems, Next.js/TanStack state orchestration, PostgreSQL RLS, and high-throughput Redis queues.",
     baselineScore: 48,
     optimizedScore: 95,
     missingSkills: ["Event-Driven Architecture", "PostgreSQL RLS", "High-Throughput Redis"],
     matchedSkills: ["TypeScript", "FastAPI", "TanStack Router", "React 19"],
     diffPreview: {
-      original: "Built backend APIs with Python and managed database queries for user application tracking.",
-      optimized: "Architected distributed event-driven ingestion pipeline with Redis & ARQ, reducing ATS scoring latency by 64% with PostgreSQL RLS security.",
+      original:
+        "Built backend APIs with Python and managed database queries for user application tracking.",
+      optimized:
+        "Architected distributed event-driven ingestion pipeline with Redis & ARQ, reducing ATS scoring latency by 64% with PostgreSQL RLS security.",
       impact: "+47% ATS Semantic Alignment",
     },
   },
@@ -37,14 +48,16 @@ const SCENARIOS: RoleScenario[] = [
     id: "ai-engineer",
     roleTitle: "Senior AI Systems Engineer",
     companyTier: "Enterprise AI Platform",
-    jdSnippet: "Looking for an engineer experienced with LLM Provider Fallbacks, structured Pydantic JSON extraction, deterministic evaluation pipelines, and token latency minimization.",
+    jdSnippet:
+      "Looking for an engineer experienced with LLM Provider Fallbacks, structured Pydantic JSON extraction, deterministic evaluation pipelines, and token latency minimization.",
     baselineScore: 52,
     optimizedScore: 96,
     missingSkills: ["LLM Gateway Fallback", "Deterministic Eval", "Pydantic Structured Output"],
     matchedSkills: ["Python 3.11", "Vector Search", "FastAPI", "Prompt Engineering"],
     diffPreview: {
       original: "Integrated OpenAI API to generate suggestions for resume sections.",
-      optimized: "Engineered multi-provider LLM Gateway with automatic rate-limit fallback and strict Pydantic JSON schemas, eliminating parse failures.",
+      optimized:
+        "Engineered multi-provider LLM Gateway with automatic rate-limit fallback and strict Pydantic JSON schemas, eliminating parse failures.",
       impact: "+44% ATS Semantic Alignment",
     },
   },
@@ -52,14 +65,16 @@ const SCENARIOS: RoleScenario[] = [
     id: "product-lead",
     roleTitle: "Principal Product Manager",
     companyTier: "B2B SaaS Unicorn",
-    jdSnippet: "Needs a product leader who has designed intent-driven onboarding, activation metric funnels, deterministic user workflows, and reduced job seeker drop-off.",
+    jdSnippet:
+      "Needs a product leader who has designed intent-driven onboarding, activation metric funnels, deterministic user workflows, and reduced job seeker drop-off.",
     baselineScore: 44,
     optimizedScore: 92,
     missingSkills: ["Intent-Driven Onboarding", "Funnel Cohort Diagnostics", "Activation Velocity"],
     matchedSkills: ["Roadmapping", "B2B SaaS UX", "User Research", "Agile Execution"],
     diffPreview: {
       original: "Led sprint planning and coordinated feature launches with engineering teams.",
-      optimized: "Spearheaded two-pane intent-first workspace architecture, lifting candidate funnel activation by 38% while cutting time-to-first-apply in half.",
+      optimized:
+        "Spearheaded two-pane intent-first workspace architecture, lifting candidate funnel activation by 38% while cutting time-to-first-apply in half.",
       impact: "+48% ATS Semantic Alignment",
     },
   },
@@ -153,7 +168,11 @@ export function InteractiveSimulator() {
                         : "bg-amber-950/40 text-amber-300 border-amber-800/60"
                     }`}
                   >
-                    {hasApplied ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <AlertTriangle className="w-3 h-3 text-amber-400" />}
+                    {hasApplied ? (
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    ) : (
+                      <AlertTriangle className="w-3 h-3 text-amber-400" />
+                    )}
                     {sk}
                   </span>
                 ))}
@@ -165,7 +184,9 @@ export function InteractiveSimulator() {
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-mono text-muted-foreground">ATS MATCH PROJECTION</span>
               <span className="text-xs font-mono font-bold text-foreground">
-                {hasApplied ? `${scenario.optimizedScore}% (INTERVIEW TARGET)` : `${scenario.baselineScore}% (HIGH REJECTION RISK)`}
+                {hasApplied
+                  ? `${scenario.optimizedScore}% (INTERVIEW TARGET)`
+                  : `${scenario.baselineScore}% (HIGH REJECTION RISK)`}
               </span>
             </div>
             <div className="w-full h-3 bg-surface rounded-full overflow-hidden border border-border/60 relative">
@@ -175,13 +196,17 @@ export function InteractiveSimulator() {
                     ? "bg-gradient-to-r from-primary to-emerald-500"
                     : "bg-gradient-to-r from-rose-500 to-amber-500"
                 }`}
-                style={{ width: `${hasApplied ? scenario.optimizedScore : scenario.baselineScore}%` }}
+                style={{
+                  width: `${hasApplied ? scenario.optimizedScore : scenario.baselineScore}%`,
+                }}
               />
             </div>
             <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground mt-2">
               <span>Baseline: {scenario.baselineScore}%</span>
               <span className="text-emerald-400 font-bold">
-                {hasApplied ? `+${scenario.optimizedScore - scenario.baselineScore}% Alignment Lift` : "Needs Studio Tailoring"}
+                {hasApplied
+                  ? `+${scenario.optimizedScore - scenario.baselineScore}% Alignment Lift`
+                  : "Needs Studio Tailoring"}
               </span>
               <span>Target: 90%+</span>
             </div>
@@ -204,7 +229,9 @@ export function InteractiveSimulator() {
                 disabled={isOptimizing}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-medium border border-border bg-surface-elevated hover:bg-surface text-foreground transition cursor-pointer"
               >
-                <RefreshCw className={`w-3 h-3 ${isOptimizing ? "animate-spin text-primary" : ""}`} />
+                <RefreshCw
+                  className={`w-3 h-3 ${isOptimizing ? "animate-spin text-primary" : ""}`}
+                />
                 {hasApplied ? "View Raw Baseline" : "Apply AI Refactor"}
               </button>
             </div>
@@ -245,7 +272,9 @@ export function InteractiveSimulator() {
             <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground bg-surface-elevated/60 border border-border/60 rounded-lg p-2.5">
               <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
               <span className="leading-tight text-[11px]">
-                <strong className="text-foreground">Deterministic Guardrails:</strong> CareerOS preserves your real career history and never invents employers, fake dates, or hallucinated credentials.
+                <strong className="text-foreground">Deterministic Guardrails:</strong> CareerOS
+                preserves your real career history and never invents employers, fake dates, or
+                hallucinated credentials.
               </span>
             </div>
           </div>

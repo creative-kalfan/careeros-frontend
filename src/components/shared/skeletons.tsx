@@ -50,10 +50,7 @@ export function SkeletonBlock({ className }: { className?: string }) {
 
 export function SkeletonTelemetryRibbon({ className }: { className?: string }) {
   return (
-    <div
-      className={cn("grid gap-3 sm:grid-cols-2 xl:grid-cols-4", className)}
-      aria-hidden
-    >
+    <div className={cn("grid gap-3 sm:grid-cols-2 xl:grid-cols-4", className)} aria-hidden>
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
@@ -70,12 +67,15 @@ export function SkeletonTelemetryRibbon({ className }: { className?: string }) {
   );
 }
 
-export function SkeletonKanban({ columns = 4, className }: { columns?: number; className?: string }) {
+export function SkeletonKanban({
+  columns = 4,
+  className,
+}: {
+  columns?: number;
+  className?: string;
+}) {
   return (
-    <div
-      className={cn("grid gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full", className)}
-      aria-hidden
-    >
+    <div className={cn("grid gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full", className)} aria-hidden>
       {Array.from({ length: columns }).map((_, i) => (
         <div
           key={i}
@@ -109,10 +109,21 @@ export function SkeletonKanban({ columns = 4, className }: { columns?: number; c
   );
 }
 
-export function SkeletonTable({ rows = 5, cols = 4, className }: { rows?: number; cols?: number; className?: string }) {
+export function SkeletonTable({
+  rows = 5,
+  cols = 4,
+  className,
+}: {
+  rows?: number;
+  cols?: number;
+  className?: string;
+}) {
   return (
     <div
-      className={cn("workstation-panel rounded-xl border border-border/80 overflow-hidden", className)}
+      className={cn(
+        "workstation-panel rounded-xl border border-border/80 overflow-hidden",
+        className,
+      )}
       aria-hidden
     >
       <div className="border-b border-border/80 bg-surface-elevated/50 p-3 flex gap-4">

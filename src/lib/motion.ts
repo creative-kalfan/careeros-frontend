@@ -2,13 +2,13 @@
 // Shared motion variants for CareerOS spatial UI
 // All durations in seconds. Respects prefers-reduced-motion via Framer Motion's built-in support.
 
-import type { Variants, Transition } from 'framer-motion';
+import type { Variants, Transition } from "framer-motion";
 
 // Spring configs
 export const spring = {
-  snappy: { type: 'spring', stiffness: 400, damping: 30 } as Transition,
-  smooth: { type: 'spring', stiffness: 300, damping: 35 } as Transition,
-  gentle: { type: 'spring', stiffness: 200, damping: 30 } as Transition,
+  snappy: { type: "spring", stiffness: 400, damping: 30 } as Transition,
+  smooth: { type: "spring", stiffness: 300, damping: 35 } as Transition,
+  gentle: { type: "spring", stiffness: 200, damping: 30 } as Transition,
 };
 
 // Easing
@@ -21,7 +21,12 @@ export const ease = {
 export const pageVariants: Variants = {
   initial: { opacity: 0, y: 12, scale: 0.995 },
   animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] } },
-  exit: { opacity: 0, y: -8, scale: 1.002, transition: { duration: 0.14, ease: [0.45, 0, 0.55, 1] } },
+  exit: {
+    opacity: 0,
+    y: -8,
+    scale: 1.002,
+    transition: { duration: 0.14, ease: [0.45, 0, 0.55, 1] },
+  },
 };
 
 // Stagger container
@@ -66,6 +71,16 @@ export const fadeOnly: Variants = {
 // Suggestion card accept/reject
 export const suggestionAccept: Variants = {
   idle: { opacity: 1, scale: 1, x: 0 },
-  accepted: { opacity: 0, scale: 0.95, x: 16, transition: { duration: 0.22, ease: [0.45, 0, 0.55, 1] } },
-  rejected: { opacity: 0, scale: 0.95, x: -16, transition: { duration: 0.22, ease: [0.45, 0, 0.55, 1] } },
+  accepted: {
+    opacity: 0,
+    scale: 0.95,
+    x: 16,
+    transition: { duration: 0.22, ease: [0.45, 0, 0.55, 1] },
+  },
+  rejected: {
+    opacity: 0,
+    scale: 0.95,
+    x: -16,
+    transition: { duration: 0.22, ease: [0.45, 0, 0.55, 1] },
+  },
 };

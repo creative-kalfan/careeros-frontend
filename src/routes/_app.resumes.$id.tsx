@@ -206,11 +206,7 @@ function ResumeWorkspace() {
   }, [activeStoragePath, generateSignedUrl]);
 
   const geometryMap = useMemo(() => {
-    return (
-      selectedVersion?.meta?.geometry ||
-      record?.meta?.geometry ||
-      null
-    );
+    return selectedVersion?.meta?.geometry || record?.meta?.geometry || null;
   }, [selectedVersion, record]);
 
   const handleMutateBlock = useCallback(
@@ -247,7 +243,7 @@ function ResumeWorkspace() {
         throw err;
       }
     },
-    [id, activeVersionId, record?.id, queryClient, toast]
+    [id, activeVersionId, record?.id, queryClient, toast],
   );
 
   useEffect(() => {

@@ -22,7 +22,11 @@ interface SignalProgressProps {
   sceneProgress?: number; // 0 to 1
 }
 
-export function SignalProgress({ activeScene, onSelectScene, sceneProgress = 0 }: SignalProgressProps) {
+export function SignalProgress({
+  activeScene,
+  onSelectScene,
+  sceneProgress = 0,
+}: SignalProgressProps) {
   return (
     <nav
       aria-label="Experience Progress"
@@ -52,8 +56,8 @@ export function SignalProgress({ activeScene, onSelectScene, sceneProgress = 0 }
                   isPassed
                     ? "w-full bg-[#A8A49A]/80"
                     : isCurrent
-                    ? "bg-[#315CFF]"
-                    : "w-0 bg-transparent"
+                      ? "bg-[#315CFF]"
+                      : "w-0 bg-transparent"
                 }`}
                 style={
                   isCurrent && !isFinal && scene.duration > 0
@@ -62,8 +66,8 @@ export function SignalProgress({ activeScene, onSelectScene, sceneProgress = 0 }
                         transition: "width 80ms linear",
                       }
                     : isCurrent
-                    ? { width: "100%" }
-                    : undefined
+                      ? { width: "100%" }
+                      : undefined
                 }
               />
             </button>
@@ -73,5 +77,3 @@ export function SignalProgress({ activeScene, onSelectScene, sceneProgress = 0 }
     </nav>
   );
 }
-
-

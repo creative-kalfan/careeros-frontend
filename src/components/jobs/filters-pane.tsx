@@ -117,7 +117,7 @@ export function AdditionalFiltersDrawer({
   };
 
   const filteredSkills = filterOptions.skills.filter((s) =>
-    s.toLowerCase().includes(skillSearch.toLowerCase())
+    s.toLowerCase().includes(skillSearch.toLowerCase()),
   );
 
   const activeCount =

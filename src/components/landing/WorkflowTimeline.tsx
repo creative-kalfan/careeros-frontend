@@ -19,8 +19,10 @@ const STEPS: Step[] = [
     tag: "PHASE 01 // TARGETING",
     title: "Deconstruct the Target Role",
     subtitle: "Turn ambiguous job postings into structured technical requirements.",
-    problem: "Recruiter job descriptions are filled with buzzwords, unstated prerequisites, and hidden automated filters.",
-    solution: "CareerOS parses the job description, extracts exact required technologies, experience weightings, and core competency vectors.",
+    problem:
+      "Recruiter job descriptions are filled with buzzwords, unstated prerequisites, and hidden automated filters.",
+    solution:
+      "CareerOS parses the job description, extracts exact required technologies, experience weightings, and core competency vectors.",
     telemetry: "OUTPUT: 14 HARD SKILLS // 4 DOMAIN REQUIREMENTS // SALARY RANGE",
   },
   {
@@ -29,8 +31,10 @@ const STEPS: Step[] = [
     tag: "PHASE 02 // PARSING",
     title: "Deterministic Resume Extraction",
     subtitle: "8-factor profile vectorization preserving structural integrity.",
-    problem: "Most AI resume tools blindly rewrite your history and hallucinate technologies you have never touched.",
-    solution: "Our Python parsing engine breaks your resume into immutable career achievements, skills, and timeline nodes without altering your truth.",
+    problem:
+      "Most AI resume tools blindly rewrite your history and hallucinate technologies you have never touched.",
+    solution:
+      "Our Python parsing engine breaks your resume into immutable career achievements, skills, and timeline nodes without altering your truth.",
     telemetry: "OUTPUT: 100% FACTUAL FIDELITY // LOSSLESS PROFILE GRAPH",
   },
   {
@@ -39,8 +43,10 @@ const STEPS: Step[] = [
     tag: "PHASE 03 // DIAGNOSTICS",
     title: "Continuous ATS Gap Analysis",
     subtitle: "Real-time scoring across role match, resume match, and experience overlap.",
-    problem: "You hit submit without knowing whether your resume scored 30% or 90% in the employer's ATS parser.",
-    solution: "View exact keyword matches, missing semantic phrases, and experience deficits before you send a single application.",
+    problem:
+      "You hit submit without knowing whether your resume scored 30% or 90% in the employer's ATS parser.",
+    solution:
+      "View exact keyword matches, missing semantic phrases, and experience deficits before you send a single application.",
     telemetry: "OUTPUT: 8-FACTOR MATCH VECTOR // IDENTIFIED REJECTION RISKS",
   },
   {
@@ -49,8 +55,10 @@ const STEPS: Step[] = [
     tag: "PHASE 04 // STUDIO",
     title: "Version-Safe Two-Pane Optimization",
     subtitle: "Derived versions created specifically for target opportunities.",
-    problem: "Editing your master resume constantly leaves you with 40 chaotic files named 'Resume_Final_v3_Google.pdf'.",
-    solution: "Maintain one Master Resume. CareerOS generates derived versions per job, applying surgical bullet-point refactors with diff previews.",
+    problem:
+      "Editing your master resume constantly leaves you with 40 chaotic files named 'Resume_Final_v3_Google.pdf'.",
+    solution:
+      "Maintain one Master Resume. CareerOS generates derived versions per job, applying surgical bullet-point refactors with diff previews.",
     telemetry: "OUTPUT: MASTER PRESERVED // TARGET-OPTIMIZED DERIVED VERSION",
   },
   {
@@ -59,8 +67,10 @@ const STEPS: Step[] = [
     tag: "PHASE 05 // EXECUTION",
     title: "Application Execution & Pipeline",
     subtitle: "Export clean vector PDFs and manage stages from applied to offer.",
-    problem: "Tracking 30 applications across spreadsheets and email threads leads to missed follow-ups and lost leverage.",
-    solution: "Export crisp, ATS-compliant PDFs and track every application in a unified command center with timeline intelligence.",
+    problem:
+      "Tracking 30 applications across spreadsheets and email threads leads to missed follow-ups and lost leverage.",
+    solution:
+      "Export crisp, ATS-compliant PDFs and track every application in a unified command center with timeline intelligence.",
     telemetry: "OUTPUT: VECTOR PDF RENDER // CONVERTED PIPELINE TELEMETRY",
   },
 ];
@@ -83,13 +93,17 @@ export function WorkflowTimeline() {
             }`}
           >
             <div className="flex items-center justify-between w-full mb-2">
-              <span className="text-[10px] font-mono text-muted-foreground font-semibold">0{step.id}</span>
+              <span className="text-[10px] font-mono text-muted-foreground font-semibold">
+                0{step.id}
+              </span>
               <div className="p-1 rounded-md bg-surface-instrument border border-border/40">
                 {step.icon}
               </div>
             </div>
             <span className="text-xs font-bold text-foreground line-clamp-1">{step.title}</span>
-            <span className="text-[10px] text-muted-foreground font-mono mt-0.5">{step.tag.split("//")[1]}</span>
+            <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
+              {step.tag.split("//")[1]}
+            </span>
           </button>
         ))}
       </div>

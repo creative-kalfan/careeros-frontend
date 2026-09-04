@@ -11,7 +11,8 @@ export function BrokenSearchComparison() {
           Stop treating job hunting like a lottery ticket.
         </h2>
         <p className="text-sm text-muted-foreground mt-2">
-          Submitting 400 uncalibrated resumes into ATS filters is statistically hopeless. CareerOS replaces random volume with engineered precision.
+          Submitting 400 uncalibrated resumes into ATS filters is statistically hopeless. CareerOS
+          replaces random volume with engineered precision.
         </p>
       </div>
 
@@ -36,11 +37,16 @@ export function BrokenSearchComparison() {
             <ul className="mt-5 space-y-3.5 text-xs sm:text-sm text-muted-foreground">
               <li className="flex items-start gap-2.5">
                 <XCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span>Sending the same master resume to 50 companies with wildly different tech stacks.</span>
+                <span>
+                  Sending the same master resume to 50 companies with wildly different tech stacks.
+                </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <XCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span>Zero feedback: Rejections happen in complete silence with no actionable diagnostic signal.</span>
+                <span>
+                  Zero feedback: Rejections happen in complete silence with no actionable diagnostic
+                  signal.
+                </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <XCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
@@ -48,7 +54,10 @@ export function BrokenSearchComparison() {
               </li>
               <li className="flex items-start gap-2.5">
                 <XCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span>Generic AI bots rewriting your resume with fake buzzwords that fail technical interviews.</span>
+                <span>
+                  Generic AI bots rewriting your resume with fake buzzwords that fail technical
+                  interviews.
+                </span>
               </li>
             </ul>
           </div>
@@ -68,7 +77,9 @@ export function BrokenSearchComparison() {
                 <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
                   THE CAREEROS OPERATING SYSTEM
                 </span>
-                <h3 className="text-lg font-bold text-foreground mt-0.5">Target-Calibrated Execution</h3>
+                <h3 className="text-lg font-bold text-foreground mt-0.5">
+                  Target-Calibrated Execution
+                </h3>
               </div>
               <span className="px-2.5 py-1 rounded-full text-xs font-mono bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 font-semibold">
                 High-Signal Match
@@ -78,19 +89,29 @@ export function BrokenSearchComparison() {
             <ul className="mt-5 space-y-3.5 text-xs sm:text-sm text-foreground/90 font-medium">
               <li className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Deterministic 8-factor matching against verified job descriptions before applying.</span>
+                <span>
+                  Deterministic 8-factor matching against verified job descriptions before applying.
+                </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Two-Pane Resume Studio with version-safe derived tailoring per specific role.</span>
+                <span>
+                  Two-Pane Resume Studio with version-safe derived tailoring per specific role.
+                </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Zero-hallucination guardrails: Your factual timeline is preserved with zero invented credentials.</span>
+                <span>
+                  Zero-hallucination guardrails: Your factual timeline is preserved with zero
+                  invented credentials.
+                </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>End-to-end pipeline management: from JD ingestion to vector PDF export and interview tracking.</span>
+                <span>
+                  End-to-end pipeline management: from JD ingestion to vector PDF export and
+                  interview tracking.
+                </span>
               </li>
             </ul>
           </div>

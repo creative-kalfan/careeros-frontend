@@ -79,143 +79,143 @@
   --radius: 10px;
 
   /* Canvas */
-  --background: #080A0D;
-  --foreground: #F4F7FB;
+  --background: #080a0d;
+  --foreground: #f4f7fb;
 
   /* Surfaces */
   --surface: #101318;
   --surface-elevated: #151922;
-  --surface-instrument: #0D1014;
-  --surface-hud: #1A1F29;
+  --surface-instrument: #0d1014;
+  --surface-hud: #1a1f29;
 
   --card: #101318;
-  --card-foreground: #F4F7FB;
+  --card-foreground: #f4f7fb;
 
   --popover: #151922;
-  --popover-foreground: #F4F7FB;
+  --popover-foreground: #f4f7fb;
 
   /* Primary Brand / Action — CareerOS Blue */
-  --primary: #315CFF;
-  --primary-hover: #4770FF;
-  --primary-foreground: #FFFFFF;
+  --primary: #315cff;
+  --primary-hover: #4770ff;
+  --primary-foreground: #ffffff;
 
   --secondary: #151922;
-  --secondary-foreground: #F4F7FB;
+  --secondary-foreground: #f4f7fb;
 
   /* Neutrals & Text */
   --muted: #151922;
-  --muted-foreground: #737C8C;
+  --muted-foreground: #737c8c;
 
   --accent: #151922;
-  --accent-foreground: #F4F7FB;
+  --accent-foreground: #f4f7fb;
 
   /* Semantic Status Colors */
-  --success: #3FA66B;
-  --success-foreground: #FFFFFF;
+  --success: #3fa66b;
+  --success-foreground: #ffffff;
 
-  --warning: #C58A2B;
-  --warning-foreground: #FFFFFF;
+  --warning: #c58a2b;
+  --warning-foreground: #ffffff;
 
-  --destructive: #C94B45;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #c94b45;
+  --destructive-foreground: #ffffff;
 
-  --info: #315CFF;
-  --info-foreground: #FFFFFF;
+  --info: #315cff;
+  --info-foreground: #ffffff;
 
   /* Secondary Semantic Accent only */
-  --copper: #D56B3F;
+  --copper: #d56b3f;
 
   /* Borders & Inputs */
-  --border: #242A35;
-  --input: #242A35;
-  --ring: #315CFF;
+  --border: #242a35;
+  --input: #242a35;
+  --ring: #315cff;
 
-  --chart-1: #315CFF;
-  --chart-2: #3FA66B;
-  --chart-3: #C58A2B;
-  --chart-4: #C94B45;
-  --chart-5: #6366F1;
+  --chart-1: #315cff;
+  --chart-2: #3fa66b;
+  --chart-3: #c58a2b;
+  --chart-4: #c94b45;
+  --chart-5: #6366f1;
 
   /* Sidebar */
-  --sidebar: #090B0F;
-  --sidebar-foreground: #A7AFBD;
-  --sidebar-primary: #315CFF;
-  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar: #090b0f;
+  --sidebar-foreground: #a7afbd;
+  --sidebar-primary: #315cff;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #151922;
-  --sidebar-accent-foreground: #F4F7FB;
-  --sidebar-border: #1F242E;
-  --sidebar-ring: #315CFF;
+  --sidebar-accent-foreground: #f4f7fb;
+  --sidebar-border: #1f242e;
+  --sidebar-ring: #315cff;
 }
 
 /* Light theme — clean, neutral and professional */
 .light {
   /* Canvas */
-  --background: #F7F8FA;
-  --foreground: #171A1F;
+  --background: #f7f8fa;
+  --foreground: #171a1f;
 
   /* Surfaces */
-  --surface: #FFFFFF;
-  --surface-elevated: #F1F3F6;
-  --surface-instrument: #F8F9FB;
-  --surface-hud: #EBEEF2;
+  --surface: #ffffff;
+  --surface-elevated: #f1f3f6;
+  --surface-instrument: #f8f9fb;
+  --surface-hud: #ebeef2;
 
-  --card: #FFFFFF;
-  --card-foreground: #171A1F;
+  --card: #ffffff;
+  --card-foreground: #171a1f;
 
-  --popover: #FFFFFF;
-  --popover-foreground: #171A1F;
+  --popover: #ffffff;
+  --popover-foreground: #171a1f;
 
   /* Primary Brand / Action — CareerOS Blue */
-  --primary: #315CFF;
-  --primary-hover: #2552E8;
-  --primary-foreground: #FFFFFF;
+  --primary: #315cff;
+  --primary-hover: #2552e8;
+  --primary-foreground: #ffffff;
 
-  --secondary: #F1F3F6;
-  --secondary-foreground: #171A1F;
+  --secondary: #f1f3f6;
+  --secondary-foreground: #171a1f;
 
   /* Neutrals & Text */
-  --muted: #F1F3F6;
-  --muted-foreground: #89919D;
+  --muted: #f1f3f6;
+  --muted-foreground: #89919d;
 
-  --accent: #F1F3F6;
-  --accent-foreground: #171A1F;
+  --accent: #f1f3f6;
+  --accent-foreground: #171a1f;
 
   /* Semantic Status Colors */
-  --success: #37845C;
-  --success-foreground: #FFFFFF;
+  --success: #37845c;
+  --success-foreground: #ffffff;
 
-  --warning: #C58A2B;
-  --warning-foreground: #FFFFFF;
+  --warning: #c58a2b;
+  --warning-foreground: #ffffff;
 
-  --destructive: #C94B45;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #c94b45;
+  --destructive-foreground: #ffffff;
 
-  --info: #315CFF;
-  --info-foreground: #FFFFFF;
+  --info: #315cff;
+  --info-foreground: #ffffff;
 
   /* Secondary Semantic Accent only */
-  --copper: #B9542F;
+  --copper: #b9542f;
 
   /* Borders & Inputs */
-  --border: #DDE1E7;
-  --input: #DDE1E7;
-  --ring: #315CFF;
+  --border: #dde1e7;
+  --input: #dde1e7;
+  --ring: #315cff;
 
-  --chart-1: #315CFF;
-  --chart-2: #37845C;
-  --chart-3: #C58A2B;
-  --chart-4: #C94B45;
-  --chart-5: #4F46E5;
+  --chart-1: #315cff;
+  --chart-2: #37845c;
+  --chart-3: #c58a2b;
+  --chart-4: #c94b45;
+  --chart-5: #4f46e5;
 
   /* Sidebar */
-  --sidebar: #F3F5F8;
-  --sidebar-foreground: #5E6673;
-  --sidebar-primary: #315CFF;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E8ECF2;
-  --sidebar-accent-foreground: #171A1F;
-  --sidebar-border: #DDE1E7;
-  --sidebar-ring: #315CFF;
+  --sidebar: #f3f5f8;
+  --sidebar-foreground: #5e6673;
+  --sidebar-primary: #315cff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8ecf2;
+  --sidebar-accent-foreground: #171a1f;
+  --sidebar-border: #dde1e7;
+  --sidebar-ring: #315cff;
 }
 
 @utility glass {

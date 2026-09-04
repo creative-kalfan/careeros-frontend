@@ -12,7 +12,9 @@ test.describe("CareerOS Auth Experience Redesign Verification", () => {
   // Use unauthenticated context for auth flow testing
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("Desktop 1440x900: Login Page visual structure, password toggle, and navigation", async ({ page }) => {
+  test("Desktop 1440x900: Login Page visual structure, password toggle, and navigation", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/login");
     await page.waitForLoadState("domcontentloaded");
@@ -54,7 +56,9 @@ test.describe("CareerOS Auth Experience Redesign Verification", () => {
     await expect(page.getByRole("heading", { name: "Build once." })).toBeVisible();
   });
 
-  test("Desktop 1440x900: Signup Page visual structure, password toggle, and navigation", async ({ page }) => {
+  test("Desktop 1440x900: Signup Page visual structure, password toggle, and navigation", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/signup");
     await page.waitForLoadState("domcontentloaded");
@@ -121,7 +125,9 @@ test.describe("CareerOS Auth Experience Redesign Verification", () => {
     await expect(page.getByRole("heading", { name: "Your next application" })).toBeVisible();
   });
 
-  test("Responsive viewports: 1366x768, 1280x720, Tablet 1024x768, Mobile 390x844", async ({ page }) => {
+  test("Responsive viewports: 1366x768, 1280x720, Tablet 1024x768, Mobile 390x844", async ({
+    page,
+  }) => {
     // 1366x768
     await page.setViewportSize({ width: 1366, height: 768 });
     await page.goto("/login");
@@ -158,7 +164,7 @@ test.describe("CareerOS Auth Experience Redesign Verification", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/login");
     await page.waitForLoadState("domcontentloaded");
-    
+
     // Check no horizontal overflow
     let scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     let clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
@@ -178,6 +184,9 @@ test.describe("CareerOS Auth Experience Redesign Verification", () => {
     await page.goto("/forgot-password");
     await page.waitForLoadState("domcontentloaded");
     await expect(page.getByRole("heading", { name: "Reset password" })).toBeVisible();
-    await page.screenshot({ path: path.join(outDir, "forgot_password_mobile_390x844.png"), fullPage: true });
+    await page.screenshot({
+      path: path.join(outDir, "forgot_password_mobile_390x844.png"),
+      fullPage: true,
+    });
   });
 });

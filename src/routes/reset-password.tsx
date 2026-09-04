@@ -1,7 +1,16 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "../auth/useAuth";
-import { ArrowRight, AlertCircle, Loader2, Compass, ArrowLeft, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import {
+  ArrowRight,
+  AlertCircle,
+  Loader2,
+  Compass,
+  ArrowLeft,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -58,7 +67,9 @@ function ResetPasswordPage() {
               <Compass className="w-4 h-4" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold tracking-tight text-[#F3F0E8]">CareerOS</span>
+              <span className="text-base font-semibold tracking-tight text-[#F3F0E8]">
+                CareerOS
+              </span>
               <span className="hidden sm:inline text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#1A1916] border border-[#302E29] text-[#A8A49A]">
                 Career Intelligence
               </span>
@@ -84,7 +95,9 @@ function ResetPasswordPage() {
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">Password updated</h1>
+                  <h1 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">
+                    Password updated
+                  </h1>
                   <p className="mt-1 text-xs text-[#A8A49A]">
                     Your password has been successfully reset.
                   </p>
@@ -100,7 +113,9 @@ function ResetPasswordPage() {
             ) : (
               <div>
                 <div className="mb-6 text-left">
-                  <h1 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">Set new password</h1>
+                  <h1 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">
+                    Set new password
+                  </h1>
                   <p className="mt-1 text-xs text-[#A8A49A]">Enter your new password below</p>
                 </div>
 
@@ -138,7 +153,11 @@ function ResetPasswordPage() {
                         aria-label={showPassword ? "Hide password" : "Show password"}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8A49A] hover:text-[#F3F0E8] transition-colors p-1"
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -185,7 +204,10 @@ function ResetPasswordPage() {
 
                 <div className="mt-6 pt-5 border-t border-[#302E29]/80 text-center text-xs text-[#A8A49A]">
                   Remember your password?{" "}
-                  <Link to="/login" className="font-medium text-[#F3F0E8] hover:text-[#315CFF] transition-colors">
+                  <Link
+                    to="/login"
+                    className="font-medium text-[#F3F0E8] hover:text-[#315CFF] transition-colors"
+                  >
                     Sign in
                   </Link>
                 </div>

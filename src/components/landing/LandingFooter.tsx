@@ -38,7 +38,8 @@ export function LandingFooter() {
             <span className="text-sm font-bold text-foreground">CareerOS</span>
           </div>
           <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
-            The AI Career Operating System. Deconstruct target roles, vectorize resume intelligence, and execute job applications with deterministic confidence.
+            The AI Career Operating System. Deconstruct target roles, vectorize resume intelligence,
+            and execute job applications with deterministic confidence.
           </p>
         </div>
 
@@ -76,7 +77,10 @@ export function LandingFooter() {
           </h4>
           <ul className="space-y-2 text-xs">
             <li>
-              <Link to="/signup" className="text-primary hover:text-primary/80 font-medium transition">
+              <Link
+                to="/signup"
+                className="text-primary hover:text-primary/80 font-medium transition"
+              >
                 Create Account
               </Link>
             </li>

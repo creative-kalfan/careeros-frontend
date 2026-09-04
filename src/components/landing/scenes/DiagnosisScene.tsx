@@ -26,37 +26,114 @@ export function DiagnosisScene() {
       companyType: "Distributed Systems & Cloud",
       score: 62,
       requirements: [
-        { id: "1", name: "Python 3.11+ & AsyncIO", category: "verified", detail: "Found in Experience Section (3 yrs verified)" },
-        { id: "2", name: "PostgreSQL Schema Tuning", category: "verified", detail: "Found in Query tuning & indexing bullets" },
-        { id: "3", name: "High-Throughput RESTful APIs", category: "verified", detail: "Found in API Gateway development" },
-        { id: "4", name: "Redis Caching & Queue Workers", category: "weak", detail: "Mentioned casually without quantified impact" },
-        { id: "5", name: "Kubernetes Production Ingress", category: "missing", detail: "Zero occurrence across current resume" },
+        {
+          id: "1",
+          name: "Python 3.11+ & AsyncIO",
+          category: "verified",
+          detail: "Found in Experience Section (3 yrs verified)",
+        },
+        {
+          id: "2",
+          name: "PostgreSQL Schema Tuning",
+          category: "verified",
+          detail: "Found in Query tuning & indexing bullets",
+        },
+        {
+          id: "3",
+          name: "High-Throughput RESTful APIs",
+          category: "verified",
+          detail: "Found in API Gateway development",
+        },
+        {
+          id: "4",
+          name: "Redis Caching & Queue Workers",
+          category: "weak",
+          detail: "Mentioned casually without quantified impact",
+        },
+        {
+          id: "5",
+          name: "Kubernetes Production Ingress",
+          category: "missing",
+          detail: "Zero occurrence across current resume",
+        },
       ],
-      summary: "Critical gap: Missing orchestrator evidence and unquantified queue metrics lower your match probability.",
+      summary:
+        "Critical gap: Missing orchestrator evidence and unquantified queue metrics lower your match probability.",
     },
     ai: {
       title: "AI Systems Engineer",
       companyType: "LLM Infrastructure & Evaluation",
       score: 58,
       requirements: [
-        { id: "1", name: "FastAPI / Python Services", category: "verified", detail: "Verified backend service architecture" },
-        { id: "2", name: "Vector Search & Retrieval", category: "weak", detail: "Present in personal project, absent in work roles" },
-        { id: "3", name: "Deterministic Gateways", category: "missing", detail: "Missing explicit gateway design evidence" },
-        { id: "4", name: "Pytest & Integration Suites", category: "verified", detail: "Strong test coverage documented" },
-        { id: "5", name: "Latency Benchmarks", category: "missing", detail: "No quantitative benchmarking mentioned" },
+        {
+          id: "1",
+          name: "FastAPI / Python Services",
+          category: "verified",
+          detail: "Verified backend service architecture",
+        },
+        {
+          id: "2",
+          name: "Vector Search & Retrieval",
+          category: "weak",
+          detail: "Present in personal project, absent in work roles",
+        },
+        {
+          id: "3",
+          name: "Deterministic Gateways",
+          category: "missing",
+          detail: "Missing explicit gateway design evidence",
+        },
+        {
+          id: "4",
+          name: "Pytest & Integration Suites",
+          category: "verified",
+          detail: "Strong test coverage documented",
+        },
+        {
+          id: "5",
+          name: "Latency Benchmarks",
+          category: "missing",
+          detail: "No quantitative benchmarking mentioned",
+        },
       ],
-      summary: "High rejection risk: Core infrastructure keywords missing from production experience.",
+      summary:
+        "High rejection risk: Core infrastructure keywords missing from production experience.",
     },
     fullstack: {
       title: "Senior Fullstack Engineer",
       companyType: "SaaS Product & Web Architecture",
       score: 64,
       requirements: [
-        { id: "1", name: "TypeScript & Modern React (v19)", category: "verified", detail: "Strong frontend component architecture" },
-        { id: "2", name: "TanStack Router & Query State", category: "weak", detail: "Generic React query listed, needs exact library match" },
-        { id: "3", name: "Design Systems & Tailwind", category: "verified", detail: "Verified token system implementation" },
-        { id: "4", name: "Postgres RLS Policies", category: "verified", detail: "Documented security role policies" },
-        { id: "5", name: "Playwright E2E Pipelines", category: "missing", detail: "Testing limited to unit tests" },
+        {
+          id: "1",
+          name: "TypeScript & Modern React (v19)",
+          category: "verified",
+          detail: "Strong frontend component architecture",
+        },
+        {
+          id: "2",
+          name: "TanStack Router & Query State",
+          category: "weak",
+          detail: "Generic React query listed, needs exact library match",
+        },
+        {
+          id: "3",
+          name: "Design Systems & Tailwind",
+          category: "verified",
+          detail: "Verified token system implementation",
+        },
+        {
+          id: "4",
+          name: "Postgres RLS Policies",
+          category: "verified",
+          detail: "Documented security role policies",
+        },
+        {
+          id: "5",
+          name: "Playwright E2E Pipelines",
+          category: "missing",
+          detail: "Testing limited to unit tests",
+        },
       ],
       summary: "E2E testing gap and missing router keywords reduce candidate match confidence.",
     },
@@ -76,7 +153,8 @@ export function DiagnosisScene() {
           See why your resume isn't getting interviews.
         </h2>
         <p className="text-[11px] sm:text-xs text-[#A8A49A] mt-0.5 leading-normal max-w-lg mx-auto">
-          CareerOS maps your resume against target requirements — identifying what is proven, what is weak, and what is missing.
+          CareerOS maps your resume against target requirements — identifying what is proven, what
+          is weak, and what is missing.
         </p>
       </div>
 
@@ -158,7 +236,9 @@ export function DiagnosisScene() {
                         {req.category}
                       </span>
                     </div>
-                    <p className="text-[9px] sm:text-[10px] text-[#A8A49A] mt-0.5 truncate">{req.detail}</p>
+                    <p className="text-[9px] sm:text-[10px] text-[#A8A49A] mt-0.5 truncate">
+                      {req.detail}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -189,9 +269,7 @@ export function DiagnosisScene() {
               />
             </div>
 
-            <p className="text-[11px] text-[#A8A49A] leading-relaxed">
-              {current.summary}
-            </p>
+            <p className="text-[11px] text-[#A8A49A] leading-relaxed">{current.summary}</p>
           </div>
 
           <div className="pt-3 border-t border-[#302E29] text-[11px] text-[#A8A49A]">
@@ -205,5 +283,3 @@ export function DiagnosisScene() {
     </div>
   );
 }
-
-

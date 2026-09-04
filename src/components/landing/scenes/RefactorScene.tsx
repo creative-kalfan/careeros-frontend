@@ -38,7 +38,8 @@ export function RefactorScene() {
           Sharpen what you did. Never invent what you didn't.
         </h2>
         <p className="text-xs sm:text-sm text-[#A8A49A] mt-1 leading-relaxed">
-          CareerOS generates role-specific derived versions from your master profile — restructuring verified proof without fabricating experience.
+          CareerOS generates role-specific derived versions from your master profile — restructuring
+          verified proof without fabricating experience.
         </p>
       </div>
 
@@ -50,8 +51,12 @@ export function RefactorScene() {
             {/* Document Header */}
             <div className="flex items-center justify-between border-b border-[#302E29] pb-2.5 mb-3">
               <div>
-                <div className="text-xs font-semibold text-[#F3F0E8] tracking-wide">Target Derived Resume</div>
-                <div className="text-[10px] text-[#A8A49A]">Derived for: Staff Platform Engineer</div>
+                <div className="text-xs font-semibold text-[#F3F0E8] tracking-wide">
+                  Target Derived Resume
+                </div>
+                <div className="text-[10px] text-[#A8A49A]">
+                  Derived for: Staff Platform Engineer
+                </div>
               </div>
               <span className="px-2 py-0.5 rounded bg-[#45A875]/15 border border-[#45A875]/30 text-[#45A875] text-[10px] font-medium">
                 Truth-Preserving
@@ -74,18 +79,25 @@ export function RefactorScene() {
               >
                 {isOptimized ? (
                   <span>
-                    <strong className="text-white">Architected asynchronous ingestion services</strong> using{" "}
-                    <span className="text-[#315CFF] font-medium">Python & Redis workers</span>, cutting p95 query latency by{" "}
-                    <span className="text-[#45A875] font-semibold">42%</span> across high-volume traffic.
+                    <strong className="text-white">
+                      Architected asynchronous ingestion services
+                    </strong>{" "}
+                    using <span className="text-[#315CFF] font-medium">Python & Redis workers</span>
+                    , cutting p95 query latency by{" "}
+                    <span className="text-[#45A875] font-semibold">42%</span> across high-volume
+                    traffic.
                   </span>
                 ) : (
-                  <span>Built backend APIs with Python and managed database queries for user requests.</span>
+                  <span>
+                    Built backend APIs with Python and managed database queries for user requests.
+                  </span>
                 )}
               </div>
 
               {/* Bullet Item 2 */}
               <div className="p-2.5 sm:p-3 rounded-lg bg-[#11110F]/60 border border-[#302E29]/50 text-xs text-[#A8A49A] leading-relaxed">
-                Tuned PostgreSQL indexing strategies and established automated CI suites with comprehensive Pytest coverage.
+                Tuned PostgreSQL indexing strategies and established automated CI suites with
+                comprehensive Pytest coverage.
               </div>
             </div>
           </div>
@@ -94,7 +106,9 @@ export function RefactorScene() {
           <div className="mt-3 pt-2.5 border-t border-[#302E29] flex items-center justify-between">
             <div>
               <div className="text-[10px] text-[#A8A49A]">Optimized Match Score</div>
-              <div className="text-base sm:text-lg font-mono font-bold text-[#45A875]">{score}%</div>
+              <div className="text-base sm:text-lg font-mono font-bold text-[#45A875]">
+                {score}%
+              </div>
             </div>
             <div className="w-28 sm:w-36 h-1.5 rounded-full bg-[#11110F] overflow-hidden">
               <div
@@ -125,7 +139,9 @@ export function RefactorScene() {
               <div className="flex items-center gap-2 text-[#A8A49A]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#E4573D] shrink-0" />
                 <span className="font-medium text-[11px]">Original:</span>
-                <span className="line-through opacity-70 truncate">Unquantified description, buried criteria</span>
+                <span className="line-through opacity-70 truncate">
+                  Unquantified description, buried criteria
+                </span>
               </div>
               <div className="flex items-center gap-2 text-[#45A875]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#45A875] shrink-0" />
@@ -138,9 +154,12 @@ export function RefactorScene() {
           <div className="p-3.5 sm:p-4 rounded-xl bg-[#11110F] border border-[#302E29] flex items-start gap-2.5">
             <ShieldCheck className="w-4 h-4 text-[#45A875] shrink-0 mt-0.5" />
             <div>
-              <div className="text-xs font-semibold text-[#F3F0E8]">Strict Truth-Preserving Guarantee</div>
+              <div className="text-xs font-semibold text-[#F3F0E8]">
+                Strict Truth-Preserving Guarantee
+              </div>
               <p className="text-[11px] text-[#A8A49A] mt-0.5 leading-relaxed">
-                CareerOS never hallucinates employers, fake degrees, or unearned credentials. Every bullet is strictly grounded in candidate facts.
+                CareerOS never hallucinates employers, fake degrees, or unearned credentials. Every
+                bullet is strictly grounded in candidate facts.
               </p>
             </div>
           </div>
@@ -154,5 +173,3 @@ export function RefactorScene() {
     </div>
   );
 }
-
-

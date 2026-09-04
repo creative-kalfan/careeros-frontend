@@ -46,12 +46,18 @@ export function ATSAnalysisDialog({
   };
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Analyze Resume Against Job</DialogTitle>
           <DialogDescription>
-            Compare your resume against a target job description to evaluate ATS compatibility and keyword alignment.
+            Compare your resume against a target job description to evaluate ATS compatibility and
+            keyword alignment.
           </DialogDescription>
         </DialogHeader>
 
@@ -97,12 +103,7 @@ export function ATSAnalysisDialog({
           </div>
 
           <div className="flex justify-end space-x-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
             <Button

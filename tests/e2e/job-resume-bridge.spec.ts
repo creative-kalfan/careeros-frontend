@@ -77,7 +77,8 @@ test.describe("Job → Resume Studio Bridge Real E2E Verification", () => {
     await expect(opportunitiesHeader.first()).toBeVisible({ timeout: 20000 });
 
     const jobListCards = page.locator(".space-y-1\\.5 > div, [data-job-id]").filter({
-      hasText: /Stripe|Notion|Engineer|Architect|Manager|Representative|Director|Developer|coupa|Eurofins/i,
+      hasText:
+        /Stripe|Notion|Engineer|Architect|Manager|Representative|Director|Developer|coupa|Eurofins/i,
     });
     await expect(jobListCards.first()).toBeVisible({ timeout: 15000 });
     const jobCount = await jobListCards.count();
@@ -115,9 +116,12 @@ test.describe("Job → Resume Studio Bridge Real E2E Verification", () => {
     await resumeOptions.first().click();
 
     // 7. Wait for navigation to /resumes/{id}?versionId={version_id}
-    await page.waitForURL((url) => url.pathname.includes("/resumes/") && url.searchParams.has("versionId"), {
-      timeout: 20000,
-    });
+    await page.waitForURL(
+      (url) => url.pathname.includes("/resumes/") && url.searchParams.has("versionId"),
+      {
+        timeout: 20000,
+      },
+    );
     await waitForWorkspace();
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(3000);
@@ -149,7 +153,9 @@ test.describe("Job → Resume Studio Bridge Real E2E Verification", () => {
     await expect(leftPane).toBeVisible({ timeout: 10000 });
 
     // Assert no Postgres 23514 or check constraint violations occurred
-    const hasConstraintError = consoleErrors.some((e) => e.includes("23514") || e.includes("check constraint"));
+    const hasConstraintError = consoleErrors.some(
+      (e) => e.includes("23514") || e.includes("check constraint"),
+    );
     expect(hasConstraintError).toBe(false);
     expect(pageErrors.length).toBe(0);
 

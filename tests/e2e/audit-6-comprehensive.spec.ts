@@ -46,8 +46,14 @@ async function ensureAuthenticated(page: Page) {
   const currentUrl = page.url();
   if (currentUrl.includes("/login")) {
     await page.waitForSelector('input#email, input[name="email"]', { timeout: 10000 });
-    await page.fill('input#email, input[name="email"]', process.env.TEST_USER_EMAIL || "careeros-test-user@example.com");
-    await page.fill('input#password, input[name="password"]', process.env.TEST_USER_PASSWORD || "TestUser123!");
+    await page.fill(
+      'input#email, input[name="email"]',
+      process.env.TEST_USER_EMAIL || "careeros-test-user@example.com",
+    );
+    await page.fill(
+      'input#password, input[name="password"]',
+      process.env.TEST_USER_PASSWORD || "TestUser123!",
+    );
     await page.click('button[type="submit"]');
     await page.waitForURL((url) => !url.href.includes("/login"), { timeout: 15000 });
   }
@@ -63,7 +69,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 2 — Complete app walkthrough", async ({ page }) => {
     console.log("\n=== STARTING FULL JOURNEY ===");
-    
+
     await page.goto(FRONTEND, { waitUntil: "domcontentloaded" });
     await takeScreenshot(page, "01-landing-authed.png");
     console.log("Landing page:", page.url());
@@ -72,7 +78,9 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
     await page.goto(`${FRONTEND}/dashboard`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await takeScreenshot(page, "02-dashboard.png");
-    await expect(page.locator("main, [role='main'], header").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("main, [role='main'], header").first()).toBeVisible({
+      timeout: 10000,
+    });
     console.log("Dashboard loaded:", page.url());
 
     console.log("\n=== RESUMES ===");
@@ -112,7 +120,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
     console.log("\n=== RESUME STUDIO ===");
     await page.goto(`${FRONTEND}/resumes`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1000);
-    
+
     const resumeLinks = page.locator('a[href*="/resumes/"]');
     const count = await resumeLinks.count();
     console.log(`Found ${count} resume links`);
@@ -120,7 +128,12 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
     if (count > 0) {
       for (let i = 0; i < Math.min(count, 3); i++) {
         const href = await resumeLinks.nth(i).getAttribute("href");
-        if (href && !href.includes("/setup") && !href.includes("/templates") && href.match(/\/resumes\/[a-zA-Z0-9_-]+/)) {
+        if (
+          href &&
+          !href.includes("/setup") &&
+          !href.includes("/templates") &&
+          href.match(/\/resumes\/[a-zA-Z0-9_-]+/)
+        ) {
           await page.goto(href, { waitUntil: "domcontentloaded" });
           await page.waitForTimeout(1500);
           await takeScreenshot(page, `08-resume-studio-${i}.png`);
@@ -138,7 +151,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 2 — Navigation & reload persistence", async ({ page }) => {
     console.log("\n=== NAVIGATION & PERSISTENCE ===");
-    
+
     const pages = ["/dashboard", "/resumes", "/jobs", "/applications", "/profile"];
     for (const pagePath of pages) {
       await page.goto(`${FRONTEND}${pagePath}`, { waitUntil: "domcontentloaded" });
@@ -151,7 +164,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
     await page.goBack();
     await page.waitForTimeout(500);
     console.log("After back:", page.url());
-    
+
     await page.goForward();
     await page.waitForTimeout(500);
     console.log("After forward:", page.url());
@@ -164,7 +177,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 6 — Empty states", async ({ page }) => {
     console.log("\n=== EMPTY STATES ===");
-    
+
     await page.goto(`${FRONTEND}/jobs`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
     await takeScreenshot(page, "10-jobs.png");
@@ -183,7 +196,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 7 — Responsive QA", async ({ page }) => {
     console.log("\n=== RESPONSIVE QA ===");
-    
+
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${FRONTEND}/dashboard`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
@@ -229,7 +242,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 8 — Accessibility", async ({ page }) => {
     console.log("\n=== ACCESSIBILITY ===");
-    
+
     await page.goto(`${FRONTEND}/dashboard`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
     await takeScreenshot(page, "19-a11y-dashboard.png");
@@ -254,7 +267,11 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
       const el = document.activeElement;
       if (!el) return false;
       const styles = window.getComputedStyle(el);
-      return styles.outlineStyle !== "none" || styles.boxShadow !== "none" || styles.outlineWidth !== "0px";
+      return (
+        styles.outlineStyle !== "none" ||
+        styles.boxShadow !== "none" ||
+        styles.outlineWidth !== "0px"
+      );
     });
     console.log("Focus indicator visible:", hasFocusStyles);
 
@@ -287,7 +304,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 10 — Console & network audit", async ({ page }) => {
     console.log("\n=== CONSOLE & NETWORK AUDIT ===");
-    
+
     await page.goto(`${FRONTEND}/dashboard`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await page.goto(`${FRONTEND}/resumes`, { waitUntil: "domcontentloaded" });
@@ -306,12 +323,10 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
     console.log(`\nFailed requests: ${failedRequests.length}`);
     failedRequests.forEach((e, i) => console.log(`  ${i + 1}. ${e.error} - ${e.url}`));
 
-    const criticalErrors = consoleErrors.filter(e => 
-      !e.includes("DevTools") &&
-      !e.includes("controlled") &&
-      !e.includes("textarea")
+    const criticalErrors = consoleErrors.filter(
+      (e) => !e.includes("DevTools") && !e.includes("controlled") && !e.includes("textarea"),
     );
-    
+
     if (criticalErrors.length > 0) {
       console.error(`CRITICAL CONSOLE ERRORS: ${criticalErrors.length}`);
     }
@@ -319,17 +334,23 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 11 — Performance sanity", async ({ page }) => {
     console.log("\n=== PERFORMANCE SANITY ===");
-    
+
     const startTime = Date.now();
     await page.goto(`${FRONTEND}/dashboard`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     const loadTime = Date.now() - startTime;
     console.log(`Dashboard load time: ${loadTime}ms`);
-    
+
     const apiRequestCounts: { [key: string]: number } = {};
     page.on("request", (request) => {
       const url = request.url();
-      if (url.includes("/api/") || url.includes("/jobs/") || url.includes("/applications/") || url.includes("/recommendations/") || url.includes("/notifications/")) {
+      if (
+        url.includes("/api/") ||
+        url.includes("/jobs/") ||
+        url.includes("/applications/") ||
+        url.includes("/recommendations/") ||
+        url.includes("/notifications/")
+      ) {
         const key = url.split("?")[0];
         apiRequestCounts[key] = (apiRequestCounts[key] || 0) + 1;
       }
@@ -351,27 +372,34 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 3 — Backend unavailable (error handling)", async ({ page }) => {
     console.log("\n=== BACKEND UNAVAILABLE TEST ===");
-    
+
     await page.goto(`${FRONTEND}/dashboard`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
 
     await page.route("**/api/**", (route) => {
-      route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ success: false, error: { code: "server_error", message: "Service temporarily unavailable" } }) });
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+          error: { code: "server_error", message: "Service temporarily unavailable" },
+        }),
+      });
     });
 
     await page.goto(`${FRONTEND}/jobs`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await takeScreenshot(page, "20-backend-500.png");
-    
+
     const content = await page.content();
     console.log("Page content with backend 500:", content.length);
-    
+
     expect(content.length).toBeGreaterThan(0);
   });
 
   test("Phase 4 — Auth resilience", async ({ page }) => {
     console.log("\n=== AUTH RESILIENCE ===");
-    
+
     // Start from authenticated state (pre-authenticated session)
     await page.goto(`${FRONTEND}/dashboard`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);
@@ -391,8 +419,10 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
     console.log("Protected route accessible:", page.url());
 
     // Test 3: Logout
-    const logoutBtn = page.locator('button:has-text("Logout"), button:has-text("Sign out"), [href*="logout"]').first();
-    if (await logoutBtn.count() > 0) {
+    const logoutBtn = page
+      .locator('button:has-text("Logout"), button:has-text("Sign out"), [href*="logout"]')
+      .first();
+    if ((await logoutBtn.count()) > 0) {
       await logoutBtn.click();
       await page.waitForTimeout(2000);
       console.log("After logout:", page.url());
@@ -400,12 +430,14 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
     } else {
       console.log("No logout button found, checking sidebar/profile menu");
       // Try clicking on user menu or avatar
-      const userMenu = page.locator('[data-testid="user-menu"], .user-menu, button:has(img), button:has(.avatar)').first();
-      if (await userMenu.count() > 0) {
+      const userMenu = page
+        .locator('[data-testid="user-menu"], .user-menu, button:has(img), button:has(.avatar)')
+        .first();
+      if ((await userMenu.count()) > 0) {
         await userMenu.click();
         await page.waitForTimeout(500);
-        const logoutOption = page.locator('text=Logout, text=Sign out').first();
-        if (await logoutOption.count() > 0) {
+        const logoutOption = page.locator("text=Logout, text=Sign out").first();
+        if ((await logoutOption.count()) > 0) {
           await logoutOption.click();
           await page.waitForTimeout(2000);
           console.log("After logout via menu:", page.url());
@@ -416,14 +448,14 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 3 — Invalid credentials", async ({ page }) => {
     console.log("\n=== INVALID CREDENTIALS ===");
-    
+
     // Clear auth state first
     await page.goto(FRONTEND, { waitUntil: "domcontentloaded" });
     await page.evaluate(() => {
       localStorage.clear();
       sessionStorage.clear();
     });
-    
+
     await page.goto(`${FRONTEND}/login`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector('input#email, input[name="email"]', { timeout: 10000 });
     await page.fill('input#email, input[name="email"]', "invalid@example.com");
@@ -431,7 +463,7 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
     await page.click('button[type="submit"]');
     await page.waitForTimeout(3000);
     await takeScreenshot(page, "21-invalid-credentials.png");
-    
+
     const content = await page.content();
     console.log("Page content after invalid login:", content.length);
     expect(content.length).toBeGreaterThan(0);
@@ -439,9 +471,9 @@ test.describe("AUDIT 6 — Full Launch QA / Chaos / UX Audit", () => {
 
   test("Phase 5 — Data persistence", async ({ page }) => {
     console.log("\n=== DATA PERSISTENCE ===");
-    
+
     await ensureAuthenticated(page);
-    
+
     // Navigate to profile
     await page.goto(`${FRONTEND}/profile`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1500);

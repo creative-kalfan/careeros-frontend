@@ -91,7 +91,9 @@ export function PdfGeometryOverlay({
             >
               <div className="flex items-center justify-between pb-1 border-b border-border/50 text-[10px] uppercase font-mono tracking-wider text-muted-foreground">
                 <span>Edit {block.section || "Block"}</span>
-                <span>{block.style?.font_name || "Text"} • {block.style?.font_size || 10}pt</span>
+                <span>
+                  {block.style?.font_name || "Text"} • {block.style?.font_size || 10}pt
+                </span>
               </div>
               <Textarea
                 autoFocus
@@ -114,9 +116,7 @@ export function PdfGeometryOverlay({
                 <div className="flex items-center gap-1 font-mono">
                   <span
                     className={
-                      isOverBudget
-                        ? "text-amber-500 font-semibold"
-                        : "text-muted-foreground"
+                      isOverBudget ? "text-amber-500 font-semibold" : "text-muted-foreground"
                     }
                   >
                     {currLen} / {charLimit} chars ({budgetPct}%)
@@ -170,8 +170,8 @@ export function PdfGeometryOverlay({
               isSelected
                 ? "border-2 border-primary bg-primary/10 shadow-sm"
                 : isHovered
-                ? "border border-primary/40 bg-primary/5"
-                : "border border-transparent hover:border-primary/40 hover:bg-primary/5"
+                  ? "border border-primary/40 bg-primary/5"
+                  : "border border-transparent hover:border-primary/40 hover:bg-primary/5"
             }`}
             style={{
               left,
@@ -191,7 +191,9 @@ export function PdfGeometryOverlay({
             onDoubleClick={(e) => handleStartEdit(block, e)}
             onMouseEnter={() => setHoveredBlockId(block.id)}
             onMouseLeave={() => setHoveredBlockId((cur) => (cur === block.id ? null : cur))}
-            title={block.section ? `${block.section} (Double-click to edit)` : "Double-click to edit"}
+            title={
+              block.section ? `${block.section} (Double-click to edit)` : "Double-click to edit"
+            }
           >
             {(isHovered || isSelected) && (
               <button

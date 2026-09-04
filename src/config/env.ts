@@ -1,6 +1,5 @@
 const getEnv = (key: string, defaultValue?: string): string => {
-  const processValue =
-    typeof process !== "undefined" && process.env ? process.env[key] : undefined;
+  const processValue = typeof process !== "undefined" && process.env ? process.env[key] : undefined;
   if (processValue !== undefined && processValue !== "") {
     return processValue;
   }

@@ -1,12 +1,4 @@
-import {
-  Sparkles,
-  Target,
-  Check,
-  X,
-  Trophy,
-  ShieldCheck,
-  Wand2,
-} from "lucide-react";
+import { Sparkles, Target, Check, X, Trophy, ShieldCheck, Wand2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -177,9 +169,7 @@ export function AIInsights({
           <div className="mt-2 text-sm font-semibold text-foreground font-mono">
             {job.atsScore ? `${job.atsScore}%` : "Verified"}
           </div>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Core industry keywords present
-          </p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Core industry keywords present</p>
         </div>
       </div>
     </div>

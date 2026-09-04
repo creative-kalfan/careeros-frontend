@@ -30,18 +30,35 @@ export const versionsApi = {
     return { version: res?.data ?? res?.version ?? res };
   },
 
-  create: async (resumeId: string, data: CreateVersionRequest): Promise<{ version: ResumeVersion }> => {
-    const res = await request<any>({ method: "POST", path: API_ENDPOINTS.VERSIONS.CREATE(resumeId), body: data });
+  create: async (
+    resumeId: string,
+    data: CreateVersionRequest,
+  ): Promise<{ version: ResumeVersion }> => {
+    const res = await request<any>({
+      method: "POST",
+      path: API_ENDPOINTS.VERSIONS.CREATE(resumeId),
+      body: data,
+    });
     return { version: res?.data ?? res?.version ?? res };
   },
 
-  update: async (versionId: string, data: UpdateVersionRequest): Promise<{ version: ResumeVersion }> => {
-    const res = await request<any>({ method: "PATCH", path: API_ENDPOINTS.VERSIONS.UPDATE(versionId), body: data });
+  update: async (
+    versionId: string,
+    data: UpdateVersionRequest,
+  ): Promise<{ version: ResumeVersion }> => {
+    const res = await request<any>({
+      method: "PATCH",
+      path: API_ENDPOINTS.VERSIONS.UPDATE(versionId),
+      body: data,
+    });
     return { version: res?.data ?? res?.version ?? res };
   },
 
   delete: async (versionId: string): Promise<{ deleted: boolean }> => {
-    const res = await request<any>({ method: "DELETE", path: API_ENDPOINTS.VERSIONS.DELETE(versionId) });
+    const res = await request<any>({
+      method: "DELETE",
+      path: API_ENDPOINTS.VERSIONS.DELETE(versionId),
+    });
     return { deleted: res?.data?.deleted ?? res?.deleted ?? true };
   },
 
@@ -55,7 +72,10 @@ export const versionsApi = {
   },
 
   setMaster: async (versionId: string): Promise<{ version: ResumeVersion }> => {
-    const res = await request<any>({ method: "POST", path: API_ENDPOINTS.VERSIONS.SET_MASTER(versionId) });
+    const res = await request<any>({
+      method: "POST",
+      path: API_ENDPOINTS.VERSIONS.SET_MASTER(versionId),
+    });
     return { version: res?.data ?? res?.version ?? res };
   },
 

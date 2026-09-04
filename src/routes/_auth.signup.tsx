@@ -18,7 +18,8 @@ export const Route = createFileRoute("/_auth/signup")({
       { title: "Sign Up · CareerOS" },
       {
         name: "description",
-        content: "Create your CareerOS profile to build your verified career intelligence workspace.",
+        content:
+          "Create your CareerOS profile to build your verified career intelligence workspace.",
       },
     ],
   }),
@@ -85,7 +86,8 @@ function SignupPage() {
         </h1>
 
         <p className="text-sm sm:text-base text-[#A8A49A] leading-relaxed mt-3 sm:mt-4 max-w-lg">
-          Create your CareerOS profile and turn your experience into a career system you can continuously improve.
+          Create your CareerOS profile and turn your experience into a career system you can
+          continuously improve.
         </p>
 
         {/* 3 Core Value Proofs */}
@@ -95,7 +97,8 @@ function SignupPage() {
               <FileCheck2 className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">Don't start from a blank page.</span> Turn your existing background into a structured intelligence base.
+              <span className="font-medium text-[#F3F0E8]">Don't start from a blank page.</span>{" "}
+              Turn your existing background into a structured intelligence base.
             </div>
           </div>
 
@@ -104,7 +107,8 @@ function SignupPage() {
               <CheckCircle2 className="w-3.5 h-3.5 text-[#45A875]" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">Zero experience fabrication.</span> Suggests truthful bullet refinements based solely on your real achievements.
+              <span className="font-medium text-[#F3F0E8]">Zero experience fabrication.</span>{" "}
+              Suggests truthful bullet refinements based solely on your real achievements.
             </div>
           </div>
 
@@ -113,7 +117,8 @@ function SignupPage() {
               <Layers className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">Role-specific derived versions.</span> Master resume stays untouched while you adapt to specific openings.
+              <span className="font-medium text-[#F3F0E8]">Role-specific derived versions.</span>{" "}
+              Master resume stays untouched while you adapt to specific openings.
             </div>
           </div>
         </div>
@@ -123,8 +128,12 @@ function SignupPage() {
       <div className="lg:col-span-5 w-full max-w-md mx-auto lg:mx-0">
         <div className="rounded-2xl border border-[#302E29] bg-[#1A1916]/90 p-6 sm:p-8 backdrop-blur-sm shadow-2xl shadow-black/50">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">Create your profile</h2>
-            <p className="mt-1 text-xs text-[#A8A49A]">Start building your structured career intelligence system</p>
+            <h2 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">
+              Create your profile
+            </h2>
+            <p className="mt-1 text-xs text-[#A8A49A]">
+              Start building your structured career intelligence system
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

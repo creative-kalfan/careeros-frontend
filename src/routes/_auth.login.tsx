@@ -84,7 +84,8 @@ function LoginPage() {
         </h1>
 
         <p className="text-sm sm:text-base text-[#A8A49A] leading-relaxed mt-3 sm:mt-4 max-w-lg">
-          Pick up where you left off. Your career profile, resume versions, job matches, and application strategy are waiting.
+          Pick up where you left off. Your career profile, resume versions, job matches, and
+          application strategy are waiting.
         </p>
 
         {/* 3 Core Value Proofs */}
@@ -94,7 +95,8 @@ function LoginPage() {
               <ShieldCheck className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">One verified profile.</span> Never rewrite your experience from scratch for each opportunity.
+              <span className="font-medium text-[#F3F0E8]">One verified profile.</span> Never
+              rewrite your experience from scratch for each opportunity.
             </div>
           </div>
 
@@ -103,7 +105,8 @@ function LoginPage() {
               <Target className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">Targeted role versions.</span> Safe, truth-preserving tailoring matching exact job requirements.
+              <span className="font-medium text-[#F3F0E8]">Targeted role versions.</span> Safe,
+              truth-preserving tailoring matching exact job requirements.
             </div>
           </div>
 
@@ -112,7 +115,8 @@ function LoginPage() {
               <Cpu className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">Deterministic gap analysis.</span> Know your evidence match score before recruiters open your PDF.
+              <span className="font-medium text-[#F3F0E8]">Deterministic gap analysis.</span> Know
+              your evidence match score before recruiters open your PDF.
             </div>
           </div>
         </div>
@@ -122,7 +126,9 @@ function LoginPage() {
       <div className="lg:col-span-5 w-full max-w-md mx-auto lg:mx-0">
         <div className="rounded-2xl border border-[#302E29] bg-[#1A1916]/90 p-6 sm:p-8 backdrop-blur-sm shadow-2xl shadow-black/50">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">Sign in to CareerOS</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">
+              Sign in to CareerOS
+            </h2>
             <p className="mt-1 text-xs text-[#A8A49A]">Access your career intelligence workspace</p>
           </div>
 

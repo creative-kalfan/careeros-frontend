@@ -26,7 +26,9 @@ test.describe("Resume Optimization Flow", () => {
     page.on("response", async (res) => {
       if (res.url().includes("/api/optimization/generate")) {
         let body = "";
-        try { body = await res.text(); } catch {}
+        try {
+          body = await res.text();
+        } catch {}
         optimizationRequests.push({ url: res.url(), status: res.status(), body });
       }
     });
@@ -63,7 +65,9 @@ test.describe("Resume Optimization Flow", () => {
     await page.screenshot({ path: path.join(screenshotsDir, "01-studio-loaded.png") });
 
     // Verify left pane (has "No job target set" or job context)
-    const leftPaneContent = page.locator("text=No job target set").or(page.locator("text=Run Optimization"));
+    const leftPaneContent = page
+      .locator("text=No job target set")
+      .or(page.locator("text=Run Optimization"));
     await expect(leftPaneContent.first()).toBeVisible({ timeout: 10000 });
 
     // Verify right pane (has PDF preview controls)
@@ -74,7 +78,10 @@ test.describe("Resume Optimization Flow", () => {
     await page.screenshot({ path: path.join(screenshotsDir, "02-two-pane.png") });
 
     // ── Step 3: Set job context via ATS dialog ──
-    const hasJobContext = await page.locator("text=Run Optimization").isVisible().catch(() => false);
+    const hasJobContext = await page
+      .locator("text=Run Optimization")
+      .isVisible()
+      .catch(() => false);
 
     if (!hasJobContext) {
       console.log("Setting job context via ATS dialog");
@@ -161,7 +168,9 @@ test.describe("Resume Optimization Flow", () => {
     // Validate evidence is array for each suggestion
     for (const s of suggestions) {
       if (s.evidence !== undefined && s.evidence !== null) {
-        expect(Array.isArray(s.evidence), `evidence must be array, got ${typeof s.evidence}`).toBe(true);
+        expect(Array.isArray(s.evidence), `evidence must be array, got ${typeof s.evidence}`).toBe(
+          true,
+        );
       }
     }
 
@@ -177,7 +186,10 @@ test.describe("Resume Optimization Flow", () => {
     const typeErrs = pageErrors.filter((e) => e.includes("TypeError"));
     expect(typeErrs, "No TypeError").toHaveLength(0);
 
-    const errorBoundary = await page.getByText("This page didn't load").isVisible().catch(() => false);
+    const errorBoundary = await page
+      .getByText("This page didn't load")
+      .isVisible()
+      .catch(() => false);
     expect(errorBoundary, "No error boundary").toBe(false);
 
     await page.screenshot({ path: path.join(screenshotsDir, "08-final.png") });

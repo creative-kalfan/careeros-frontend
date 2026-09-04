@@ -29,13 +29,17 @@ test.describe("CareerOS Cinematic Landing Page Verification", () => {
     // Test Keyboard navigation to Scene 2
     await page.keyboard.press("2");
     await page.waitForTimeout(600);
-    await expect(page.getByRole("heading", { name: "Deconstruct the job description first" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Deconstruct the job description first" }),
+    ).toBeVisible();
     await page.screenshot({ path: path.join(outDir, "scene_2_desktop_1440.png") });
 
     // Test Keyboard navigation to Scene 3
     await page.keyboard.press("3");
     await page.waitForTimeout(600);
-    await expect(page.getByRole("heading", { name: "See why your resume isn't getting interviews" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "See why your resume isn't getting interviews" }),
+    ).toBeVisible();
     await page.screenshot({ path: path.join(outDir, "scene_3_desktop_1440.png") });
 
     // Test Scene 3 role selection interaction
@@ -53,13 +57,17 @@ test.describe("CareerOS Cinematic Landing Page Verification", () => {
     // Test Keyboard navigation to Scene 5
     await page.keyboard.press("5");
     await page.waitForTimeout(600);
-    await expect(page.getByRole("heading", { name: "Target opportunities where your proof is strongest" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Target opportunities where your proof is strongest" }),
+    ).toBeVisible();
     await page.screenshot({ path: path.join(outDir, "scene_5_desktop_1440.png") });
 
     // Test Keyboard navigation to Scene 6
     await page.keyboard.press("6");
     await page.waitForTimeout(600);
-    await expect(page.getByRole("heading", { name: "Stop sending resumes into the void" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Stop sending resumes into the void" }),
+    ).toBeVisible();
     await page.screenshot({ path: path.join(outDir, "scene_6_desktop_1440.png") });
 
     // Verify Primary CTA
@@ -67,7 +75,8 @@ test.describe("CareerOS Cinematic Landing Page Verification", () => {
 
     // Verify no critical console errors
     const criticalErrors = consoleErrors.filter(
-      (e) => !e.includes("favicon") && !e.includes("404") && !e.includes("Download the React DevTools")
+      (e) =>
+        !e.includes("favicon") && !e.includes("404") && !e.includes("Download the React DevTools"),
     );
     expect(criticalErrors.length).toBe(0);
   });
@@ -80,12 +89,16 @@ test.describe("CareerOS Cinematic Landing Page Verification", () => {
 
     await page.keyboard.press("2");
     await page.waitForTimeout(400);
-    await expect(page.getByRole("heading", { name: "Deconstruct the job description first" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Deconstruct the job description first" }),
+    ).toBeVisible();
     await page.screenshot({ path: path.join(outDir, "scene_2_desktop_1366x768.png") });
 
     await page.keyboard.press("3");
     await page.waitForTimeout(400);
-    await expect(page.getByRole("heading", { name: "See why your resume isn't getting interviews" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "See why your resume isn't getting interviews" }),
+    ).toBeVisible();
     await page.screenshot({ path: path.join(outDir, "scene_3_desktop_1366x768.png") });
   });
 
@@ -97,7 +110,9 @@ test.describe("CareerOS Cinematic Landing Page Verification", () => {
 
     await page.keyboard.press("2");
     await page.waitForTimeout(400);
-    await expect(page.getByRole("heading", { name: "Deconstruct the job description first" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Deconstruct the job description first" }),
+    ).toBeVisible();
     await page.screenshot({ path: path.join(outDir, "scene_2_desktop_1280x720.png") });
 
     await page.keyboard.press("4");
@@ -142,5 +157,3 @@ test.describe("CareerOS Cinematic Landing Page Verification", () => {
     await page.screenshot({ path: path.join(outDir, "mobile_390x844_scene6.png") });
   });
 });
-
-

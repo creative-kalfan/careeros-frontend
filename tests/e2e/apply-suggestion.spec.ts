@@ -37,7 +37,9 @@ test.describe("Optimization Suggestion Apply Flow", () => {
 
     // ── Seed deterministic data ──
     const seed = runSeed();
-    console.log(`Seed: resume=${seed.resume_id}, session=${seed.session_id}, suggestion=${seed.suggestion_id}`);
+    console.log(
+      `Seed: resume=${seed.resume_id}, session=${seed.session_id}, suggestion=${seed.suggestion_id}`,
+    );
 
     // ── Collect diagnostics ──
     const consoleErrors: string[] = [];
@@ -62,7 +64,9 @@ test.describe("Optimization Suggestion Apply Flow", () => {
     await page.screenshot({ path: path.join(screenshotsDir, "01-studio.png") });
 
     // ── Step 2: Verify left pane loaded ──
-    const leftPane = page.locator("text=No job target set").or(page.locator("text=Run Optimization"));
+    const leftPane = page
+      .locator("text=No job target set")
+      .or(page.locator("text=Run Optimization"));
     await expect(leftPane.first()).toBeVisible({ timeout: 10000 });
     console.log("Left pane loaded");
 
@@ -97,38 +101,53 @@ test.describe("Optimization Suggestion Apply Flow", () => {
     await page.screenshot({ path: path.join(screenshotsDir, "03-suggestions.png") });
 
     // ── Step 5: Accept suggestion via backend API (same path as frontend) ──
-    const acceptResult = await page.evaluate(async (args: { sessionId: string; suggestionId: string }) => {
-      // Get JWT from Supabase auth storage — check all localStorage keys
-      let token = "";
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.includes("auth")) {
-          try {
-            const data = JSON.parse(localStorage.getItem(key) || "{}");
-            if (data?.access_token) { token = data.access_token; break; }
-            if (data?.currentSession?.access_token) { token = data.currentSession.access_token; break; }
-          } catch {}
+    const acceptResult = await page.evaluate(
+      async (args: { sessionId: string; suggestionId: string }) => {
+        // Get JWT from Supabase auth storage — check all localStorage keys
+        let token = "";
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.includes("auth")) {
+            try {
+              const data = JSON.parse(localStorage.getItem(key) || "{}");
+              if (data?.access_token) {
+                token = data.access_token;
+                break;
+              }
+              if (data?.currentSession?.access_token) {
+                token = data.currentSession.access_token;
+                break;
+              }
+            } catch {}
+          }
         }
-      }
-      if (!token) return { error: "No access token found in localStorage", keys: Array.from({length: localStorage.length}, (_: unknown, i: number) => localStorage.key(i)) };
+        if (!token)
+          return {
+            error: "No access token found in localStorage",
+            keys: Array.from({ length: localStorage.length }, (_: unknown, i: number) =>
+              localStorage.key(i),
+            ),
+          };
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      try {
-        const res = await fetch("http://localhost:8000/api/optimization/suggestions/accept", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-          body: JSON.stringify({ session_id: args.sessionId, suggestion_id: args.suggestionId }),
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        const body = await res.json();
-        return { status: res.status, body };
-      } catch (e) {
-        clearTimeout(timeoutId);
-        return { error: String(e) };
-      }
-    }, { sessionId: seed.session_id, suggestionId: seed.suggestion_id });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        try {
+          const res = await fetch("http://localhost:8000/api/optimization/suggestions/accept", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ session_id: args.sessionId, suggestion_id: args.suggestionId }),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          const body = await res.json();
+          return { status: res.status, body };
+        } catch (e) {
+          clearTimeout(timeoutId);
+          return { error: String(e) };
+        }
+      },
+      { sessionId: seed.session_id, suggestionId: seed.suggestion_id },
+    );
 
     console.log("Accept result:", JSON.stringify(acceptResult).substring(0, 500));
 
@@ -154,7 +173,10 @@ test.describe("Optimization Suggestion Apply Flow", () => {
     // Re-set job context since state is ephemeral
     // The suggestions should now show "Accepted" status
     const acceptedBadge = page.locator("text=Accepted").or(page.locator("text=Applied"));
-    const hasAccepted = await acceptedBadge.first().isVisible().catch(() => false);
+    const hasAccepted = await acceptedBadge
+      .first()
+      .isVisible()
+      .catch(() => false);
     console.log(`Suggestion marked as accepted after reload: ${hasAccepted}`);
 
     await page.screenshot({ path: path.join(screenshotsDir, "05-after-reload.png") });
@@ -162,14 +184,20 @@ test.describe("Optimization Suggestion Apply Flow", () => {
     // ── Step 8: Verify the resume content was actually modified ──
     // Check that the professional summary in the preview changed
     const newSummary = page.locator("text=Senior Software Engineer with 6+ years");
-    const summaryUpdated = await newSummary.first().isVisible().catch(() => false);
+    const summaryUpdated = await newSummary
+      .first()
+      .isVisible()
+      .catch(() => false);
     console.log(`New summary text visible in preview: ${summaryUpdated}`);
 
     // ── Step 9: No runtime crashes ──
     const typeErrs = pageErrors.filter((e) => e.includes("TypeError"));
     expect(typeErrs, "No TypeError").toHaveLength(0);
 
-    const errorBoundary = await page.getByText("This page didn't load").isVisible().catch(() => false);
+    const errorBoundary = await page
+      .getByText("This page didn't load")
+      .isVisible()
+      .catch(() => false);
     expect(errorBoundary, "No error boundary").toBe(false);
 
     await page.screenshot({ path: path.join(screenshotsDir, "06-final.png") });

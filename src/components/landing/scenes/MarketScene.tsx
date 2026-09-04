@@ -65,7 +65,8 @@ export function MarketScene() {
           Target opportunities where your proof is strongest.
         </h2>
         <p className="text-xs sm:text-sm text-[#A8A49A] mt-1 leading-relaxed">
-          CareerOS connects your verified profile to active roles — ranking openings by technical alignment and proof completeness.
+          CareerOS connects your verified profile to active roles — ranking openings by technical
+          alignment and proof completeness.
         </p>
       </div>
 
@@ -98,10 +99,14 @@ export function MarketScene() {
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <Building2 className="w-3 h-3 text-[#A8A49A] shrink-0" />
-                    <span className="text-[10px] sm:text-[11px] font-medium text-[#F3F0E8] truncate">{opp.companyType}</span>
+                    <span className="text-[10px] sm:text-[11px] font-medium text-[#F3F0E8] truncate">
+                      {opp.companyType}
+                    </span>
                     <span className="text-[9px] text-[#A8A49A]">({opp.source})</span>
                   </div>
-                  <h3 className="text-xs sm:text-sm font-semibold text-[#F3F0E8] truncate">{opp.role}</h3>
+                  <h3 className="text-xs sm:text-sm font-semibold text-[#F3F0E8] truncate">
+                    {opp.role}
+                  </h3>
                   <p className="text-[9px] sm:text-[10px] text-[#A8A49A]">{opp.location}</p>
                 </div>
 
@@ -134,8 +139,12 @@ export function MarketScene() {
             </div>
 
             <div>
-              <div className="text-[11px] text-[#315CFF] font-medium">{selectedOpp.companyType}</div>
-              <h3 className="text-xs sm:text-sm font-semibold text-[#F3F0E8] mt-0.5">{selectedOpp.role}</h3>
+              <div className="text-[11px] text-[#315CFF] font-medium">
+                {selectedOpp.companyType}
+              </div>
+              <h3 className="text-xs sm:text-sm font-semibold text-[#F3F0E8] mt-0.5">
+                {selectedOpp.role}
+              </h3>
               <p className="text-[10px] text-[#A8A49A]">{selectedOpp.location}</p>
             </div>
 
@@ -158,5 +167,3 @@ export function MarketScene() {
     </div>
   );
 }
-
-

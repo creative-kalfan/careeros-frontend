@@ -95,7 +95,12 @@ describe("PDF Geometry Overlay Coordinates", () => {
 describe("PDF Geometry Overlay Keyboard Navigation & Accessibility Contract", () => {
   it("triggers save on Ctrl+Enter and Meta+Enter (Cmd+Enter)", () => {
     let saved = false;
-    const handleKeyDown = (e: { key: string; ctrlKey?: boolean; metaKey?: boolean; preventDefault: () => void }) => {
+    const handleKeyDown = (e: {
+      key: string;
+      ctrlKey?: boolean;
+      metaKey?: boolean;
+      preventDefault: () => void;
+    }) => {
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         saved = true;
@@ -106,7 +111,9 @@ describe("PDF Geometry Overlay Keyboard Navigation & Accessibility Contract", ()
     handleKeyDown({
       key: "Enter",
       ctrlKey: true,
-      preventDefault: () => { prevented = true; },
+      preventDefault: () => {
+        prevented = true;
+      },
     });
     expect(saved).toBe(true);
     expect(prevented).toBe(true);
@@ -116,7 +123,9 @@ describe("PDF Geometry Overlay Keyboard Navigation & Accessibility Contract", ()
     handleKeyDown({
       key: "Enter",
       metaKey: true,
-      preventDefault: () => { prevented = true; },
+      preventDefault: () => {
+        prevented = true;
+      },
     });
     expect(saved).toBe(true);
     expect(prevented).toBe(true);
@@ -125,7 +134,12 @@ describe("PDF Geometry Overlay Keyboard Navigation & Accessibility Contract", ()
   it("triggers cancel on Escape key without triggering save", () => {
     let cancelled = false;
     let saved = false;
-    const handleKeyDown = (e: { key: string; ctrlKey?: boolean; metaKey?: boolean; preventDefault: () => void }) => {
+    const handleKeyDown = (e: {
+      key: string;
+      ctrlKey?: boolean;
+      metaKey?: boolean;
+      preventDefault: () => void;
+    }) => {
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         saved = true;
@@ -138,7 +152,9 @@ describe("PDF Geometry Overlay Keyboard Navigation & Accessibility Contract", ()
     let prevented = false;
     handleKeyDown({
       key: "Escape",
-      preventDefault: () => { prevented = true; },
+      preventDefault: () => {
+        prevented = true;
+      },
     });
     expect(cancelled).toBe(true);
     expect(saved).toBe(false);
@@ -148,7 +164,12 @@ describe("PDF Geometry Overlay Keyboard Navigation & Accessibility Contract", ()
   it("does not trigger save or cancel on regular Enter key (allows multiline edits)", () => {
     let cancelled = false;
     let saved = false;
-    const handleKeyDown = (e: { key: string; ctrlKey?: boolean; metaKey?: boolean; preventDefault: () => void }) => {
+    const handleKeyDown = (e: {
+      key: string;
+      ctrlKey?: boolean;
+      metaKey?: boolean;
+      preventDefault: () => void;
+    }) => {
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         saved = true;
@@ -194,32 +215,28 @@ describe("Preview Pane Fallback Logic (storage_path absent)", () => {
     expect(computeCanvasMode(null, "https://signed.url/doc.pdf", undefined)).toBe(false);
     expect(computeCanvasMode("", "https://signed.url/doc.pdf", undefined)).toBe(false);
 
-    expect(resolvePreviewRenderer(undefined, "https://signed.url/doc.pdf", undefined)).toBe("A4Page");
+    expect(resolvePreviewRenderer(undefined, "https://signed.url/doc.pdf", undefined)).toBe(
+      "A4Page",
+    );
     expect(resolvePreviewRenderer(null, null, undefined)).toBe("A4Page");
   });
 
   it("falls back to TemplatePreview when storage_path is missing but templateSlug is present", () => {
     expect(resolvePreviewRenderer(undefined, undefined, "modern")).toBe("TemplatePreview");
-    expect(resolvePreviewRenderer(null, "https://signed.url/doc.pdf", "executive")).toBe("TemplatePreview");
+    expect(resolvePreviewRenderer(null, "https://signed.url/doc.pdf", "executive")).toBe(
+      "TemplatePreview",
+    );
   });
 
   it("uses PdfCanvasPreview only when activeStoragePath AND originalPdfUrl exist without templateSlug", () => {
     expect(
-      resolvePreviewRenderer(
-        "user-1/versions/v1.pdf",
-        "https://signed.url/doc.pdf",
-        undefined,
-      ),
+      resolvePreviewRenderer("user-1/versions/v1.pdf", "https://signed.url/doc.pdf", undefined),
     ).toBe("PdfCanvasPreview");
   });
 
   it("falls back to TemplatePreview even if storage_path is present if user explicitly chose templateSlug", () => {
     expect(
-      resolvePreviewRenderer(
-        "user-1/versions/v1.pdf",
-        "https://signed.url/doc.pdf",
-        "minimal",
-      ),
+      resolvePreviewRenderer("user-1/versions/v1.pdf", "https://signed.url/doc.pdf", "minimal"),
     ).toBe("TemplatePreview");
   });
 });
@@ -279,21 +296,44 @@ describe("PDF Geometry Block Keyboard Accessibility & ARIA", () => {
     };
 
     let preventedEnter = false;
-    handleKeyDown({ key: "Enter", preventDefault: () => { preventedEnter = true; } }, namedBlock);
+    handleKeyDown(
+      {
+        key: "Enter",
+        preventDefault: () => {
+          preventedEnter = true;
+        },
+      },
+      namedBlock,
+    );
     expect(startedEditBlock).toBe(namedBlock);
     expect(preventedEnter).toBe(true);
 
     startedEditBlock = null;
     let preventedSpace = false;
-    handleKeyDown({ key: " ", preventDefault: () => { preventedSpace = true; } }, unnamedBlock);
+    handleKeyDown(
+      {
+        key: " ",
+        preventDefault: () => {
+          preventedSpace = true;
+        },
+      },
+      unnamedBlock,
+    );
     expect(startedEditBlock).toBe(unnamedBlock);
     expect(preventedSpace).toBe(true);
 
     startedEditBlock = null;
     let preventedOther = false;
-    handleKeyDown({ key: "Tab", preventDefault: () => { preventedOther = true; } }, namedBlock);
+    handleKeyDown(
+      {
+        key: "Tab",
+        preventDefault: () => {
+          preventedOther = true;
+        },
+      },
+      namedBlock,
+    );
     expect(startedEditBlock).toBeNull();
     expect(preventedOther).toBe(false);
   });
 });
-

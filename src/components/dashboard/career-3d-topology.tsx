@@ -333,10 +333,7 @@ export function Career3DTopology({
         transparent: true,
         opacity: isDimmed ? 0.08 : 0.28,
       });
-      const lineGeo = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(0, 0, 0),
-        pos,
-      ]);
+      const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), pos]);
       const line = new THREE.Line(lineGeo, lineMat);
       constellationGroup.add(line);
 
@@ -397,12 +394,12 @@ export function Career3DTopology({
       ([entry]) => {
         isVisible = entry.isIntersecting;
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     intersectionObserver.observe(container);
 
     let animationFrameId: number;
-    let lastTime = performance.now();
+    const lastTime = performance.now();
     let frameCount = 0;
     let lastFpsUpdate = performance.now();
     const clock = new THREE.Clock();
@@ -505,7 +502,7 @@ export function Career3DTopology({
     <div
       className={cn(
         "workstation-panel spatial-card relative flex flex-col overflow-hidden rounded-xl border border-border/80 bg-surface shadow-elevation-2",
-        className
+        className,
       )}
     >
       {/* Cockpit HUD Header */}
@@ -540,7 +537,7 @@ export function Career3DTopology({
                   "rounded-md px-2 py-0.5 text-[10px] font-mono uppercase transition-colors",
                   activeFilter === filter
                     ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-surface-elevated"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-elevated",
                 )}
               >
                 {filter}
@@ -577,12 +574,15 @@ export function Career3DTopology({
                     "cursor-pointer rounded-lg border p-3 transition-all",
                     isSelected
                       ? "border-primary bg-primary/10 shadow-elevation-1"
-                      : "border-border/70 bg-surface-instrument hover:border-border hover:bg-surface-elevated"
+                      : "border-border/70 bg-surface-instrument hover:border-border hover:bg-surface-elevated",
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-foreground">{n.name}</span>
-                    <Badge variant="outline" className={cn("text-[9px] font-mono uppercase", meta.badge)}>
+                    <Badge
+                      variant="outline"
+                      className={cn("text-[9px] font-mono uppercase", meta.badge)}
+                    >
                       {meta.label}
                     </Badge>
                   </div>
@@ -634,7 +634,7 @@ export function Career3DTopology({
                     variant="outline"
                     className={cn(
                       "text-[9px] font-mono",
-                      categoryMeta[(selectedNode || hoveredNode)!.category].badge
+                      categoryMeta[(selectedNode || hoveredNode)!.category].badge,
                     )}
                   >
                     {categoryMeta[(selectedNode || hoveredNode)!.category].label}
@@ -671,10 +671,7 @@ export function Career3DTopology({
                 <span className="text-xs font-bold text-foreground">{selectedNode.name}</span>
                 <Badge
                   variant="outline"
-                  className={cn(
-                    "text-[10px] font-mono",
-                    categoryMeta[selectedNode.category].badge
-                  )}
+                  className={cn("text-[10px] font-mono", categoryMeta[selectedNode.category].badge)}
                 >
                   {categoryMeta[selectedNode.category].label}
                 </Badge>
@@ -687,9 +684,13 @@ export function Career3DTopology({
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-3 font-mono text-xs text-muted-foreground">
-              <span>Proficiency: <strong className="text-foreground">{selectedNode.level}%</strong></span>
+              <span>
+                Proficiency: <strong className="text-foreground">{selectedNode.level}%</strong>
+              </span>
               <span>•</span>
-              <span>Velocity: <strong className="text-primary">{selectedNode.marketDemand}%</strong></span>
+              <span>
+                Velocity: <strong className="text-primary">{selectedNode.marketDemand}%</strong>
+              </span>
             </div>
             <Button
               size="sm"

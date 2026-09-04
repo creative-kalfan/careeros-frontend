@@ -153,7 +153,7 @@ export function ProgressRing({
           strokeDasharray={`${dash} ${c}`}
           className={cn(
             "fill-none transition-[stroke-dasharray] duration-700 ease-out motion-reduce:transition-none",
-            toneClass
+            toneClass,
           )}
           stroke="currentColor"
         />
@@ -221,7 +221,8 @@ export function ExecutiveTelemetryRibbon({
                 {greeting}, <span className="text-primary">{name}</span>
               </h1>
               <p className="mt-1 text-xs text-muted-foreground leading-relaxed max-w-lg">
-                Primary flight deck: real-time ATS calibration, spatial skill alignment, and high-impact career directives.
+                Primary flight deck: real-time ATS calibration, spatial skill alignment, and
+                high-impact career directives.
               </p>
             </div>
 
@@ -274,7 +275,10 @@ export function ExecutiveTelemetryRibbon({
             {/* 2. ATS Readiness */}
             <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-accent/40">
               <ProgressRing value={resumeScore} tone="accent" sublabel="ATS" />
-              <Badge variant="outline" className="h-4 border-accent/40 bg-accent/10 px-1.5 font-mono text-[9px] text-accent">
+              <Badge
+                variant="outline"
+                className="h-4 border-accent/40 bg-accent/10 px-1.5 font-mono text-[9px] text-accent"
+              >
                 Target 90+
               </Badge>
               <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
@@ -288,7 +292,8 @@ export function ExecutiveTelemetryRibbon({
                 <Target className="h-6 w-6" />
               </div>
               <div className="mt-1 font-mono text-lg font-bold text-foreground">
-                {matchPoolCount} <span className="text-xs font-normal text-muted-foreground">Roles</span>
+                {matchPoolCount}{" "}
+                <span className="text-xs font-normal text-muted-foreground">Roles</span>
               </div>
               <div className="text-[10px] font-mono text-emerald-400 font-medium">
                 {highFitCount} High-Fit (80%+)
@@ -355,11 +360,7 @@ export interface CareerDirectiveItem {
   icon: "resume" | "ats" | "jobs" | "skills" | "interview";
 }
 
-export function CareerActionDirectives({
-  directives,
-}: {
-  directives: CareerDirectiveItem[];
-}) {
+export function CareerActionDirectives({ directives }: { directives: CareerDirectiveItem[] }) {
   const iconMap: Record<CareerDirectiveItem["icon"], ComponentType<{ className?: string }>> = {
     resume: Sparkles,
     ats: Target,
@@ -407,7 +408,10 @@ export function CareerActionDirectives({
             High-Leverage Career Directives
           </h2>
         </div>
-        <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground border-border/60">
+        <Badge
+          variant="outline"
+          className="font-mono text-[10px] text-muted-foreground border-border/60"
+        >
           {directives.length} PENDING
         </Badge>
       </div>
@@ -422,11 +426,16 @@ export function CareerActionDirectives({
               key={d.id}
               className={cn(
                 "group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border/70 bg-surface-instrument/80 p-3 transition-all hover:bg-surface-elevated/70 shadow-2xs",
-                tone.ring
+                tone.ring,
               )}
             >
               <div className="flex items-start gap-3 min-w-0">
-                <div className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border/50", tone.bg)}>
+                <div
+                  className={cn(
+                    "grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border/50",
+                    tone.bg,
+                  )}
+                >
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
@@ -434,7 +443,10 @@ export function CareerActionDirectives({
                     <h3 className="truncate text-xs font-bold text-foreground group-hover:text-primary transition-colors">
                       {d.title}
                     </h3>
-                    <Badge variant="outline" className={cn("text-[9px] font-mono uppercase px-1.5 py-0", tone.badge)}>
+                    <Badge
+                      variant="outline"
+                      className={cn("text-[9px] font-mono uppercase px-1.5 py-0", tone.badge)}
+                    >
                       {d.badge}
                     </Badge>
                   </div>
@@ -491,9 +503,13 @@ export function PipelineDistributionInstrument({
           </h2>
         </div>
         <div className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
-          <span>Active Pipeline: <strong className="text-foreground">{totalApps}</strong></span>
+          <span>
+            Active Pipeline: <strong className="text-foreground">{totalApps}</strong>
+          </span>
           <span>•</span>
-          <span>Match Pool: <strong className="text-foreground">{totalMatches}</strong></span>
+          <span>
+            Match Pool: <strong className="text-foreground">{totalMatches}</strong>
+          </span>
         </div>
       </div>
 
@@ -501,7 +517,9 @@ export function PipelineDistributionInstrument({
         {/* Pipeline Breakdown Gauges */}
         <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-surface-instrument/60 p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">Application Conversion Stages</span>
+            <span className="text-xs font-semibold text-foreground">
+              Application Conversion Stages
+            </span>
             <span className="font-mono text-[10px] text-muted-foreground">CONVERSION FLOW</span>
           </div>
 
@@ -543,7 +561,9 @@ export function PipelineDistributionInstrument({
         {/* Match Tiers Calibration */}
         <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-surface-instrument/60 p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">Target Role Compatibility Tiers</span>
+            <span className="text-xs font-semibold text-foreground">
+              Target Role Compatibility Tiers
+            </span>
             <span className="font-mono text-[10px] text-muted-foreground">FIT SPECTRUM</span>
           </div>
 
@@ -554,7 +574,10 @@ export function PipelineDistributionInstrument({
                 <div key={tier.label} className="space-y-1">
                   <div className="flex items-center justify-between font-mono text-[11px]">
                     <span className="text-muted-foreground flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: tier.color }} />
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: tier.color }}
+                      />
                       {tier.label}
                     </span>
                     <span className="font-medium text-foreground">
@@ -636,7 +659,7 @@ export function PriorityTile({ p }: { p: PriorityCard }) {
           <div
             className={cn(
               "grid h-8 w-8 shrink-0 place-items-center rounded-lg ring-1",
-              accentClass[p.accent]
+              accentClass[p.accent],
             )}
           >
             <Icon className="h-4 w-4" />
@@ -1017,7 +1040,7 @@ export function ActivityTimeline({ items }: { items: TimelineEvent[] }) {
           <span
             className={cn(
               "absolute -left-[18px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-background/60",
-              timelineDot[e.kind]
+              timelineDot[e.kind],
             )}
           />
           <div className="flex items-baseline justify-between gap-3">
@@ -1058,7 +1081,7 @@ export function UpcomingList({ items }: { items: UpcomingItem[] }) {
               <span
                 className={cn(
                   "ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ring-1",
-                  urgencyStyle[u.urgency]
+                  urgencyStyle[u.urgency],
                 )}
               >
                 {u.when}
@@ -1126,7 +1149,7 @@ export function AchievementCard({ a }: { a: Achievement }) {
     <div
       className={cn(
         "glass spatial-card relative flex h-full flex-col overflow-hidden rounded-xl border border-border/80 p-4 transition-colors",
-        a.earned ? "bg-surface shadow-xs" : "bg-surface/50 opacity-90"
+        a.earned ? "bg-surface shadow-xs" : "bg-surface/50 opacity-90",
       )}
     >
       <div className="relative flex items-start justify-between">
@@ -1180,7 +1203,7 @@ export function InsightPill({ i }: { i: CareerInsight }) {
   return (
     <div
       className={cn(
-        "glass spatial-card relative rounded-xl border border-border/80 bg-surface/70 p-3.5 shadow-xs transition-colors hover:border-border hover:bg-surface-elevated/70"
+        "glass spatial-card relative rounded-xl border border-border/80 bg-surface/70 p-3.5 shadow-xs transition-colors hover:border-border hover:bg-surface-elevated/70",
       )}
     >
       <div className="flex items-start gap-2.5">

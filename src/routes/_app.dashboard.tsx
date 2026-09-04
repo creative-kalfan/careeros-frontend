@@ -216,10 +216,7 @@ function Dashboard() {
       <motion.div variants={staggerItem} className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         {/* Left Column (7 cols on xl / 12 on lg): 3D Career Vector & Skill Topology Canvas */}
         <div className="xl:col-span-7 col-span-12 flex flex-col">
-          <Career3DTopology
-            careerScore={activeData.healthScore.overall || 88}
-            className="h-full"
-          />
+          <Career3DTopology careerScore={activeData.healthScore.overall || 88} className="h-full" />
         </div>
 
         {/* Right Column (5 cols on xl / 12 on lg): High-Leverage Career Action Directives */}
@@ -254,7 +251,12 @@ function Dashboard() {
               { id: "qa-2", label: "Run ATS Diagnostics", icon: "sparkles", href: "/ats" },
               { id: "qa-3", label: "Explore Match Pool", icon: "search", href: "/jobs" },
               { id: "qa-4", label: "Open Copilot Studio", icon: "bot", href: "/copilot" },
-              { id: "qa-5", label: "Pipeline Kanban Tracker", icon: "kanban", href: "/applications" },
+              {
+                id: "qa-5",
+                label: "Pipeline Kanban Tracker",
+                icon: "kanban",
+                href: "/applications",
+              },
               { id: "qa-6", label: "AI Recommendations", icon: "star", href: "/recommendations" },
             ]}
           />

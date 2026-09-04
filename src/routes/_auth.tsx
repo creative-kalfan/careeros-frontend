@@ -74,7 +74,9 @@ function AuthLayout() {
               <Compass className="w-4 h-4" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold tracking-tight text-[#F3F0E8]">CareerOS</span>
+              <span className="text-base font-semibold tracking-tight text-[#F3F0E8]">
+                CareerOS
+              </span>
               <span className="hidden sm:inline text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#1A1916] border border-[#302E29] text-[#A8A49A]">
                 Career Intelligence
               </span>

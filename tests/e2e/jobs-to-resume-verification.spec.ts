@@ -35,7 +35,12 @@ test.describe("Complete Jobs → Resume Optimization E2E Workflow Verification",
 
     page.on("response", async (res) => {
       const url = res.url();
-      if (url.includes("/api/") || url.includes("/jobs") || url.includes("/resumes") || url.includes("/optimization")) {
+      if (
+        url.includes("/api/") ||
+        url.includes("/jobs") ||
+        url.includes("/resumes") ||
+        url.includes("/optimization")
+      ) {
         let body = "";
         try {
           body = await res.text();
@@ -79,7 +84,8 @@ test.describe("Complete Jobs → Resume Optimization E2E Workflow Verification",
     await expect(opportunitiesHeader.first()).toBeVisible({ timeout: 15000 });
 
     const jobListCards = page.locator(".space-y-1\\.5 > div, [data-job-id]").filter({
-      hasText: /Stripe|Notion|Engineer|Architect|Manager|Representative|Director|Developer|coupa|Eurofins/i,
+      hasText:
+        /Stripe|Notion|Engineer|Architect|Manager|Representative|Director|Developer|coupa|Eurofins/i,
     });
     const jobCardCount = await jobListCards.count();
     console.log(`Job cards found in JobList: ${jobCardCount}`);
@@ -136,7 +142,9 @@ test.describe("Complete Jobs → Resume Optimization E2E Workflow Verification",
     console.log(`Resume options found in dialog: ${resumeOptionCount}`);
     expect(resumeOptionCount, "Must have at least one resume to tailor").toBeGreaterThan(0);
 
-    await page.screenshot({ path: path.join(screenshotsDir, "04-job-resume-dialog-select-resume.png") });
+    await page.screenshot({
+      path: path.join(screenshotsDir, "04-job-resume-dialog-select-resume.png"),
+    });
 
     // Close dialog with Escape
     await page.keyboard.press("Escape");
@@ -203,8 +211,15 @@ test.describe("Complete Jobs → Resume Optimization E2E Workflow Verification",
     console.log("=== PHASE 7: Running Job Analysis / Optimization ===");
 
     // Open ATS analysis dialog to set the target job
-    const atsDialogBtn = page.getByRole("button", { name: /ATS Analysis|Add job description|Set Target Job|Change/i });
-    if (await atsDialogBtn.first().isVisible().catch(() => false)) {
+    const atsDialogBtn = page.getByRole("button", {
+      name: /ATS Analysis|Add job description|Set Target Job|Change/i,
+    });
+    if (
+      await atsDialogBtn
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await atsDialogBtn.first().click();
       await page.waitForTimeout(1000);
 
@@ -271,7 +286,9 @@ test.describe("Complete Jobs → Resume Optimization E2E Workflow Verification",
       await applyButtons.first().click();
       console.log("Clicked Apply on first suggestion");
       await page.waitForTimeout(3000);
-      await page.screenshot({ path: path.join(screenshotsDir, "10-after-applying-suggestion.png") });
+      await page.screenshot({
+        path: path.join(screenshotsDir, "10-after-applying-suggestion.png"),
+      });
     }
 
     // Test page reload to verify persisted state
@@ -289,8 +306,15 @@ test.describe("Complete Jobs → Resume Optimization E2E Workflow Verification",
     // PHASE 12: Navigation / Back Behavior
     // ══════════════════════════════════════════════════════════════════════════
     console.log("=== PHASE 12: Testing Navigation Back to Jobs ===");
-    const backBtn = page.getByRole("link", { name: /Back to resumes/i }).or(page.locator("a[href='/resumes']"));
-    if (await backBtn.first().isVisible().catch(() => false)) {
+    const backBtn = page
+      .getByRole("link", { name: /Back to resumes/i })
+      .or(page.locator("a[href='/resumes']"));
+    if (
+      await backBtn
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await backBtn.first().click();
       await waitForWorkspace();
       await page.waitForURL((url) => url.pathname.includes("/resumes"), { timeout: 10000 });

@@ -20,7 +20,7 @@ interface SeedResult {
 
 function runSeed(): SeedResult {
   const output = execSync(
-    'python -c "import sys; sys.path.insert(0, \'.\'); import runpy; runpy.run_path(\'scripts/seed_optimization_e2e.py\', run_name=\'__main__\')"',
+    "python -c \"import sys; sys.path.insert(0, '.'); import runpy; runpy.run_path('scripts/seed_optimization_e2e.py', run_name='__main__')\"",
     {
       cwd: BACKEND_DIR,
       encoding: "utf-8",
@@ -84,9 +84,16 @@ test.describe("CareerOS Real Browser Audit #1", () => {
 
     // Open target seeded resume
     const resumeLink = page.locator(`a[href*="${seed.resume_id}"]`);
-    if (await resumeLink.first().isVisible().catch(() => false)) {
+    if (
+      await resumeLink
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       const cardText = await resumeLink.first().innerText();
-      const rawUuidMatch = cardText.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+      const rawUuidMatch = cardText.match(
+        /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
+      );
       expect(rawUuidMatch, "UI must NOT expose raw UUID as resume name").toBeNull();
       console.log("Verified: Resume entry does NOT expose raw UUID");
     }
@@ -129,7 +136,12 @@ test.describe("CareerOS Real Browser Audit #1", () => {
     const addJobBtn = page.getByRole("button", {
       name: /Add job description|Set Target Job|Change/i,
     });
-    if (await addJobBtn.first().isVisible().catch(() => false)) {
+    if (
+      await addJobBtn
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await addJobBtn.first().click();
       await page.waitForTimeout(1000);
 
@@ -231,7 +243,12 @@ test.describe("CareerOS Real Browser Audit #1", () => {
     const reanalyzeBtn = page.getByRole("button", {
       name: /Re-analyze|Run ATS Analysis|Analyze Again|Change/i,
     });
-    if (await reanalyzeBtn.first().isVisible().catch(() => false)) {
+    if (
+      await reanalyzeBtn
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await reanalyzeBtn.first().click();
       await page.waitForTimeout(1000);
       const submitAnalyze = page.getByRole("button", { name: "Analyze Resume" });
@@ -258,7 +275,12 @@ test.describe("CareerOS Real Browser Audit #1", () => {
     await page.waitForTimeout(5000);
 
     const liveResumeBtnReload = page.getByRole("button", { name: "Live Resume" });
-    if (await liveResumeBtnReload.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false)) {
+    if (
+      await liveResumeBtnReload
+        .waitFor({ state: "visible", timeout: 15000 })
+        .then(() => true)
+        .catch(() => false)
+    ) {
       await liveResumeBtnReload.click();
       await page.waitForTimeout(1000);
     }
@@ -279,7 +301,12 @@ test.describe("CareerOS Real Browser Audit #1", () => {
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(5000);
 
-    if (await liveResumeBtnReload.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false)) {
+    if (
+      await liveResumeBtnReload
+        .waitFor({ state: "visible", timeout: 15000 })
+        .then(() => true)
+        .catch(() => false)
+    ) {
       await liveResumeBtnReload.click();
       await page.waitForTimeout(1000);
     }
@@ -298,7 +325,12 @@ test.describe("CareerOS Real Browser Audit #1", () => {
     await page.waitForTimeout(5000);
 
     const liveResumeBtnMaster = page.getByRole("button", { name: "Live Resume" });
-    if (await liveResumeBtnMaster.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false)) {
+    if (
+      await liveResumeBtnMaster
+        .waitFor({ state: "visible", timeout: 15000 })
+        .then(() => true)
+        .catch(() => false)
+    ) {
       await liveResumeBtnMaster.click();
       await page.waitForTimeout(1000);
     }
@@ -314,7 +346,12 @@ test.describe("CareerOS Real Browser Audit #1", () => {
     await page.goto(derivedVersionUrl);
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(5000);
-    if (await liveResumeBtnReload.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false)) {
+    if (
+      await liveResumeBtnReload
+        .waitFor({ state: "visible", timeout: 15000 })
+        .then(() => true)
+        .catch(() => false)
+    ) {
       await liveResumeBtnReload.click();
       await page.waitForTimeout(1000);
     }
@@ -331,7 +368,12 @@ test.describe("CareerOS Real Browser Audit #1", () => {
     await page.goto(derivedVersionUrl);
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(5000);
-    if (await liveResumeBtnReload.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false)) {
+    if (
+      await liveResumeBtnReload
+        .waitFor({ state: "visible", timeout: 15000 })
+        .then(() => true)
+        .catch(() => false)
+    ) {
       await liveResumeBtnReload.click();
       await page.waitForTimeout(1000);
     }

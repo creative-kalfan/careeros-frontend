@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { useRouterState } from '@tanstack/react-router';
-import { pageVariants, fadeOnly } from '@/lib/motion';
+import type { ReactNode } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useRouterState } from "@tanstack/react-router";
+import { pageVariants, fadeOnly } from "@/lib/motion";
 
 export function PageTransition({ children }: { children: ReactNode }) {
   const key = useRouterState({ select: (s) => s.location.pathname });
@@ -16,7 +16,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
         initial="initial"
         animate="animate"
         exit="exit"
-        style={{ willChange: 'opacity, transform' }}
+        style={{ willChange: "opacity, transform" }}
       >
         {children}
       </motion.div>

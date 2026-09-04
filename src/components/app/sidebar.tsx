@@ -87,11 +87,17 @@ function Section({
                 >
                   <Link to={item.url} className="flex items-center gap-2.5">
                     {active && (
-                      <motion.span layoutId="sidebar-active" className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-r-full bg-primary" transition={{ type: 'spring', stiffness: 400, damping: 35 }} />
+                      <motion.span
+                        layoutId="sidebar-active"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-r-full bg-primary"
+                        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                      />
                     )}
                     <item.icon
                       className={`h-4 w-4 shrink-0 transition-transform ${
-                        active ? "text-primary" : "text-muted-foreground/70 group-hover:text-foreground"
+                        active
+                          ? "text-primary"
+                          : "text-muted-foreground/70 group-hover:text-foreground"
                       }`}
                     />
                     <span className="truncate">{item.title}</span>

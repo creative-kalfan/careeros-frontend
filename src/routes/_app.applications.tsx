@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from 'framer-motion';
-import { staggerContainer, staggerItem } from '@/lib/motion';
+import { motion } from "framer-motion";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 import {
   KanbanSquare,
   LayoutList,
@@ -413,11 +413,7 @@ function MissionControl() {
             >
               {filtered.map((a) => (
                 <motion.div key={a.id} variants={staggerItem}>
-                  <ApplicationCard
-                    app={a}
-                    active={a.id === active?.id}
-                    onSelect={setActiveId}
-                  />
+                  <ApplicationCard app={a} active={a.id === active?.id} onSelect={setActiveId} />
                 </motion.div>
               ))}
             </motion.div>

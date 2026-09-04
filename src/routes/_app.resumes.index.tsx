@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from 'framer-motion';
-import { staggerContainer, staggerItem, slideInRight } from '@/lib/motion';
+import { motion } from "framer-motion";
+import { staggerContainer, staggerItem, slideInRight } from "@/lib/motion";
 import {
   Target,
   FilePlus2,
@@ -67,8 +67,8 @@ function ResumesPage() {
                     Optimize my resume for a job
                   </div>
                   <div className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-                    Tailor a resume against a specific job description. Get ATS alignment, requirement
-                    tracking, and AI-powered suggestions.
+                    Tailor a resume against a specific job description. Get ATS alignment,
+                    requirement tracking, and AI-powered suggestions.
                   </div>
                 </div>
                 <div className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-semibold text-primary transition-all group-hover:gap-2">
@@ -162,11 +162,7 @@ function ResumesPage() {
                 variants={staggerItem}
                 whileHover={{ scale: 1.008, transition: { duration: 0.15 } }}
               >
-                <Link
-                  to="/resumes/$id"
-                  params={{ id: resume.id }}
-                  className="group block"
-                >
+                <Link to="/resumes/$id" params={{ id: resume.id }} className="group block">
                   <Card className="glass spatial-card spatial-card-hover rounded-xl border-border/80 p-4 transition-all hover:border-primary/40 bg-surface/60">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">

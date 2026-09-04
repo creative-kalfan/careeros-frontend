@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from 'framer-motion';
-import { staggerContainer, staggerItem } from '@/lib/motion';
+import { motion } from "framer-motion";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Sparkles, RefreshCw, ThumbsUp, X } from "lucide-react";
 import {
   useRecommendations,
@@ -209,9 +209,7 @@ function RecommendationsPage() {
               >
                 {recommendations.map((rec) => (
                   <motion.div key={rec.id} variants={staggerItem}>
-                    <Card
-                      className="glass spatial-card spatial-card-hover flex flex-col justify-between rounded-xl border border-border/80 p-4 shadow-xs bg-surface"
-                    >
+                    <Card className="glass spatial-card spatial-card-hover flex flex-col justify-between rounded-xl border border-border/80 p-4 shadow-xs bg-surface">
                       <div>
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
@@ -228,14 +226,20 @@ function RecommendationsPage() {
                           <span
                             className={`font-mono text-xl font-bold ${getScoreColor(rec.matchScore)}`}
                           >
-                            {Math.round(rec.matchScore <= 1 ? rec.matchScore * 100 : rec.matchScore)}%
+                            {Math.round(
+                              rec.matchScore <= 1 ? rec.matchScore * 100 : rec.matchScore,
+                            )}
+                            %
                           </span>
                           <span className="text-xs text-muted-foreground font-medium">match</span>
                         </div>
                         <div className="mt-2 flex gap-3 text-xs text-muted-foreground font-mono">
                           <span>
                             Skills:{" "}
-                            {Math.round(rec.skillMatch <= 1 ? rec.skillMatch * 100 : rec.skillMatch)}%
+                            {Math.round(
+                              rec.skillMatch <= 1 ? rec.skillMatch * 100 : rec.skillMatch,
+                            )}
+                            %
                           </span>
                           <span>
                             Keywords:{" "}
