@@ -87,6 +87,7 @@ export const API_ENDPOINTS = {
     DUPLICATE: (versionId: string) => `/api/resumes/versions/${versionId}/duplicate`,
     SET_MASTER: (versionId: string) => `/api/resumes/versions/${versionId}/set-master`,
     DIFF: (versionId: string) => `/api/resumes/versions/${versionId}/diff`,
+    SAVE_CONTENT: (versionId: string) => `/api/resumes/versions/${versionId}/save-content`,
   },
   EXPORT: {
     PDF: (resumeId: string, versionId: string) =>

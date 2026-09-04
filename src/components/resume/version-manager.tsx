@@ -45,11 +45,6 @@ export function VersionManager({
 }: VersionManagerProps) {
   const { toast } = useToast();
   const { data: versionsData } = useVersions(resumeId);
-  const createVersion = useCreateVersion(resumeId);
-  const updateVersion = useUpdateVersion(showRename?.id || "", resumeId);
-  const deleteVersion = useDeleteVersion(resumeId);
-  const duplicateVersion = useDuplicateVersion(resumeId);
-  const diffQuery = useVersionDiff(selectedVersionId || "");
 
   const [showCreate, setShowCreate] = useState(false);
   const [showRename, setShowRename] = useState<ResumeVersion | null>(null);
@@ -57,6 +52,12 @@ export function VersionManager({
   const [newVersionName, setNewVersionName] = useState("");
   const [newJobTitle, setNewJobTitle] = useState("");
   const [newJobDescription, setNewJobDescription] = useState("");
+
+  const createVersion = useCreateVersion(resumeId);
+  const updateVersion = useUpdateVersion(showRename?.id || "", resumeId);
+  const deleteVersion = useDeleteVersion(resumeId);
+  const duplicateVersion = useDuplicateVersion(resumeId);
+  const diffQuery = useVersionDiff(selectedVersionId || "");
 
   const versions = versionsData?.versions || [];
   const master = versions.find((v) => v.is_master);

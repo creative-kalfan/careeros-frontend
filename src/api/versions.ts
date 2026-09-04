@@ -95,4 +95,16 @@ export const versionsApi = {
     });
     return { version: res?.data ?? res?.version ?? res };
   },
+
+  saveContent: async (
+    versionId: string,
+    content: Record<string, unknown>,
+  ): Promise<{ version: ResumeVersion }> => {
+    const res = await request<any>({
+      method: "POST",
+      path: API_ENDPOINTS.VERSIONS.SAVE_CONTENT(versionId),
+      body: { content },
+    });
+    return { version: res?.data ?? res?.version ?? res };
+  },
 };

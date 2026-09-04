@@ -14,7 +14,7 @@ import {
 import { useToast } from "@/components/ui/use-tooltip";
 import { LeftPane } from "@/components/resume/left-pane";
 import { PreviewPane, A4DocumentSkeleton } from "@/components/resume/preview-pane";
-import { useResumeDetail, useUpdateResumeContent, resumeQueryKeys } from "@/hooks/api/useResumes";
+import { useResumeDetail, resumeQueryKeys } from "@/hooks/api/useResumes";
 import { useAnalyzeResume } from "@/hooks/api/useATS";
 import { getErrorMessage } from "@/utils/api-error";
 import { ATSAnalysisDialog } from "@/components/resume/ats-analysis-dialog";
@@ -46,6 +46,7 @@ import type { EvidenceLocationMap } from "@/lib/evidence-location";
 import type { ResumeProfile, ResumeData } from "@/types/resume";
 import type { OptimizationSuggestion } from "@/types/optimization";
 import { optimizationApi } from "@/api/optimization";
+import { versionsApi } from "@/api/versions";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,7 +94,6 @@ function ResumeWorkspace() {
   const { data: record, isLoading, isError, error } = useResumeDetail(id);
   const { data: versionsData } = useVersions(id);
   const queryClient = useQueryClient();
-  const updateMutation = useUpdateResumeContent();
   const analyzeResume = useAnalyzeResume();
 
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
@@ -406,18 +406,67 @@ function ResumeWorkspace() {
         toast.error("No resume content to save");
         return;
       }
-      await updateMutation.mutateAsync({ id, content: { profile: profileToSave } });
+      const content = { profile: profileToSave };
+      // Version-safe manual save: master is immutable, so derive first
+      // (mirrors handleApplySuggestion). The canonical save-content endpoint
+      // recompiles PDF/DOCX and only persists when the artifact exists.
+      const isEditingMaster = !activeVersionId || selectedVersionData?.version.is_master;
+      let targetVersionId = activeVersionId;
+      if (isEditingMaster) {
+        const newVersion = await createVersionMutation.mutateAsync({
+          version_name: `Manual Edit ${new Date().toLocaleDateString()}`,
+          parent_version_id: activeVersionId || undefined,
+          source: "manual",
+          content,
+        });
+        targetVersionId = newVersion.version.id;
+      }
+      if (!targetVersionId) {
+        toast.error("No version available for editing");
+        return;
+      }
+      let savedVersionId = targetVersionId;
+      try {
+        const saved = await versionsApi.saveContent(targetVersionId, content);
+        savedVersionId = saved.version.id;
+      } catch (err) {
+        // TRUTHFUL FAILURE: keep edits in the editor (still dirty) but never
+        // claim success when no document artifact was produced.
+        toast.error(
+          getErrorMessage(err) || "Failed to save resume - the document was not changed.",
+        );
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: versionQueryKeys.list(id) });
+      await queryClient.invalidateQueries({ queryKey: versionQueryKeys.get(savedVersionId) });
+      await queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
+      setSelectedVersionId(savedVersionId);
+      navigate({
+        search: (prev: ResumeStudioSearchParams) => ({ ...prev, versionId: savedVersionId }),
+        replace: true,
+      });
       setProfile(profileToSave);
       setIsDirty(false);
       toast.success("Resume saved successfully");
       setShowSaved(true);
       setTimeout(() => setShowSaved(false), 2000);
     } catch {
-      toast.error("Failed to save resume");
+      toast.error("Failed to save resume - the document was not changed.");
     } finally {
       setIsSaving(false);
     }
-  }, [id, resumeData, profile, record, updateMutation, toast]);
+  }, [
+    id,
+    resumeData,
+    profile,
+    record,
+    activeVersionId,
+    selectedVersionData,
+    createVersionMutation,
+    queryClient,
+    navigate,
+    toast,
+  ]);
 
   useKeyboardShortcut(
     { key: "s", meta: true, ignoreInInputs: false },
@@ -597,6 +646,9 @@ function ResumeWorkspace() {
         toast.info("Suggestion already applied");
         return;
       }
+      const prevResumeData = resumeData;
+      const prevProfile = profile;
+      const prevDirty = isDirty;
       const isEditingMaster = !activeVersionId || selectedVersionData?.version.is_master;
       let targetVersionId = activeVersionId;
 
@@ -780,12 +832,28 @@ function ResumeWorkspace() {
         }
         await queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
         toast.success("Suggestion applied to resume");
-      } catch {
-        toast.success("Suggestion applied to resume");
+      } catch (error) {
+        // TRUTHFUL FAILURE: never claim a suggestion was applied when the
+        // document operation failed. Revert the optimistic local state so the
+        // UI cannot show applied content that produced no real document change.
+        setResumeData(prevResumeData);
+        setProfile(prevProfile);
+        setIsDirty(prevDirty);
+        setLastAppliedSuggestionId(null);
+        setActiveSuggestions((prev) =>
+          prev && !prev.some((s) => s.id === suggestion.id) ? [suggestion, ...prev] : prev,
+        );
+        const applyMsg = error instanceof Error && error.message ? error.message : "";
+        toast.error(
+          applyMsg && applyMsg !== "An unexpected error occurred"
+            ? applyMsg
+            : "Failed to apply suggestion - the document was not changed.",
+        );
       }
     },
     [
       id,
+      isDirty,
       resumeData,
       profile,
       activeVersionId,
