@@ -170,13 +170,28 @@ export function PreviewPane({
     resume.storage_path ??
     null;
 
+  const isUploadedDocument = Boolean(
+    activeStoragePath ||
+    resume.original_filename ||
+    resume.source === "upload" ||
+    resume.source === "upload_parse" ||
+    resume.source === "pdf_edit" ||
+    selectedVersion?.source === "upload_parse" ||
+    selectedVersion?.source === "pdf_edit"
+  );
+
   // A resume backed by an uploaded file must NEVER silently fall back to a
   // synthetic resume. While the signed URL resolves we show a loading
   // skeleton; if resolution fails we show a real error with retry.
   const isAwaitingPdf = Boolean(
-    activeStoragePath && !originalPdfUrl && !originalPdfError && !templateSlug,
+    (activeStoragePath || (isUploadedDocument && !originalPdfError)) &&
+      !originalPdfUrl &&
+      !originalPdfError &&
+      !templateSlug,
   );
-  const isPdfFailed = Boolean(activeStoragePath && originalPdfError && !templateSlug);
+  const isPdfFailed = Boolean(
+    (activeStoragePath || isUploadedDocument) && originalPdfError && !templateSlug,
+  );
   const isCanvasMode = Boolean(activeStoragePath && originalPdfUrl && !templateSlug);
 
   const change = (dir: 1 | -1) => {
@@ -364,6 +379,32 @@ export function PreviewPane({
               onMutateBlock={onMutateBlock}
             />
           </SpatialDocumentStage>
+        ) : !templateSlug && isUploadedDocument ? (
+          <div className="flex min-h-full items-start justify-center p-6 sm:p-10">
+            <div
+              className="flex flex-col items-center gap-4 rounded-lg border border-border/60 bg-surface-elevated/40 px-8 py-10 text-center"
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: "top center",
+              }}
+              role="status"
+            >
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Synchronizing Resume Document
+                </p>
+                <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                  Compiling high-fidelity layout and verifying document geometry...
+                </p>
+              </div>
+              {onRetryOriginalPdf && (
+                <Button size="sm" variant="outline" onClick={onRetryOriginalPdf}>
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reload Document
+                </Button>
+              )}
+            </div>
+          </div>
         ) : (
           <SpatialDocumentStage>
             <div
