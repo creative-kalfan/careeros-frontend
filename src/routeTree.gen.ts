@@ -25,6 +25,7 @@ import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppOnboardingRouteImport } from './routes/_app.onboarding'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppJobsRouteImport } from './routes/_app.jobs'
+import { Route as AppInterviewPrepRouteImport } from './routes/_app.interview-prep'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCopilotRouteImport } from './routes/_app.copilot'
 import { Route as AppAtsHistoryRouteImport } from './routes/_app.ats-history'
@@ -35,6 +36,7 @@ import { Route as AppResumesTemplatesRouteImport } from './routes/_app.resumes.t
 import { Route as AppResumesSetupRouteImport } from './routes/_app.resumes.setup'
 import { Route as AppResumesIdRouteImport } from './routes/_app.resumes.$id'
 import { Route as AppOptimizerResumeIdRouteImport } from './routes/_app.optimizer.$resumeId'
+import { Route as AppInterviewPrepSessionIdRouteImport } from './routes/_app.interview-prep.$sessionId'
 
 const SentryTestRoute = SentryTestRouteImport.update({
   id: '/sentry-test',
@@ -114,6 +116,11 @@ const AppJobsRoute = AppJobsRouteImport.update({
   path: '/jobs',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInterviewPrepRoute = AppInterviewPrepRouteImport.update({
+  id: '/interview-prep',
+  path: '/interview-prep',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -164,6 +171,12 @@ const AppOptimizerResumeIdRoute = AppOptimizerResumeIdRouteImport.update({
   path: '/optimizer/$resumeId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInterviewPrepSessionIdRoute =
+  AppInterviewPrepSessionIdRouteImport.update({
+    id: '/$sessionId',
+    path: '/$sessionId',
+    getParentRoute: () => AppInterviewPrepRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -176,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/ats-history': typeof AppAtsHistoryRoute
   '/copilot': typeof AppCopilotRoute
   '/dashboard': typeof AppDashboardRoute
+  '/interview-prep': typeof AppInterviewPrepRouteWithChildren
   '/jobs': typeof AppJobsRoute
   '/notifications': typeof AppNotificationsRoute
   '/onboarding': typeof AppOnboardingRoute
@@ -185,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/interview-prep/$sessionId': typeof AppInterviewPrepSessionIdRoute
   '/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/resumes/$id': typeof AppResumesIdRoute
   '/resumes/setup': typeof AppResumesSetupRoute
@@ -202,6 +217,7 @@ export interface FileRoutesByTo {
   '/ats-history': typeof AppAtsHistoryRoute
   '/copilot': typeof AppCopilotRoute
   '/dashboard': typeof AppDashboardRoute
+  '/interview-prep': typeof AppInterviewPrepRouteWithChildren
   '/jobs': typeof AppJobsRoute
   '/notifications': typeof AppNotificationsRoute
   '/onboarding': typeof AppOnboardingRoute
@@ -210,6 +226,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/interview-prep/$sessionId': typeof AppInterviewPrepSessionIdRoute
   '/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/resumes/$id': typeof AppResumesIdRoute
   '/resumes/setup': typeof AppResumesSetupRoute
@@ -230,6 +247,7 @@ export interface FileRoutesById {
   '/_app/ats-history': typeof AppAtsHistoryRoute
   '/_app/copilot': typeof AppCopilotRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/interview-prep': typeof AppInterviewPrepRouteWithChildren
   '/_app/jobs': typeof AppJobsRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/onboarding': typeof AppOnboardingRoute
@@ -239,6 +257,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
+  '/_app/interview-prep/$sessionId': typeof AppInterviewPrepSessionIdRoute
   '/_app/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/_app/resumes/$id': typeof AppResumesIdRoute
   '/_app/resumes/setup': typeof AppResumesSetupRoute
@@ -258,6 +277,7 @@ export interface FileRouteTypes {
     | '/ats-history'
     | '/copilot'
     | '/dashboard'
+    | '/interview-prep'
     | '/jobs'
     | '/notifications'
     | '/onboarding'
@@ -267,6 +287,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/signup'
+    | '/interview-prep/$sessionId'
     | '/optimizer/$resumeId'
     | '/resumes/$id'
     | '/resumes/setup'
@@ -284,6 +305,7 @@ export interface FileRouteTypes {
     | '/ats-history'
     | '/copilot'
     | '/dashboard'
+    | '/interview-prep'
     | '/jobs'
     | '/notifications'
     | '/onboarding'
@@ -292,6 +314,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/signup'
+    | '/interview-prep/$sessionId'
     | '/optimizer/$resumeId'
     | '/resumes/$id'
     | '/resumes/setup'
@@ -311,6 +334,7 @@ export interface FileRouteTypes {
     | '/_app/ats-history'
     | '/_app/copilot'
     | '/_app/dashboard'
+    | '/_app/interview-prep'
     | '/_app/jobs'
     | '/_app/notifications'
     | '/_app/onboarding'
@@ -320,6 +344,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_auth/login'
     | '/_auth/signup'
+    | '/_app/interview-prep/$sessionId'
     | '/_app/optimizer/$resumeId'
     | '/_app/resumes/$id'
     | '/_app/resumes/setup'
@@ -451,6 +476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJobsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/interview-prep': {
+      id: '/_app/interview-prep'
+      path: '/interview-prep'
+      fullPath: '/interview-prep'
+      preLoaderRoute: typeof AppInterviewPrepRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
@@ -521,8 +553,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOptimizerResumeIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/interview-prep/$sessionId': {
+      id: '/_app/interview-prep/$sessionId'
+      path: '/$sessionId'
+      fullPath: '/interview-prep/$sessionId'
+      preLoaderRoute: typeof AppInterviewPrepSessionIdRouteImport
+      parentRoute: typeof AppInterviewPrepRoute
+    }
   }
 }
+
+interface AppInterviewPrepRouteChildren {
+  AppInterviewPrepSessionIdRoute: typeof AppInterviewPrepSessionIdRoute
+}
+
+const AppInterviewPrepRouteChildren: AppInterviewPrepRouteChildren = {
+  AppInterviewPrepSessionIdRoute: AppInterviewPrepSessionIdRoute,
+}
+
+const AppInterviewPrepRouteWithChildren =
+  AppInterviewPrepRoute._addFileChildren(AppInterviewPrepRouteChildren)
 
 interface AppResumesRouteChildren {
   AppResumesIdRoute: typeof AppResumesIdRoute
@@ -548,6 +598,7 @@ interface AppRouteChildren {
   AppAtsHistoryRoute: typeof AppAtsHistoryRoute
   AppCopilotRoute: typeof AppCopilotRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppInterviewPrepRoute: typeof AppInterviewPrepRouteWithChildren
   AppJobsRoute: typeof AppJobsRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
@@ -564,6 +615,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAtsHistoryRoute: AppAtsHistoryRoute,
   AppCopilotRoute: AppCopilotRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppInterviewPrepRoute: AppInterviewPrepRouteWithChildren,
   AppJobsRoute: AppJobsRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppOnboardingRoute: AppOnboardingRoute,

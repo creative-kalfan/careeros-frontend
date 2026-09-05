@@ -105,6 +105,15 @@ export const API_ENDPOINTS = {
     DOCX: (resumeId: string, versionId: string) =>
       `/api/export/resumes/${resumeId}/versions/${versionId}/docx`,
   },
+  INTERVIEW_PREP: {
+    GENERATE: "/api/interview-prep/generate",
+    SESSIONS: "/api/interview-prep/sessions",
+    SESSION: (id: string) => `/api/interview-prep/sessions/${id}`,
+    REGENERATE: (id: string) => `/api/interview-prep/sessions/${id}/regenerate`,
+    QUESTION: (id: string) => `/api/interview-prep/questions/${id}`,
+    BY_APPLICATION: (applicationId: string) =>
+      `/api/interview-prep/by-application/${applicationId}`,
+  },
 } as const;
 
 export const HTTP_STATUS = {

@@ -61,3 +61,12 @@ export {
   useApplyApprovedImprovements,
   improvementQueryKeys,
 } from "./useImprovement";
+
+export {
+  useInterviewPrepSessions,
+  useInterviewPrepSession,
+  useGenerateInterviewPrep,
+  useRegenerateInterviewPrep,
+  useUpdatePrepQuestion,
+  interviewPrepQueryKeys,
+} from "./useInterviewPrep";

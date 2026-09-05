@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion";
@@ -116,6 +116,7 @@ const filterIcon = {
 } as const;
 
 function MissionControl() {
+  const navigate = useNavigate();
   const [filterId, setFilterId] = useState<string>("all");
   const [view, setView] = useState<ViewMode>("kanban");
   const [query, setQuery] = useState("");
@@ -734,6 +735,12 @@ function MissionControl() {
                 <InterviewRounds
                   rounds={active.interviews}
                   onDelete={(id) => handleDeleteChild(active.id, "interviews", id)}
+                  onPrepare={(interviewId) =>
+                    navigate({
+                      to: "/interview-prep",
+                      search: { applicationId: active.id, interviewId },
+                    })
+                  }
                 />
                 <div className="mt-4 border-t border-border/60 pt-3">
                   <div className="mb-2 flex items-center justify-between">
@@ -859,6 +866,14 @@ function MissionControl() {
                 onDelete={(id) => {
                   const target = applications.find((a) => a.interviews.some((iv) => iv.id === id));
                   if (target) handleDeleteChild(target.id, "interviews", id);
+                }}
+                onPrepare={(id) => {
+                  const target = applications.find((a) => a.interviews.some((iv) => iv.id === id));
+                  if (target)
+                    navigate({
+                      to: "/interview-prep",
+                      search: { applicationId: target.id, interviewId: id },
+                    });
                 }}
               />
             </div>

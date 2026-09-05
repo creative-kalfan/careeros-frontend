@@ -235,9 +235,11 @@ const roundStatus = {
 export function InterviewRounds({
   rounds,
   onDelete,
+  onPrepare,
 }: {
   rounds: ApplicationUI["interviews"];
   onDelete?: (id: string) => void;
+  onPrepare?: (id: string) => void;
 }) {
   if (rounds.length === 0)
     return <p className="text-xs text-muted-foreground">No interview rounds yet.</p>;
@@ -272,6 +274,16 @@ export function InterviewRounds({
                 <p className="mt-0.5 text-xs text-muted-foreground">with {r.interviewer}</p>
               )}
               {r.notes && <p className="mt-1 text-xs text-foreground/80">{r.notes}</p>}
+              {onPrepare && (
+                <button
+                  type="button"
+                  onClick={() => onPrepare(r.id)}
+                  className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary ring-1 ring-primary/25 transition hover:bg-primary/15"
+                  title="Generate interview preparation for this round"
+                >
+                  <Sparkles className="h-3 w-3" /> Prepare for Interview
+                </button>
+              )}
             </div>
           </li>
         );

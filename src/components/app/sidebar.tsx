@@ -7,6 +7,7 @@ import {
   Briefcase,
   Sparkles,
   KanbanSquare,
+  Mic,
   Bell,
   User,
   Settings,
@@ -43,6 +44,7 @@ const intelligence: NavItem[] = [
   { title: "Job Intelligence", url: "/jobs", icon: Briefcase },
   { title: "Recommendations", url: "/recommendations", icon: Sparkles },
   { title: "Mission Control", url: "/applications", icon: KanbanSquare },
+  { title: "Interview Prep", url: "/interview-prep", icon: Mic },
   { title: "AI Copilot", url: "/copilot", icon: Sparkles, badge: "AI" },
 ];
 
