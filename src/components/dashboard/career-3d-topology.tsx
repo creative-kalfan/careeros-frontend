@@ -399,16 +399,18 @@ export function Career3DTopology({
     intersectionObserver.observe(container);
 
     let animationFrameId: number;
-    const lastTime = performance.now();
+    let lastTime = performance.now();
     let frameCount = 0;
     let lastFpsUpdate = performance.now();
-    const clock = new THREE.Clock();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       if (!isVisible) return;
 
       const now = performance.now();
+      const delta = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
       frameCount++;
       if (now - lastFpsUpdate >= 800) {
         const calculatedFps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
@@ -416,8 +418,6 @@ export function Career3DTopology({
         frameCount = 0;
         lastFpsUpdate = now;
       }
-
-      const delta = clock.getDelta();
 
       if (!isDragging) {
         constellationGroup.rotation.y += delta * 0.2;

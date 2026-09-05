@@ -290,14 +290,17 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
     observer.observe(container);
 
     let animationFrameId: number;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
+    let lastTime = performance.now();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       if (!isVisible || !scene || !camera || !renderer) return;
 
-      const delta = clock.getDelta();
-      const elapsed = clock.getElapsedTime();
+      const now = performance.now();
+      const delta = Math.min((now - lastTime) / 1000, 0.1);
+      const elapsed = (now - startTime) / 1000;
+      lastTime = now;
 
       if (!prefersReducedMotion) {
         currentCameraPos.lerp(targetCameraPos, 0.05);

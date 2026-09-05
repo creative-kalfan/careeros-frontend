@@ -701,6 +701,25 @@ export function LeftPane({
     "idle" | "analyzing" | "synthesizing" | "compiling"
   >("idle");
 
+  const tailorMutation = useMutation({
+    mutationFn: (data: {
+      resumeId: string;
+      versionId?: string;
+      jobDescription: string;
+      jobTitle?: string;
+      company?: string;
+    }) => optimizationApi.tailor(data),
+    onSuccess: (res) => {
+      if (res.success) {
+        setTailorResult(res);
+        toast.success(res.message || "Whole resume tailored successfully!");
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err instanceof Error ? err.message : "Whole resume tailoring failed");
+    },
+  });
+
   useEffect(() => {
     let t1: NodeJS.Timeout;
     let t2: NodeJS.Timeout;
@@ -720,25 +739,6 @@ export function LeftPane({
       clearTimeout(t2);
     };
   }, [tailorMutation.isPending]);
-
-  const tailorMutation = useMutation({
-    mutationFn: (data: {
-      resumeId: string;
-      versionId?: string;
-      jobDescription: string;
-      jobTitle?: string;
-      company?: string;
-    }) => optimizationApi.tailor(data),
-    onSuccess: (res) => {
-      if (res.success) {
-        setTailorResult(res);
-        toast.success(res.message || "Whole resume tailored successfully!");
-      }
-    },
-    onError: (err: any) => {
-      toast.error(err instanceof Error ? err.message : "Whole resume tailoring failed");
-    },
-  });
 
   const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
     queryKey: ["optimization", "sessions", currentId],
