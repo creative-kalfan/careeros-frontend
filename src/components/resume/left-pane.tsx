@@ -13,6 +13,10 @@ import {
   Loader2,
   GripVertical,
   Plus,
+  Wand2,
+  TrendingUp,
+  ArrowRight,
+  Check,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,13 +32,93 @@ import {
   useGenerateSkillsOptimization,
   useGenerateSummaryOptimization,
 } from "@/hooks/api/useOptimization";
-import type { OptimizationSuggestion } from "@/types/optimization";
+import type {
+  OptimizationSuggestion,
+  TailoringPlanItem,
+  TailorResumeResponse,
+  ATSScoreComparison,
+} from "@/types/optimization";
 import type { AtsAnalysisResult } from "@/api/ats";
 import { buildAtsRequirementViews, atsRequirementDomId } from "@/lib/ats-evidence-view";
 import { interpretAtsScore, summarizeRequirementCoverage } from "@/lib/ats-evidence-view";
 import { partitionRecommendations } from "@/lib/ats-evidence-view";
 import type { EvidenceLocationMap } from "@/lib/evidence-location";
 import { AtsEvidenceList } from "@/components/resume/ats-evidence-list";
+
+function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
+  const actionColor =
+    planItem.action === "REWRITE"
+      ? "text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10"
+      : planItem.action === "EMPHASIZE"
+        ? "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10"
+        : planItem.action === "ALIGN"
+          ? "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+          : "text-muted-foreground border-border/50 bg-muted/10";
+
+  return (
+    <div className="space-y-2 p-3 text-left rounded-lg border border-border/50 bg-surface/40 shadow-2xs">
+      <div className="flex items-center justify-between gap-2">
+        <Badge
+          variant="outline"
+          className="rounded-md border-border/60 bg-background/60 px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wider text-primary"
+        >
+          {planItem.section}
+        </Badge>
+        <Badge variant="outline" className={`rounded text-[9.5px] font-semibold uppercase ${actionColor}`}>
+          {planItem.action}
+        </Badge>
+      </div>
+
+      {planItem.reasoning && (
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          {planItem.reasoning}
+        </p>
+      )}
+
+      {planItem.currentText && (
+        <div className="space-y-0.5">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Current
+          </span>
+          <div className="text-xs text-muted-foreground/85 line-through decoration-destructive/60 rounded bg-destructive/5 border border-destructive/15 p-2 leading-relaxed">
+            {planItem.currentText}
+          </div>
+        </div>
+      )}
+
+      {planItem.suggestedText && (
+        <div className="space-y-0.5">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            Tailored Text
+          </span>
+          <div className="text-xs font-medium text-foreground rounded bg-emerald-500/10 border border-emerald-500/20 p-2 leading-relaxed">
+            {planItem.suggestedText}
+          </div>
+        </div>
+      )}
+
+      {planItem.keywordsAddressed && planItem.keywordsAddressed.length > 0 && (
+        <div className="space-y-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Keywords Addressed
+          </span>
+          <div className="flex flex-wrap gap-1">
+            {planItem.keywordsAddressed.map((kw) => (
+              <Badge
+                key={kw}
+                variant="secondary"
+                className="rounded text-[9.5px] font-normal px-1.5 py-0 border border-border/60"
+              >
+                {kw}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function PaneSection({
   icon: Icon,
@@ -566,6 +650,8 @@ export function LeftPane({
   activeSuggestions,
   activeSessionId,
   onAddSkill,
+  onApplyTailoring,
+  isApplyingTailoring,
 }: {
   currentId: string;
   currentVersionId: string | null;
@@ -589,10 +675,39 @@ export function LeftPane({
   activeSuggestions?: OptimizationSuggestion[] | null;
   activeSessionId?: string | null;
   onAddSkill?: (skill: string) => void;
+  onApplyTailoring?: (
+    tailoredProfile: Record<string, unknown>,
+    plan: TailoringPlanItem[],
+    jobTitle?: string,
+    company?: string,
+    jobDescription?: string,
+  ) => Promise<void>;
+  isApplyingTailoring?: boolean;
 }) {
   const { data: versionsData, isLoading: versionsLoading } = useVersions(currentId);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const [tailorResult, setTailorResult] = useState<TailorResumeResponse | null>(null);
+
+  const tailorMutation = useMutation({
+    mutationFn: (data: {
+      resumeId: string;
+      versionId?: string;
+      jobDescription: string;
+      jobTitle?: string;
+      company?: string;
+    }) => optimizationApi.tailor(data),
+    onSuccess: (res) => {
+      if (res.success) {
+        setTailorResult(res);
+        toast.success(res.message || "Whole resume tailored successfully!");
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err instanceof Error ? err.message : "Whole resume tailoring failed");
+    },
+  });
 
   const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
     queryKey: ["optimization", "sessions", currentId],
@@ -736,7 +851,153 @@ export function LeftPane({
         )}
 
         {hasJobContext && (
-          <div className="space-y-2">
+          <div className="space-y-3">
+            {/* Whole Resume Tailoring Section */}
+            <div className="space-y-2.5 rounded-xl border border-primary/20 bg-primary/[0.03] p-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Wand2 className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/90">
+                    Whole Resume Tailoring
+                  </span>
+                </div>
+                {tailorResult && (
+                  <Badge variant="outline" className="rounded-full border-emerald-500/30 bg-emerald-500/10 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                    +{Math.round(tailorResult.scoreComparison.delta)}% ATS Projected
+                  </Badge>
+                )}
+              </div>
+
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                Synthesizes a cohesive, targeted resume summary, prioritized skills, and refined experience bullets aligned with the job.
+              </p>
+
+              <Button
+                size="sm"
+                className="w-full h-8 rounded-lg text-xs font-semibold shadow-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => {
+                  if (!targetJobDescription?.trim()) {
+                    toast.error("Job description is required for whole resume tailoring");
+                    return;
+                  }
+                  tailorMutation.mutate({
+                    resumeId: currentId,
+                    versionId: currentVersionId || undefined,
+                    jobDescription: targetJobDescription,
+                    jobTitle: targetJobTitle || undefined,
+                    company: targetCompany || undefined,
+                  });
+                }}
+                disabled={tailorMutation.isPending || isApplyingTailoring}
+              >
+                {tailorMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Tailoring Entire Resume...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-1.5 h-3.5 w-3.5" />
+                    {tailorResult ? "Re-tailor Entire Resume" : "Tailor Entire Resume"}
+                  </>
+                )}
+              </Button>
+
+              {tailorResult && (
+                <div className="space-y-3 pt-1">
+                  {/* ATS Score Comparison Badge */}
+                  <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-background/80 p-2.5">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Projected ATS Score
+                        </div>
+                        <div className="flex items-center gap-1.5 font-mono text-sm font-bold text-foreground">
+                          <span>{Math.round(tailorResult.scoreComparison.baselineScore)}%</span>
+                          <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-emerald-600 dark:text-emerald-400">
+                            {Math.round(tailorResult.scoreComparison.tailoredScore)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {tailorResult.scoreComparison.delta >= 0 && (
+                      <Badge className="rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10.5px] font-bold">
+                        +{Math.round(tailorResult.scoreComparison.delta)}% Match
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="text-[10.5px] text-muted-foreground px-0.5 flex justify-between">
+                    <span>
+                      Keywords Matched: <strong className="text-foreground">{tailorResult.scoreComparison.matchedKeywordsCount}</strong>
+                    </span>
+                    <span>
+                      Missing: <strong className="text-foreground">{tailorResult.scoreComparison.missingKeywordsCount}</strong>
+                    </span>
+                  </div>
+
+                  {/* Tailoring Plan Preview */}
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
+                      <span>Tailoring Plan Actions</span>
+                      <span className="font-mono text-[9px] text-muted-foreground">
+                        {tailorResult.plan.length}
+                      </span>
+                    </div>
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                      {tailorResult.plan.map((item, idx) => (
+                        <TailoringPlanCard key={`${item.section}-${idx}`} planItem={item} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Apply & Compile CTA */}
+                  <div className="flex flex-col gap-1.5 pt-1">
+                    <Button
+                      size="sm"
+                      className="h-8 w-full rounded-md text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+                      onClick={async () => {
+                        if (!onApplyTailoring) return;
+                        await onApplyTailoring(
+                          tailorResult.tailoredProfile,
+                          tailorResult.plan,
+                          targetJobTitle || undefined,
+                          targetCompany || undefined,
+                          targetJobDescription || undefined,
+                        );
+                        setTailorResult(null);
+                      }}
+                      disabled={isApplyingTailoring}
+                    >
+                      {isApplyingTailoring ? (
+                        <>
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          Compiling PDF & Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="mr-1.5 h-3.5 w-3.5" />
+                          Apply Tailoring & Save Version
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-full text-[10.5px] text-muted-foreground hover:text-foreground"
+                      onClick={() => setTailorResult(null)}
+                      disabled={isApplyingTailoring}
+                    >
+                      Dismiss Preview
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Granular Section Optimization */}
             {onRunOptimization && (
               <Button
                 size="sm"

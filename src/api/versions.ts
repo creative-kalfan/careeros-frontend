@@ -18,6 +18,18 @@ export type ApplyVersionOperationRequest = {
   child_text?: string;
 };
 
+export type ApplyTailoringRequest = {
+  parent_version_id?: string | null;
+  version_name?: string | null;
+  tailored_profile: Record<string, unknown>;
+  job_description?: string | null;
+  job_title?: string | null;
+  company?: string | null;
+  template?: string | null;
+  sections_config?: Record<string, unknown> | null;
+};
+
+
 export const versionsApi = {
   list: async (resumeId: string): Promise<{ versions: ResumeVersion[] }> => {
     const res = await request<any>({ method: "GET", path: API_ENDPOINTS.VERSIONS.LIST(resumeId) });
@@ -107,4 +119,17 @@ export const versionsApi = {
     });
     return { version: res?.data ?? res?.version ?? res };
   },
+
+  applyTailoring: async (
+    resumeId: string,
+    data: ApplyTailoringRequest,
+  ): Promise<{ version: ResumeVersion }> => {
+    const res = await request<any>({
+      method: "POST",
+      path: `/api/resumes/${resumeId}/versions/apply-tailoring`,
+      body: data,
+    });
+    return { version: res?.data ?? res?.version ?? res };
+  },
 };
+

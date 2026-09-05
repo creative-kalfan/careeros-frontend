@@ -884,6 +884,78 @@ function ResumeWorkspace() {
     [handleApplySuggestion, activeSessionId],
   );
 
+  const [isApplyingTailoring, setIsApplyingTailoring] = useState(false);
+
+  const handleApplyTailoring = useCallback(
+    async (
+      tailoredProfile: Record<string, unknown>,
+      _plan: any[],
+      jobTitleVal?: string,
+      companyVal?: string,
+      jdVal?: string,
+    ) => {
+      if (!id) return;
+      setIsApplyingTailoring(true);
+      try {
+        const vName = jobTitleVal
+          ? `${jobTitleVal} (${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })})`
+          : `Tailored Version (${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })})`;
+
+        const res = await versionsApi.applyTailoring(id, {
+          parent_version_id: activeVersionId || undefined,
+          version_name: vName,
+          tailored_profile: tailoredProfile,
+          job_title: jobTitleVal || jobTitle || undefined,
+          company: companyVal || company || undefined,
+          job_description: jdVal || jobDescription || undefined,
+        });
+
+        if (res?.version) {
+          await queryClient.invalidateQueries({ queryKey: versionQueryKeys.list(id) });
+          await queryClient.invalidateQueries({ queryKey: versionQueryKeys.get(res.version.id) });
+          await queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
+
+          setSelectedVersionId(res.version.id);
+          navigate({
+            search: (prev: ResumeStudioSearchParams) => ({ ...prev, versionId: res.version.id }),
+            replace: true,
+          });
+
+          // Sync local state
+          if (tailoredProfile) {
+            const rawProfile = (tailoredProfile as unknown) as ResumeProfile;
+            setProfile(rawProfile);
+            setResumeData({
+              ...profileToResumeData(rawProfile),
+              id: res.version.id,
+              name: res.version.version_name,
+              updatedAt: new Date(res.version.updated_at).toLocaleString(),
+              atsScore: res.version.last_ats_score || atsScore || 0,
+            });
+          }
+
+          toast.success("Tailored resume compiled and new version created!");
+        }
+      } catch (err) {
+        toast.error(getErrorMessage(err) || "Failed to apply tailored resume");
+      } finally {
+        setIsApplyingTailoring(false);
+      }
+    },
+    [
+      id,
+      activeVersionId,
+      jobTitle,
+      company,
+      jobDescription,
+      queryClient,
+      navigate,
+      atsScore,
+      toast,
+    ],
+  );
+
+
   const hasAnalysis = atsScore !== null && atsAnalysis !== null;
 
   // ATS issues that can be geometrically located on the original PDF: partial
@@ -1036,6 +1108,8 @@ function ResumeWorkspace() {
             activeSuggestions={activeSuggestions}
             activeSessionId={activeSessionId}
             onAddSkill={handleAddSkill}
+            onApplyTailoring={handleApplyTailoring}
+            isApplyingTailoring={isApplyingTailoring}
           />
         </div>
         <div

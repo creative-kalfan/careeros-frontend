@@ -127,3 +127,39 @@ export type ReanalyzeResponse = {
 
 export type OptimizationView =
   "all" | "summary" | "experience" | "projects" | "skills" | "accepted" | "rejected";
+
+export type TailoringPlanItem = {
+  section: string;
+  action: "KEEP" | "REWRITE" | "EMPHASIZE" | "ALIGN" | string;
+  targetId?: string | null;
+  currentText?: string | null;
+  suggestedText?: string | null;
+  reasoning: string;
+  keywordsAddressed: string[];
+};
+
+export type ATSScoreComparison = {
+  baselineScore: number;
+  tailoredScore: number;
+  delta: number;
+  matchedKeywordsCount: number;
+  missingKeywordsCount: number;
+};
+
+export type TailorResumeRequest = {
+  resumeId?: string;
+  versionId?: string;
+  jobDescription: string;
+  jobTitle?: string;
+  company?: string;
+  content?: Record<string, unknown>;
+};
+
+export type TailorResumeResponse = {
+  success: boolean;
+  plan: TailoringPlanItem[];
+  tailoredProfile: Record<string, unknown>;
+  scoreComparison: ATSScoreComparison;
+  message: string;
+};
+

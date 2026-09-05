@@ -11,6 +11,8 @@ import type {
   GenerateSkillsOptimizationResponse,
   GenerateSummaryOptimizationResponse,
   GenerateExperienceBulletOptimizationResponse,
+  TailorResumeRequest,
+  TailorResumeResponse,
 } from "../types/optimization";
 
 // Backend returns snake_case; frontend expects camelCase. Map once here.
@@ -115,6 +117,40 @@ function mapGenerateResponse(raw: Record<string, unknown>): {
     ),
     message: String(raw.message ?? ""),
     evidenceIssues: Array.isArray(raw.evidence_issues) ? (raw.evidence_issues as string[]) : [],
+  };
+}
+
+function mapTailorResponse(raw: Record<string, unknown>): TailorResumeResponse {
+  const rawPlan = Array.isArray(raw.plan) ? raw.plan : [];
+  const rawScore = (raw.score_comparison || raw.scoreComparison || {}) as Record<string, unknown>;
+  return {
+    success: Boolean(raw.success),
+    plan: rawPlan.map((p: any) => ({
+      section: String(p.section ?? ""),
+      action: String(p.action ?? "ALIGN"),
+      targetId: p.target_id ?? p.targetId ?? null,
+      currentText: p.current_text ?? p.currentText ?? null,
+      suggestedText: p.suggested_text ?? p.suggestedText ?? null,
+      reasoning: String(p.reasoning ?? ""),
+      keywordsAddressed: Array.isArray(p.keywords_addressed)
+        ? p.keywords_addressed
+        : Array.isArray(p.keywordsAddressed)
+          ? p.keywordsAddressed
+          : [],
+    })),
+    tailoredProfile: (raw.tailored_profile ?? raw.tailoredProfile ?? {}) as Record<string, unknown>,
+    scoreComparison: {
+      baselineScore: Number(rawScore.baseline_score ?? rawScore.baselineScore ?? 0),
+      tailoredScore: Number(rawScore.tailored_score ?? rawScore.tailoredScore ?? 0),
+      delta: Number(rawScore.delta ?? 0),
+      matchedKeywordsCount: Number(
+        rawScore.matched_keywords_count ?? rawScore.matchedKeywordsCount ?? 0,
+      ),
+      missingKeywordsCount: Number(
+        rawScore.missing_keywords_count ?? rawScore.missingKeywordsCount ?? 0,
+      ),
+    },
+    message: String(raw.message ?? ""),
   };
 }
 
@@ -280,4 +316,23 @@ export const optimizationApi = {
       message: String(raw.message ?? ""),
     } as ReanalyzeResponse;
   },
+
+  tailor: async (data: TailorResumeRequest): Promise<TailorResumeResponse> => {
+    const raw = await request<Record<string, unknown>>({
+      method: "POST",
+      path: "/api/optimization/tailor",
+      body: data,
+    });
+    return mapTailorResponse(raw);
+  },
+
+  tailorWholeResume: async (data: TailorResumeRequest): Promise<TailorResumeResponse> => {
+    const raw = await request<Record<string, unknown>>({
+      method: "POST",
+      path: "/api/optimization/tailor",
+      body: data,
+    });
+    return mapTailorResponse(raw);
+  },
 };
+
