@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import {
@@ -700,6 +700,8 @@ export function LeftPane({
   const [tailoringStep, setTailoringStep] = useState<
     "idle" | "analyzing" | "synthesizing" | "compiling"
   >("idle");
+  const tailoredContextsRef = useRef(new Set<string>());
+  const appliedContextsRef = useRef(new Set<string>());
 
   const tailorMutation = useMutation({
     mutationFn: (data: {
@@ -816,6 +818,69 @@ export function LeftPane({
   }, [isGeneratingOptimization, effectiveSuggestions.length]);
 
   const hasJobContext = Boolean(targetJobTitle && targetJobDescription?.trim());
+  const tailoringContextKey = `${currentId}|${targetJobTitle?.trim() || ""}|${targetCompany?.trim() || ""}|${targetJobDescription?.trim() || ""}`;
+
+  // Job-targeted Studio opens are autonomous: reuse an existing derived
+  // artifact, otherwise generate once and immediately compile it. The context
+  // key deliberately excludes the active version to prevent derived-version
+  // recursion after the successful switch.
+  useEffect(() => {
+    if (!hasJobContext || tailorMutation.isPending || tailorResult || isApplyingTailoring) return;
+    const existing = versions.find(
+      (version) =>
+        !version.is_master &&
+        version.target_job_title === targetJobTitle &&
+        version.target_company === targetCompany &&
+        version.job_description === targetJobDescription,
+    );
+    if (existing) {
+      if (existing.id !== currentVersionId) onSelectVersion?.(existing.id);
+      tailoredContextsRef.current.add(tailoringContextKey);
+      return;
+    }
+    if (tailoredContextsRef.current.has(tailoringContextKey)) return;
+    tailoredContextsRef.current.add(tailoringContextKey);
+    tailorMutation.mutate({
+      resumeId: currentId,
+      versionId: currentVersionId || undefined,
+      jobDescription: targetJobDescription!,
+      jobTitle: targetJobTitle || undefined,
+      company: targetCompany || undefined,
+    });
+  }, [
+    hasJobContext,
+    tailorMutation,
+    tailorResult,
+    isApplyingTailoring,
+    versions,
+    currentVersionId,
+    currentId,
+    targetJobTitle,
+    targetCompany,
+    targetJobDescription,
+    tailoringContextKey,
+    onSelectVersion,
+  ]);
+
+  useEffect(() => {
+    if (!tailorResult || isApplyingTailoring || appliedContextsRef.current.has(tailoringContextKey)) return;
+    appliedContextsRef.current.add(tailoringContextKey);
+    void onApplyTailoring?.(
+      tailorResult.tailoredProfile,
+      tailorResult.plan,
+      targetJobTitle || undefined,
+      targetCompany || undefined,
+      targetJobDescription || undefined,
+    );
+  }, [
+    tailorResult,
+    isApplyingTailoring,
+    tailoringContextKey,
+    onApplyTailoring,
+    targetJobTitle,
+    targetCompany,
+    targetJobDescription,
+  ]);
 
   useEffect(() => {
     if (!selectedAtsIssue) return;
@@ -889,7 +954,7 @@ export function LeftPane({
                 <div className="flex items-center gap-1.5">
                   <Wand2 className="h-3.5 w-3.5 text-primary" />
                   <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/90">
-                    Whole Resume Tailoring
+                    Executive Diagnostic Audit
                   </span>
                 </div>
                 {tailorResult && (
@@ -900,42 +965,18 @@ export function LeftPane({
               </div>
 
               <p className="text-[11px] leading-relaxed text-muted-foreground">
-                Synthesizes a cohesive, targeted resume summary, prioritized skills, and refined experience bullets aligned with the job.
+                Verified evidence is being aligned and compiled automatically for this target.
               </p>
 
-              <Button
-                size="sm"
-                className="w-full h-8 rounded-lg text-xs font-semibold shadow-xs bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={() => {
-                  if (!targetJobDescription?.trim()) {
-                    toast.error("Job description is required for whole resume tailoring");
-                    return;
-                  }
-                  tailorMutation.mutate({
-                    resumeId: currentId,
-                    versionId: currentVersionId || undefined,
-                    jobDescription: targetJobDescription,
-                    jobTitle: targetJobTitle || undefined,
-                    company: targetCompany || undefined,
-                  });
-                }}
-                disabled={tailorMutation.isPending || isApplyingTailoring}
-              >
-                {tailorMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                    {tailoringStep === "analyzing" && "Analyzing Job Requirements..."}
-                    {tailoringStep === "synthesizing" && "Synthesizing Evidence..."}
-                    {tailoringStep === "compiling" && "Compiling ATS Artifact..."}
-                    {tailoringStep === "idle" && "Tailoring Entire Resume..."}
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="mr-1.5 h-3.5 w-3.5" />
-                    {tailorResult ? "Re-tailor Entire Resume" : "Tailor Entire Resume"}
-                  </>
-                )}
-              </Button>
+              {(tailorMutation.isPending || isApplyingTailoring) && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-background/80 p-2.5 text-[11px] font-medium text-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                  {tailoringStep === "analyzing" && "Analyzing JD requirements…"}
+                  {tailoringStep === "synthesizing" && "Reframing candidate evidence…"}
+                  {(tailoringStep === "compiling" || isApplyingTailoring) && "Compiling executive artifact…"}
+                  {tailoringStep === "idle" && "Preparing tailored artifact…"}
+                </div>
+              )}
 
               {tailorResult && (
                 <div className="space-y-3 pt-1">
@@ -975,7 +1016,7 @@ export function LeftPane({
                   {/* Tailoring Plan Preview */}
                   <div className="space-y-2">
                     <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
-                      <span>Tailoring Plan Actions</span>
+                      <span>Tailoring Audit</span>
                       <span className="font-mono text-[9px] text-muted-foreground">
                         {tailorResult.plan.length}
                       </span>
@@ -987,46 +1028,9 @@ export function LeftPane({
                     </div>
                   </div>
 
-                  {/* Apply & Compile CTA */}
-                  <div className="flex flex-col gap-1.5 pt-1">
-                    <Button
-                      size="sm"
-                      className="h-8 w-full rounded-md text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
-                      onClick={async () => {
-                        if (!onApplyTailoring) return;
-                        await onApplyTailoring(
-                          tailorResult.tailoredProfile,
-                          tailorResult.plan,
-                          targetJobTitle || undefined,
-                          targetCompany || undefined,
-                          targetJobDescription || undefined,
-                        );
-                        setTailorResult(null);
-                      }}
-                      disabled={isApplyingTailoring}
-                    >
-                      {isApplyingTailoring ? (
-                        <>
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                          Compiling PDF & Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Check className="mr-1.5 h-3.5 w-3.5" />
-                          Apply Tailoring & Save Version
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 w-full text-[10.5px] text-muted-foreground hover:text-foreground"
-                      onClick={() => setTailorResult(null)}
-                      disabled={isApplyingTailoring}
-                    >
-                      Dismiss Preview
-                    </Button>
-                  </div>
+                  <Badge className="w-full justify-center rounded-md border border-emerald-500/30 bg-emerald-500/10 py-1.5 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-300">
+                    <Check className="mr-1.5 h-3.5 w-3.5" /> Verified Candidate Facts Only
+                  </Badge>
                 </div>
               )}
             </div>

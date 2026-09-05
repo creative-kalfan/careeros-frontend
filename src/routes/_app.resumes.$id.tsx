@@ -971,6 +971,28 @@ function ResumeWorkspace() {
     return [...set];
   }, [atsAnalysis]);
 
+  const downloadArtifact = useCallback(
+    async (format: "pdf" | "docx") => {
+      const versionId = activeVersionId || masterVersion?.id;
+      if (!versionId) return;
+      try {
+        const blob = await requestBlob({
+          method: "GET",
+          path: `/api/export/resumes/${id}/versions/${versionId}/${format}`,
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${(selectedVersion?.version_name || record?.title || "resume").replace(/\s+/g, "_")}.${format}`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      } catch {
+        toast.error(`Unable to download ${format.toUpperCase()}`);
+      }
+    },
+    [activeVersionId, masterVersion?.id, id, selectedVersion?.version_name, record?.title, toast],
+  );
+
   return (
     <div className="font-sans antialiased flex h-screen flex-col bg-background">
       <header className="glass-topbar border-b border-border/80 px-4 py-2.5 flex-shrink-0 z-30 select-none">
@@ -1149,7 +1171,16 @@ function ResumeWorkspace() {
               selectedRequirementId={selectedAtsIssue}
               selectedTargetId={selectedTargetId}
               onSelectElement={handleSelectElement}
-              onExportPdf={() => setShowFinalReview(true)}
+              onExportPdf={() => void downloadArtifact("pdf")}
+              onExportDocx={() => void downloadArtifact("docx")}
+              onCompareOriginal={() => {
+                if (!masterVersion) return;
+                setSelectedVersionId(masterVersion.id);
+                navigate({
+                  search: (prev: ResumeStudioSearchParams) => ({ ...prev, versionId: masterVersion.id }),
+                  replace: true,
+                });
+              }}
               onUpdateResume={handleUpdateResume}
               onDropSuggestion={handleDropSuggestion}
               selectedVersion={selectedVersion}

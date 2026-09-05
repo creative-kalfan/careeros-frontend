@@ -113,6 +113,8 @@ interface PreviewPaneProps {
   selectedTargetId?: string | null;
   onSelectElement?: (elementId: string, section?: string) => void;
   onExportPdf?: () => void;
+  onExportDocx?: () => void;
+  onCompareOriginal?: () => void;
   isDocumentLoading?: boolean;
   onUpdateResume?: (updated: ResumeData) => void;
   onDropSuggestion?: (
@@ -145,6 +147,8 @@ export function PreviewPane({
   selectedTargetId,
   onSelectElement,
   onExportPdf,
+  onExportDocx,
+  onCompareOriginal,
   isDocumentLoading = false,
   onUpdateResume,
   onDropSuggestion,
@@ -314,7 +318,17 @@ export function PreviewPane({
               onClick={onExportPdf}
               className="h-7 rounded-md text-xs font-medium px-2.5 shadow-2xs"
             >
-              <Download className="mr-1.5 h-3.5 w-3.5" /> Export PDF
+              <Download className="mr-1.5 h-3.5 w-3.5" /> Download PDF
+            </Button>
+          )}
+          {onExportDocx && (
+            <Button size="sm" variant="outline" onClick={onExportDocx} className="h-7 rounded-md px-2.5 text-xs font-medium">
+              <FileText className="mr-1.5 h-3.5 w-3.5" /> DOCX
+            </Button>
+          )}
+          {onCompareOriginal && (
+            <Button size="sm" variant="outline" onClick={onCompareOriginal} className="h-7 rounded-md px-2.5 text-xs font-medium">
+              Compare original
             </Button>
           )}
         </div>
