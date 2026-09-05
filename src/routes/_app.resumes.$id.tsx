@@ -364,9 +364,13 @@ function ResumeWorkspace() {
     if (!status || (status !== "pending" && status !== "processing")) return;
     const timer = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: resumeQueryKeys.detail(id) });
-    }, 4000);
+      queryClient.invalidateQueries({ queryKey: versionQueryKeys.list(id) });
+      if (activeVersionId) {
+        queryClient.invalidateQueries({ queryKey: versionQueryKeys.get(activeVersionId) });
+      }
+    }, 3000);
     return () => clearInterval(timer);
-  }, [record?.parse_status, queryClient, id]);
+  }, [record?.parse_status, queryClient, id, activeVersionId]);
 
   useEffect(() => {
     if (analyzeResume.isSuccess && analyzeResume.data) {

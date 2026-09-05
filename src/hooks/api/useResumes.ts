@@ -39,6 +39,10 @@ export function useResumeDetail(id: string | null) {
     queryFn: () => resumeApi.getResumeDetail(id as string),
     enabled: Boolean(id),
     staleTime: 1000 * 60 * 5,
+    refetchInterval: (query) => {
+      const status = query.state.data?.parse_status;
+      return status === "pending" || status === "processing" ? 2000 : false;
+    },
   });
 }
 
