@@ -11,6 +11,21 @@ export type RequestOptions = {
   headers?: Record<string, string>;
 };
 
+function toApiError(payload: unknown, status: number, fallback: string): ApiError {
+  const p = (payload ?? {}) as Record<string, any>;
+  const nested = (p.error ?? {}) as Record<string, any>;
+  const message =
+    (typeof nested.message === "string" && nested.message) ||
+    (typeof p.detail === "string" && p.detail) ||
+    (typeof p.message === "string" && p.message) ||
+    fallback;
+  const code =
+    (typeof nested.code === "string" && nested.code) ||
+    (typeof p.code === "string" && p.code) ||
+    undefined;
+  return { message, code, statusCode: status, details: p.details ?? nested };
+}
+
 export async function request<T>(options: RequestOptions): Promise<T> {
   const url = `${apiConfig.baseUrl}${options.path}`;
   const controller = new AbortController();
@@ -81,7 +96,11 @@ export async function request<T>(options: RequestOptions): Promise<T> {
 
       let errorData: ApiError;
       try {
-        errorData = await response.json();
+        errorData = toApiError(
+          await response.json(),
+          response.status,
+          response.statusText || "Request failed",
+        );
       } catch {
         errorData = {
           message: response.statusText || "Request failed",
@@ -151,7 +170,11 @@ export async function requestBlob(
     if (!response.ok) {
       let errorData: ApiError;
       try {
-        errorData = await response.json();
+        errorData = toApiError(
+          await response.json(),
+          response.status,
+          response.statusText || "Request failed",
+        );
       } catch {
         errorData = {
           message: response.statusText || "Request failed",
