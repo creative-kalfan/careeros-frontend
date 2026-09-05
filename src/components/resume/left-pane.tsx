@@ -58,12 +58,20 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
   return (
     <div className="space-y-2 p-3 text-left rounded-lg border border-border/50 bg-surface/40 shadow-2xs">
       <div className="flex items-center justify-between gap-2">
-        <Badge
-          variant="outline"
-          className="rounded-md border-border/60 bg-background/60 px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wider text-primary"
-        >
-          {planItem.section}
-        </Badge>
+        <div className="flex items-center gap-1.5">
+          <Badge
+            variant="outline"
+            className="rounded-md border-border/60 bg-background/60 px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wider text-primary"
+          >
+            {planItem.section}
+          </Badge>
+          <Badge
+            variant="outline"
+            className="rounded-md border-border/50 bg-muted/20 px-1.5 py-0 text-[9px] font-medium text-muted-foreground"
+          >
+            ATS Clean Layout
+          </Badge>
+        </div>
         <Badge variant="outline" className={`rounded text-[9.5px] font-semibold uppercase ${actionColor}`}>
           {planItem.action}
         </Badge>
@@ -689,6 +697,29 @@ export function LeftPane({
   const queryClient = useQueryClient();
 
   const [tailorResult, setTailorResult] = useState<TailorResumeResponse | null>(null);
+  const [tailoringStep, setTailoringStep] = useState<
+    "idle" | "analyzing" | "synthesizing" | "compiling"
+  >("idle");
+
+  useEffect(() => {
+    let t1: NodeJS.Timeout;
+    let t2: NodeJS.Timeout;
+    if (tailorMutation.isPending) {
+      setTailoringStep("analyzing");
+      t1 = setTimeout(() => {
+        setTailoringStep("synthesizing");
+      }, 3000);
+      t2 = setTimeout(() => {
+        setTailoringStep("compiling");
+      }, 8000);
+    } else {
+      setTailoringStep("idle");
+    }
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [tailorMutation.isPending]);
 
   const tailorMutation = useMutation({
     mutationFn: (data: {
@@ -893,7 +924,10 @@ export function LeftPane({
                 {tailorMutation.isPending ? (
                   <>
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                    Tailoring Entire Resume...
+                    {tailoringStep === "analyzing" && "Analyzing Job Requirements..."}
+                    {tailoringStep === "synthesizing" && "Synthesizing Evidence..."}
+                    {tailoringStep === "compiling" && "Compiling ATS Artifact..."}
+                    {tailoringStep === "idle" && "Tailoring Entire Resume..."}
                   </>
                 ) : (
                   <>
