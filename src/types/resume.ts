@@ -6,6 +6,14 @@ import type { DocumentGeometryMap } from "./geometry";
 
 export type ResumeSectionType = "summary" | "experience" | "education" | "skills" | "projects";
 
+export interface SubEngagementItem {
+  id: string;
+  name: string;
+  description?: string;
+  responsibilities?: BulletItem[];
+  bullets?: BulletItem[];
+}
+
 export interface ExperienceItem {
   id: string;
   role: string;
@@ -14,6 +22,7 @@ export interface ExperienceItem {
   start: string;
   end: string;
   bullets: BulletItem[];
+  sub_engagements?: SubEngagementItem[];
 }
 
 export interface BulletItem {
@@ -232,6 +241,7 @@ export interface ExperienceEntry {
   current: boolean;
   employmentType: string;
   responsibilities: BulletItem[];
+  sub_engagements?: SubEngagementItem[];
   achievements: string[];
   tools: string[];
   metrics: string;

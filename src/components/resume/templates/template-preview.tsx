@@ -189,7 +189,7 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
       <div className="p-8 sm:p-12">
         <header className="mb-6 border-b border-gray-200 pb-6">
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-            {personal.fullName || "Your Name"}
+            {personal.fullName || (personal as any).full_name || "Your Name"}
           </h1>
           {personal.headline && <p className="mt-1 text-sm text-gray-600">{personal.headline}</p>}
           {targetRole && <p className="mt-1 text-xs text-gray-500">Target Role: {targetRole}</p>}
@@ -263,6 +263,35 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
                         <li key={i}>{item}</li>
                       ))}
                     </ul>
+                  )}
+                  {exp.sub_engagements && exp.sub_engagements.length > 0 && (
+                    <div className="mt-2 space-y-2 pl-3 border-l-2 border-gray-200">
+                      {exp.sub_engagements.map((sub: any, sIdx: number) => {
+                        const subName = sub.name || sub.title || "";
+                        const subBullets = Array.isArray(sub.bullets)
+                          ? sub.bullets
+                          : Array.isArray(sub.responsibilities)
+                          ? sub.responsibilities
+                          : [];
+                        return (
+                          <div key={sub.id ?? sIdx} className="space-y-0.5">
+                            <div className="flex items-baseline justify-between text-xs">
+                              <span className="font-semibold text-gray-800">{subName}</span>
+                              {(sub.duration || sub.role) && (
+                                <span className="text-gray-500 text-[11px]">{sub.duration || sub.role}</span>
+                              )}
+                            </div>
+                            {subBullets.length > 0 && (
+                              <ul className="list-disc space-y-0.5 pl-4 text-xs text-gray-600">
+                                {subBullets.map((b: any, bIdx: number) => (
+                                  <li key={b?.id ?? bIdx}>{typeof b === "string" ? b : b?.text || ""}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               ))}

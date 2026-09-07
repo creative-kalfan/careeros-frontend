@@ -140,6 +140,28 @@ function mapExperience(exp: Record<string, unknown>): ExperienceItem {
     })
     .filter((b): b is BulletItem => b !== null && b.text !== "");
 
+  const rawSubs = Array.isArray(exp.sub_engagements) ? exp.sub_engagements : [];
+  const sub_engagements = rawSubs
+    .map((s: any) => {
+      if (!s || typeof s !== "object") return null;
+      const sRawBullets = Array.isArray(s.responsibilities) ? s.responsibilities : Array.isArray(s.bullets) ? s.bullets : [];
+      const sBullets: BulletItem[] = sRawBullets
+        .map((b: any) => {
+          if (typeof b === "string") return { id: _bulletId(b), text: b };
+          if (b && typeof b === "object" && "text" in b) return { id: b.id || _bulletId(b.text), text: b.text };
+          return null;
+        })
+        .filter((b): b is BulletItem => b !== null && b.text !== "");
+      return {
+        id: s.id || _bulletId(s.name || ""),
+        name: s.name || "",
+        description: s.description || "",
+        responsibilities: sBullets,
+        bullets: sBullets,
+      };
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null && s.name !== "");
+
   return {
     id: (exp.id as string) || crypto.randomUUID(),
     role: (exp.role as string) || "",
@@ -148,6 +170,7 @@ function mapExperience(exp: Record<string, unknown>): ExperienceItem {
     start: (exp.start_date as string) || "",
     end: (exp.end_date as string) || "",
     bullets,
+    sub_engagements,
   };
 }
 
@@ -320,7 +343,7 @@ export function profileToResumeData(profile: ResumeProfile): Omit<
   return {
     targetRole: p.targetRole || "",
     contact: {
-      fullName: personal.fullName || "",
+      fullName: personal.fullName || (personal as any).full_name || "",
       headline: personal.headline || "",
       email: personal.email || "",
       phone: personal.phone || "",
@@ -342,6 +365,25 @@ export function profileToResumeData(profile: ResumeProfile): Omit<
           ? { id: _bulletId(b), text: b }
           : { id: b?.id || _bulletId(b?.text || ""), text: b?.text || "" },
       ),
+      sub_engagements: ((e as any).sub_engagements || []).map((sub: any) => {
+        const sRawBullets = Array.isArray(sub.responsibilities)
+          ? sub.responsibilities
+          : Array.isArray(sub.bullets)
+            ? sub.bullets
+            : [];
+        const sBullets = sRawBullets.map((b: any) =>
+          typeof b === "string"
+            ? { id: _bulletId(b), text: b }
+            : { id: b?.id || _bulletId(b?.text || ""), text: b?.text || "" },
+        );
+        return {
+          id: sub.id || _bulletId(sub.name || ""),
+          name: sub.name || "",
+          description: sub.description || "",
+          responsibilities: sBullets,
+          bullets: sBullets,
+        };
+      }),
     })),
     education: (p.education || []).map((e) => ({
       id: e.id,

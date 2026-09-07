@@ -1631,6 +1631,7 @@ function TemplatePreviewWrapper({
       current: e.end === "" || e.end === "Present",
       employmentType: "",
       responsibilities: e.bullets.map((b) => ({ id: b.id, text: b.text })),
+      sub_engagements: e.sub_engagements || [],
       achievements: [],
       tools: [],
       metrics: "",
