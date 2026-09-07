@@ -9,6 +9,11 @@ export type RequestOptions = {
   path: string;
   body?: unknown;
   headers?: Record<string, string>;
+  // Per-request timeout override (ms). Defaults to apiConfig.timeout (30s).
+  // Long-running document calls (tailor / apply-tailoring / export, which can
+  // invoke the LLM gateway with its own 25-30s budgets) must pass the shared
+  // LONG_REQUEST_TIMEOUT_MS instead of being aborted mid-flight.
+  timeoutMs?: number;
 };
 
 function toApiError(payload: unknown, status: number, fallback: string): ApiError {
@@ -28,8 +33,9 @@ function toApiError(payload: unknown, status: number, fallback: string): ApiErro
 
 export async function request<T>(options: RequestOptions): Promise<T> {
   const url = `${apiConfig.baseUrl}${options.path}`;
+  const timeoutMs = options.timeoutMs ?? apiConfig.timeout;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), apiConfig.timeout);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   // Use Supabase session token instead of localStorage
   const headers: Record<string, string> = {
@@ -73,24 +79,33 @@ export async function request<T>(options: RequestOptions): Promise<T> {
         // (refreshSession uses the existing refresh token — no new token
         // store) and retry the original request with the new access token.
         // A second 401 is a genuine auth failure and propagates normally.
+        // NOTE: the retry uses a FRESH AbortController + timeout. Reusing the
+        // original signal left retried requests with no timeout at all (its
+        // timer was already cleared), so a hung server hung the UI forever.
         const { data: refreshed } = await supabase.auth.refreshSession();
         const newToken = refreshed?.session?.access_token;
         if (newToken) {
           const retryHeaders = { ...headers, Authorization: `Bearer ${newToken}` };
-          const retried = await fetch(url, {
-            method: options.method,
-            headers: retryHeaders,
-            body: options.body ? JSON.stringify(options.body) : undefined,
-            signal: controller.signal,
-          });
-          if (retried.ok) {
-            if (retried.status === 204) {
-              return undefined as T;
+          const retryController = new AbortController();
+          const retryTimeoutId = setTimeout(() => retryController.abort(), timeoutMs);
+          try {
+            const retried = await fetch(url, {
+              method: options.method,
+              headers: retryHeaders,
+              body: options.body ? JSON.stringify(options.body) : undefined,
+              signal: retryController.signal,
+            });
+            if (retried.ok) {
+              if (retried.status === 204) {
+                return undefined as T;
+              }
+              return (await retried.json()) as T;
             }
-            return (await retried.json()) as T;
+            // Fall through to normal error handling for the retried response.
+            response = retried;
+          } finally {
+            clearTimeout(retryTimeoutId);
           }
-          // Fall through to normal error handling for the retried response.
-          response = retried;
         }
       }
 
@@ -149,8 +164,9 @@ export async function requestBlob(
   options: Omit<RequestOptions, "method"> & { method: "GET" },
 ): Promise<Blob> {
   const url = `${apiConfig.baseUrl}${options.path}`;
+  const timeoutMs = options.timeoutMs ?? apiConfig.timeout;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), apiConfig.timeout);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   const headers: Record<string, string> = {
     ...apiConfig.defaultHeaders,

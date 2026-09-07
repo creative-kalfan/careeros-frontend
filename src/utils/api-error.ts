@@ -17,7 +17,7 @@ export class ApiClientError extends Error {
     return this.apiError.code;
   }
 
-  get details(): Record<string, unknown> | undefined {
+  get details(): unknown {
     return this.apiError.details;
   }
 }

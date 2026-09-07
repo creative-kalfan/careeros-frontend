@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import {
@@ -26,6 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-tooltip";
 import { useVersions } from "@/hooks/api/useVersions";
+import { getErrorMessage } from "@/utils/api-error";
 import { optimizationApi } from "@/api/optimization";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -660,6 +661,8 @@ export function LeftPane({
   onAddSkill,
   onApplyTailoring,
   isApplyingTailoring,
+  applyTailoringError,
+  onRetryApplyTailoring,
 }: {
   currentId: string;
   currentVersionId: string | null;
@@ -691,8 +694,19 @@ export function LeftPane({
     jobDescription?: string,
   ) => Promise<void>;
   isApplyingTailoring?: boolean;
+  // Error from the last apply-tailoring attempt (owned by the Studio page,
+  // which performs the apply). Rendered inline with a manual Retry — a failed
+  // auto-apply must never look like a finished +0% "no improvement" result.
+  applyTailoringError?: string | null;
+  onRetryApplyTailoring?: () => void;
 }) {
-  const { data: versionsData, isLoading: versionsLoading } = useVersions(currentId);
+  const {
+    data: versionsData,
+    isLoading: versionsLoading,
+    isError: versionsIsError,
+    error: versionsError,
+    refetch: refetchVersions,
+  } = useVersions(currentId);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -824,8 +838,35 @@ export function LeftPane({
   // artifact, otherwise generate once and immediately compile it. The context
   // key deliberately excludes the active version to prevent derived-version
   // recursion after the successful switch.
+  // Manual retry after a tailor failure: unlatch this context so the
+  // autonomous effect below may fire again, then re-run explicitly. Failed
+  // attempts stay latched otherwise, leaving the panel with no recovery path.
+  const retryTailoring = useCallback(() => {
+    tailoredContextsRef.current.delete(tailoringContextKey);
+    tailorMutation.reset();
+    tailorMutation.mutate({
+      resumeId: currentId,
+      versionId: currentVersionId || undefined,
+      jobDescription: targetJobDescription!,
+      jobTitle: targetJobTitle || undefined,
+      company: targetCompany || undefined,
+    });
+  }, [
+    tailoringContextKey,
+    tailorMutation,
+    currentId,
+    currentVersionId,
+    targetJobDescription,
+    targetJobTitle,
+    targetCompany,
+  ]);
+
   useEffect(() => {
     if (!hasJobContext || tailorMutation.isPending || tailorResult || isApplyingTailoring) return;
+    // Wait for the versions list before deciding there is no existing derived
+    // artifact. Firing while versions are still loading (or errored) missed
+    // the reuse check and compiled duplicate tailored versions on every open.
+    if (versionsLoading || versionsIsError) return;
     const existing = versions.find(
       (version) =>
         !version.is_master &&
@@ -853,6 +894,8 @@ export function LeftPane({
     tailorResult,
     isApplyingTailoring,
     versions,
+    versionsLoading,
+    versionsIsError,
     currentVersionId,
     currentId,
     targetJobTitle,
@@ -863,7 +906,7 @@ export function LeftPane({
   ]);
 
   useEffect(() => {
-    if (!tailorResult || isApplyingTailoring || appliedContextsRef.current.has(tailoringContextKey)) return;
+    if (!tailorResult || tailorResult.limitedAlignment || isApplyingTailoring || appliedContextsRef.current.has(tailoringContextKey)) return;
     appliedContextsRef.current.add(tailoringContextKey);
     void onApplyTailoring?.(
       tailorResult.tailoredProfile,
@@ -978,8 +1021,85 @@ export function LeftPane({
                 </div>
               )}
 
+              {/* Tailor-request failure: inline error with manual retry. A
+                  failed tailor previously surfaced only as a transient toast,
+                  leaving a blank panel that looked like it was still working. */}
+              {tailorMutation.isError && !tailorMutation.isPending && (
+                <Card className="glass rounded-2xl border-rose-500/30 bg-rose-500/5 p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-500" />
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-medium text-rose-700 dark:text-rose-300">
+                        Tailoring failed
+                      </div>
+                      <div className="text-[11px] leading-relaxed text-muted-foreground">
+                        {getErrorMessage(tailorMutation.error)}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-1.5 h-7 rounded-md text-[11px]"
+                        onClick={retryTailoring}
+                        disabled={tailorMutation.isPending}
+                      >
+                        Retry tailoring
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Apply-tailoring failure: inline error with manual retry. The
+                  projected +0% panel below reflects the tailor plan, not a
+                  compiled version — without this card a failed compile looked
+                  exactly like "no improvement found". */}
+              {applyTailoringError && !isApplyingTailoring && (
+                <Card className="glass rounded-2xl border-rose-500/30 bg-rose-500/5 p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-500" />
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-medium text-rose-700 dark:text-rose-300">
+                        Couldn’t compile the tailored version
+                      </div>
+                      <div className="text-[11px] leading-relaxed text-muted-foreground">
+                        {applyTailoringError} No new version was created — your resume is unchanged.
+                      </div>
+                      {onRetryApplyTailoring && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-1.5 h-7 rounded-md text-[11px]"
+                          onClick={onRetryApplyTailoring}
+                          disabled={isApplyingTailoring}
+                        >
+                          Retry compile
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              )}
+
               {tailorResult && (
                 <div className="space-y-3 pt-1">
+                  {tailorResult.limitedAlignment && (
+                    <div
+                      data-testid="limited-alignment-advisory"
+                      className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-amber-800 dark:text-amber-200"
+                    >
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1 text-left">
+                          <div className="text-[11px] font-semibold">Role Fit Advisory</div>
+                          <p className="text-[10.5px] leading-relaxed text-amber-700/90 dark:text-amber-300/90">
+                            {tailorResult.alignmentMessage ||
+                              "Limited alignment found; consider whether this resume is a strong fit for this role."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* ATS Score Comparison Badge */}
                   <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-background/80 p-2.5">
                     <div className="flex items-center gap-2">
@@ -1407,6 +1527,28 @@ export function LeftPane({
                 <Skeleton key={i} className="h-16 w-full rounded-xl" />
               ))}
             </div>
+          ) : versionsIsError && versions.length === 0 ? (
+            <Card className="glass rounded-2xl border-rose-500/30 bg-rose-500/5 p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-500" />
+                <div className="space-y-1">
+                  <div className="text-[11px] font-medium text-rose-700 dark:text-rose-300">
+                    Couldn’t load versions
+                  </div>
+                  <div className="text-[11px] leading-relaxed text-muted-foreground">
+                    {getErrorMessage(versionsError)}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-1.5 h-7 rounded-md text-[11px]"
+                    onClick={() => void refetchVersions()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            </Card>
           ) : versions.length === 0 ? (
             <Card className="glass rounded-2xl border-border/60 p-4 text-center">
               <div className="text-xs text-muted-foreground">No versions yet.</div>

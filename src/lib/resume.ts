@@ -83,12 +83,38 @@ export function adaptResumeRecord(record: ResumeRecord): ResumeData {
 function flattenSkills(skills: Record<string, unknown> | undefined): string[] {
   if (!skills) return [];
   const result: string[] = [];
-  for (const value of Object.values(skills)) {
+  for (const [key, value] of Object.entries(skills)) {
     if (Array.isArray(value)) {
       result.push(...value.filter((v): v is string => typeof v === "string"));
+    } else if (key === "custom" && value && typeof value === "object") {
+      for (const customList of Object.values(value as Record<string, unknown>)) {
+        if (Array.isArray(customList)) {
+          result.push(...customList.filter((v): v is string => typeof v === "string"));
+        }
+      }
     }
   }
   return result;
+}
+
+/** Extract categorized skills from backend SkillCategory object */
+function extractSkillCategories(skills: Record<string, unknown> | undefined): Record<string, string[]> {
+  if (!skills) return {};
+  const categories: Record<string, string[]> = {};
+  if (skills.custom && typeof skills.custom === "object") {
+    for (const [catName, list] of Object.entries(skills.custom as Record<string, unknown>)) {
+      if (Array.isArray(list) && list.length > 0) {
+        categories[catName] = list.filter((s): s is string => typeof s === "string");
+      }
+    }
+  }
+  for (const [key, list] of Object.entries(skills)) {
+    if (key !== "custom" && Array.isArray(list) && list.length > 0) {
+      const label = key.charAt(0).toUpperCase() + key.slice(1);
+      categories[label] = list.filter((s): s is string => typeof s === "string");
+    }
+  }
+  return categories;
 }
 
 function _bulletId(text: string): string {
@@ -143,6 +169,22 @@ function mapEducation(edu: Record<string, unknown>): EducationItem {
 
 /** Map backend project to frontend ProjectItem */
 function mapProject(proj: Record<string, unknown>): ProjectItem {
+  const rawBullets = Array.isArray(proj.responsibilities)
+    ? proj.responsibilities
+    : Array.isArray(proj.bullets)
+      ? proj.bullets
+      : [];
+  const responsibilities: BulletItem[] = rawBullets
+    .map((v: unknown) => {
+      if (typeof v === "string") return { id: _bulletId(v), text: v };
+      if (v && typeof v === "object" && "text" in v) {
+        const item = v as BulletItem;
+        return { id: item.id || _bulletId(item.text), text: item.text };
+      }
+      return null;
+    })
+    .filter((b): b is BulletItem => b !== null && b.text !== "");
+
   return {
     id: (proj.id as string) || crypto.randomUUID(),
     name: (proj.name as string) || "",
@@ -154,6 +196,7 @@ function mapProject(proj: Record<string, unknown>): ProjectItem {
     results: (proj.results as string) || "",
     metrics: (proj.metrics as string) || "",
     url: (proj.url as string) || "",
+    responsibilities,
   };
 }
 
@@ -252,6 +295,7 @@ export function buildResumeData(
     experience,
     education,
     skills: flattenSkills(profile.skills as Record<string, unknown>),
+    skillCategories: extractSkillCategories(profile.skills as Record<string, unknown>),
     projects,
     sections: DEFAULT_SECTIONS,
     internships,
@@ -312,6 +356,7 @@ export function profileToResumeData(profile: ResumeProfile): Omit<
       achievements: e.achievements || [],
     })),
     skills: flattenSkills((p.skills || {}) as unknown as Record<string, unknown>),
+    skillCategories: extractSkillCategories((p.skills || {}) as unknown as Record<string, unknown>),
     projects: (p.projects || []).map((proj) => ({
       id: proj.id,
       name: proj.name || "",
@@ -323,6 +368,11 @@ export function profileToResumeData(profile: ResumeProfile): Omit<
       results: proj.results || "",
       metrics: proj.metrics || "",
       url: proj.url || "",
+      responsibilities: (proj.responsibilities || []).map((b) =>
+        typeof b === "string"
+          ? { id: _bulletId(b), text: b }
+          : { id: b?.id || _bulletId(b?.text || ""), text: b?.text || "" },
+      ),
     })),
     sections: DEFAULT_SECTIONS,
     internships: (p.internships || []).map((e) => ({

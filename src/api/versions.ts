@@ -1,4 +1,5 @@
 import { request } from "../utils/request";
+import { LONG_REQUEST_TIMEOUT_MS } from "./config";
 import { API_ENDPOINTS } from "../constants/api";
 import type {
   ResumeVersion,
@@ -128,6 +129,9 @@ export const versionsApi = {
       method: "POST",
       path: `/api/resumes/${resumeId}/versions/apply-tailoring`,
       body: data,
+      // Compiles PDF/DOCX artifacts and re-runs ATS analysis (which can
+      // invoke the LLM gateway) — beyond the 30s default budget.
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
     return { version: res?.data ?? res?.version ?? res };
   },

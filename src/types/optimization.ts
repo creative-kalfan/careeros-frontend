@@ -161,5 +161,6 @@ export type TailorResumeResponse = {
   tailoredProfile: Record<string, unknown>;
   scoreComparison: ATSScoreComparison;
   message: string;
+  limitedAlignment?: boolean;
+  alignmentMessage?: string | null;
 };
-

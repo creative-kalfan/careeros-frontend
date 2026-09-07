@@ -33,6 +33,7 @@ import {
   useGenerateOptimization,
 } from "@/hooks/api/useOptimization";
 import { request, requestBlob } from "@/utils/request";
+import { LONG_REQUEST_TIMEOUT_MS } from "@/api/config";
 import { useOriginalResumeFile } from "@/hooks/useOriginalResumeFile";
 import type { DocumentGeometryMap, GeometryBlock } from "@/types/geometry";
 import {
@@ -174,6 +175,8 @@ function ResumeWorkspace() {
     setResumeData(null);
     setProfile(null);
     setSelectedVersionId(null);
+    setApplyTailoringError(null);
+    lastTailorApplyRef.current = null;
     setSelectedVersion(null);
     setEvidenceLocations(undefined);
     setSelectedAtsIssue(null);
@@ -186,10 +189,34 @@ function ResumeWorkspace() {
   }, [id, clearSignedUrl]);
 
   useEffect(() => {
-    if (versionIdFromSearch && (!selectedVersionId || selectedVersionId !== versionIdFromSearch)) {
+    if (!versionIdFromSearch) return;
+    // A ?versionId= that the versions list doesn't contain (deleted in
+    // another tab, RLS-invisible, or mistyped) previously stuck: the Studio
+    // kept sending it as parent_version_id and every apply-tailoring failed
+    // server-side while the UI showed no error. Fall back to master, fix the
+    // URL, and say so instead of failing silently.
+    if (versionsData && !versions.some((v) => v.id === versionIdFromSearch)) {
+      const fallback = masterVersion?.id ?? versions[0]?.id ?? null;
+      setSelectedVersionId(fallback);
+      navigate({
+        search: (prev: ResumeStudioSearchParams) => ({ ...prev, versionId: fallback ?? undefined }),
+        replace: true,
+      });
+      toast.info("That version is no longer available — showing the latest instead.");
+      return;
+    }
+    if (!selectedVersionId || selectedVersionId !== versionIdFromSearch) {
       setSelectedVersionId(versionIdFromSearch);
     }
-  }, [versionIdFromSearch, selectedVersionId]);
+  }, [
+    versionIdFromSearch,
+    selectedVersionId,
+    versionsData,
+    versions,
+    masterVersion,
+    navigate,
+    toast,
+  ]);
 
   useEffect(() => {
     if (selectedVersionData?.version) {
@@ -889,6 +916,18 @@ function ResumeWorkspace() {
   );
 
   const [isApplyingTailoring, setIsApplyingTailoring] = useState(false);
+  // Last failed/succeeded apply-tailoring attempt, rendered INLINE in the
+  // LeftPane tailoring panel with a manual Retry. A failed auto-apply
+  // previously surfaced only as a transient toast while the panel kept
+  // showing the tailor plan (+0%), indistinguishable from "no improvement".
+  const [applyTailoringError, setApplyTailoringError] = useState<string | null>(null);
+  const lastTailorApplyRef = useRef<{
+    tailoredProfile: Record<string, unknown>;
+    plan: any[];
+    jobTitleVal?: string;
+    companyVal?: string;
+    jdVal?: string;
+  } | null>(null);
 
   const handleApplyTailoring = useCallback(
     async (
@@ -900,13 +939,24 @@ function ResumeWorkspace() {
     ) => {
       if (!id) return;
       setIsApplyingTailoring(true);
+      setApplyTailoringError(null);
+      lastTailorApplyRef.current = { tailoredProfile, plan: _plan, jobTitleVal, companyVal, jdVal };
       try {
         const vName = jobTitleVal
           ? `${jobTitleVal} (${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })})`
           : `Tailored Version (${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })})`;
 
+        // Never send a parent the versions list doesn't contain (stale
+        // ?versionId=, deleted version). The backend now answers 404, but
+        // deriving from master/resume is the better recovery: the tailor
+        // output is still compilable without a parent.
+        const validParentId =
+          activeVersionId && versions.some((v) => v.id === activeVersionId)
+            ? activeVersionId
+            : undefined;
+
         const res = await versionsApi.applyTailoring(id, {
-          parent_version_id: activeVersionId || undefined,
+          parent_version_id: validParentId,
           version_name: vName,
           tailored_profile: tailoredProfile,
           job_title: jobTitleVal || jobTitle || undefined,
@@ -941,7 +991,9 @@ function ResumeWorkspace() {
           toast.success("Tailored resume compiled and new version created!");
         }
       } catch (err) {
-        toast.error(getErrorMessage(err) || "Failed to apply tailored resume");
+        const msg = getErrorMessage(err) || "Failed to apply tailored resume";
+        setApplyTailoringError(msg);
+        toast.error(msg);
       } finally {
         setIsApplyingTailoring(false);
       }
@@ -949,6 +1001,7 @@ function ResumeWorkspace() {
     [
       id,
       activeVersionId,
+      versions,
       jobTitle,
       company,
       jobDescription,
@@ -958,6 +1011,21 @@ function ResumeWorkspace() {
       toast,
     ],
   );
+
+  // Manual retry for a failed apply-tailoring attempt. Deliberately NOT
+  // automatic: the LeftPane auto-apply effect latches each context after one
+  // attempt, so auto-retrying here would loop forever on persistent failures.
+  const handleRetryApplyTailoring = useCallback(() => {
+    const last = lastTailorApplyRef.current;
+    if (!last || isApplyingTailoring) return;
+    void handleApplyTailoring(
+      last.tailoredProfile,
+      last.plan,
+      last.jobTitleVal,
+      last.companyVal,
+      last.jdVal,
+    );
+  }, [handleApplyTailoring, isApplyingTailoring]);
 
 
   const hasAnalysis = atsScore !== null && atsAnalysis !== null;
@@ -983,6 +1051,8 @@ function ResumeWorkspace() {
         const blob = await requestBlob({
           method: "GET",
           path: `/api/export/resumes/${id}/versions/${versionId}/${format}`,
+          // Artifact compilation + download can exceed the 30s default.
+          timeoutMs: LONG_REQUEST_TIMEOUT_MS,
         });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -1136,6 +1206,8 @@ function ResumeWorkspace() {
             onAddSkill={handleAddSkill}
             onApplyTailoring={handleApplyTailoring}
             isApplyingTailoring={isApplyingTailoring}
+            applyTailoringError={applyTailoringError}
+            onRetryApplyTailoring={handleRetryApplyTailoring}
           />
         </div>
         <div
@@ -1268,6 +1340,7 @@ function ResumeWorkspace() {
                   const blob = await requestBlob({
                     method: "GET",
                     path: `/api/export/resumes/${id}/versions/${vid}/pdf`,
+                    timeoutMs: LONG_REQUEST_TIMEOUT_MS,
                   });
                   const url = window.URL.createObjectURL(blob);
                   const a = document.createElement("a");
@@ -1290,6 +1363,7 @@ function ResumeWorkspace() {
                   const blob = await requestBlob({
                     method: "GET",
                     path: `/api/export/resumes/${id}/versions/${vid}/docx`,
+                    timeoutMs: LONG_REQUEST_TIMEOUT_MS,
                   });
                   const url = window.URL.createObjectURL(blob);
                   const a = document.createElement("a");

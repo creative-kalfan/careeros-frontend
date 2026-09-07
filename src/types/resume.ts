@@ -45,6 +45,7 @@ export interface ProjectItem {
   results: string;
   metrics: string;
   url: string;
+  responsibilities?: BulletItem[];
 }
 
 export interface ResumeSection {
@@ -75,6 +76,7 @@ export interface ResumeData {
   experience: ExperienceItem[];
   education: EducationItem[];
   skills: string[];
+  skillCategories?: Record<string, string[]>;
   projects: ProjectItem[];
   sections: ResumeSection[];
   internships: ExperienceItem[];
@@ -269,6 +271,7 @@ export interface ProjectEntry {
   results: string;
   metrics: string;
   url: string;
+  responsibilities?: BulletItem[];
 }
 
 export interface CertificationEntry {

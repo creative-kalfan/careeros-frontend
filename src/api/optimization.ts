@@ -1,4 +1,5 @@
 import { request } from "../utils/request";
+import { LONG_REQUEST_TIMEOUT_MS } from "./config";
 import { API_ENDPOINTS } from "../constants/api";
 import type {
   GenerateOptimizationResponse,
@@ -151,6 +152,8 @@ function mapTailorResponse(raw: Record<string, unknown>): TailorResumeResponse {
       ),
     },
     message: String(raw.message ?? ""),
+    limitedAlignment: Boolean(raw.limited_alignment ?? raw.limitedAlignment ?? false),
+    alignmentMessage: (raw.alignment_message ?? raw.alignmentMessage ?? null) as string | null,
   };
 }
 
@@ -182,6 +185,9 @@ export const optimizationApi = {
       method: "POST",
       path: "/api/optimization/skills/generate",
       body: data,
+      // Single LLM call with a 25s server-side budget plus session
+      // persistence — can exceed the 30s default under load.
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
     return mapGenerateResponse(raw) as GenerateSkillsOptimizationResponse;
   },
@@ -197,6 +203,7 @@ export const optimizationApi = {
       method: "POST",
       path: "/api/optimization/summary/generate",
       body: data,
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
     return mapGenerateResponse(raw) as GenerateSummaryOptimizationResponse;
   },
@@ -215,6 +222,7 @@ export const optimizationApi = {
       method: "POST",
       path: "/api/optimization/experience/bullet/generate",
       body: data,
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
     return mapGenerateResponse(raw) as GenerateExperienceBulletOptimizationResponse;
   },
@@ -322,6 +330,9 @@ export const optimizationApi = {
       method: "POST",
       path: "/api/optimization/tailor",
       body: data,
+      // Tailoring invokes the LLM gateway (up to ~25s per call, several calls
+      // per pass) plus two ATS analyses — well beyond the 30s default.
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
     return mapTailorResponse(raw);
   },
@@ -331,6 +342,7 @@ export const optimizationApi = {
       method: "POST",
       path: "/api/optimization/tailor",
       body: data,
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
     return mapTailorResponse(raw);
   },

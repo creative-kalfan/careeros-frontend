@@ -1195,6 +1195,16 @@ export function A4Page({
               </div>
             )}
 
+            {resume.skillCategories && Object.keys(resume.skillCategories).length > 0 ? (
+              <div className="space-y-1.5 text-[11.5px] leading-relaxed text-slate-700">
+                {Object.entries(resume.skillCategories).map(([category, skills]) => (
+                  <div key={category} className="flex flex-wrap items-baseline gap-1.5">
+                    <span className="font-semibold text-slate-900">{category}:</span>
+                    <span>{skills.join(", ")}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
             <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-relaxed text-slate-700 items-center">
               {resume.skills.map((skill, idx) => {
                 const normId = skill.toLowerCase().replace(/[^a-z0-9]/g, "-");
@@ -1295,6 +1305,7 @@ export function A4Page({
                 </button>
               )}
             </div>
+            )}
           </section>
         )}
 
@@ -1352,10 +1363,18 @@ export function A4Page({
                     {ed.degree && (
                       <span className="text-[11.5px] text-slate-600"> — {ed.degree}</span>
                     )}
+                    {ed.field && (
+                      <span className="text-[11.5px] text-slate-600"> in {ed.field}</span>
+                    )}
                     {ed.location && (
                       <span className="text-[11px] text-slate-500"> · {ed.location}</span>
                     )}
-                    {ed.gpa && <span className="text-[11px] text-slate-500"> · GPA: {ed.gpa}</span>}
+                    {ed.gpa && (
+                      <span className="text-[11px] text-slate-500">
+                        {" "}
+                        · {ed.gpa.startsWith("CGPA") ? ed.gpa : `GPA: ${ed.gpa}`}
+                      </span>
+                    )}
                   </div>
 
                   {(ed.start || ed.end) && (
@@ -1391,6 +1410,15 @@ export function A4Page({
                     <div className="text-[11.5px] leading-relaxed text-slate-700">
                       {p.description}
                     </div>
+                  )}
+                  {p.responsibilities && p.responsibilities.length > 0 && (
+                    <ul className="mt-1 space-y-1 pl-4 list-disc marker:text-slate-400">
+                      {p.responsibilities.map((bullet) => (
+                        <li key={bullet.id} className="text-[11.5px] leading-relaxed text-slate-700">
+                          {bullet.text}
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </div>
               ))}
@@ -1641,7 +1669,7 @@ function TemplatePreviewWrapper({
       databases: [],
       analytics: [],
       softSkills: [],
-      custom: {},
+      custom: resume.skillCategories || {},
     },
     projects: resume.projects.map((p) => ({
       id: p.id,
@@ -1654,6 +1682,7 @@ function TemplatePreviewWrapper({
       results: p.results || "",
       metrics: p.metrics || "",
       url: p.url || "",
+      responsibilities: p.responsibilities || [],
     })),
     certifications: resume.certifications ?? [],
     achievements: resume.achievements ?? [],

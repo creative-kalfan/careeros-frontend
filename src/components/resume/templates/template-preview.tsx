@@ -133,7 +133,22 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
     enabled: Boolean(templateSlug) && !template,
   });
 
-  const activeTemplate = template || fetchedTemplate;
+  const activeTemplate =
+    template ||
+    fetchedTemplate ||
+    (templateSlug
+      ? {
+          id: templateSlug,
+          name: templateSlug.charAt(0).toUpperCase() + templateSlug.slice(1),
+          slug: templateSlug,
+          description: `${templateSlug} resume template`,
+          layout: "single-column" as const,
+          styles: {},
+          is_active: true,
+          created_at: "",
+          updated_at: "",
+        }
+      : null);
   const data = useMemo(() => profile || MOCK_PROFILE, [profile]);
   const {
     personal,
@@ -307,7 +322,11 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
                       {edu.startDate} – {edu.endDate || "Present"}
                     </div>
                   </div>
-                  {edu.gpa && <div className="mt-0.5 text-xs text-gray-500">GPA: {edu.gpa}</div>}
+                  {edu.gpa && (
+                    <div className="mt-0.5 text-xs text-gray-500">
+                      {edu.gpa.toLowerCase().includes("gpa") ? edu.gpa : `CGPA: ${edu.gpa}`}
+                    </div>
+                  )}
                   {edu.coursework && edu.coursework.length > 0 && (
                     <div className="mt-1 text-xs text-gray-600">
                       Coursework: {edu.coursework.join(", ")}
@@ -319,45 +338,58 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
           </div>
         )}
 
-        {skills && Object.values(skills).some((arr) => Array.isArray(arr) && arr.length > 0) && (
-          <div className="mb-6">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-900">
-              Skills
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {skills.technical?.map((s, i) => (
-                <Badge key={i} variant="secondary" className="rounded-full text-[10px]">
-                  {s}
-                </Badge>
-              ))}
-              {skills.tools?.map((s, i) => (
-                <Badge key={i} variant="outline" className="rounded-full text-[10px]">
-                  {s}
-                </Badge>
-              ))}
-              {skills.databases?.map((s, i) => (
-                <Badge key={i} variant="outline" className="rounded-full text-[10px]">
-                  {s}
-                </Badge>
-              ))}
-              {skills.analytics?.map((s, i) => (
-                <Badge key={i} variant="outline" className="rounded-full text-[10px]">
-                  {s}
-                </Badge>
-              ))}
-              {skills.languages?.map((s, i) => (
-                <Badge key={i} variant="outline" className="rounded-full text-[10px]">
-                  {s}
-                </Badge>
-              ))}
+        {skills &&
+          (Object.values(skills).some((arr) => Array.isArray(arr) && arr.length > 0) ||
+            (skills.custom && Object.keys(skills.custom).length > 0)) && (
+            <div className="mb-6">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-900">
+                Skills
+              </h2>
+              {skills.custom && Object.keys(skills.custom).length > 0 ? (
+                <div className="space-y-2">
+                  {Object.entries(skills.custom).map(([catName, catSkills]) => (
+                    <div key={catName} className="text-xs">
+                      <span className="font-semibold text-gray-900">{catName}: </span>
+                      <span className="text-gray-700">{catSkills.join(", ")}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {skills.technical?.map((s, i) => (
+                    <Badge key={i} variant="secondary" className="rounded-full text-[10px]">
+                      {s}
+                    </Badge>
+                  ))}
+                  {skills.tools?.map((s, i) => (
+                    <Badge key={i} variant="outline" className="rounded-full text-[10px]">
+                      {s}
+                    </Badge>
+                  ))}
+                  {skills.databases?.map((s, i) => (
+                    <Badge key={i} variant="outline" className="rounded-full text-[10px]">
+                      {s}
+                    </Badge>
+                  ))}
+                  {skills.analytics?.map((s, i) => (
+                    <Badge key={i} variant="outline" className="rounded-full text-[10px]">
+                      {s}
+                    </Badge>
+                  ))}
+                  {skills.languages?.map((s, i) => (
+                    <Badge key={i} variant="outline" className="rounded-full text-[10px]">
+                      {s}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
         {projects.length > 0 && (
           <div className="mb-6">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-900">
-              Projects
+              Live Application Testing Contributions
             </h2>
             <div className="space-y-3">
               {projects.map((proj) => (
@@ -365,6 +397,13 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
                   <div className="text-sm font-semibold text-gray-900">{proj.name}</div>
                   {proj.description && (
                     <p className="mt-1 text-xs text-gray-700">{proj.description}</p>
+                  )}
+                  {proj.responsibilities && proj.responsibilities.length > 0 && (
+                    <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-gray-700">
+                      {proj.responsibilities.map((bullet, i) => (
+                        <li key={bullet.id ?? i}>{bullet.text}</li>
+                      ))}
+                    </ul>
                   )}
                   {proj.technologies && proj.technologies.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
@@ -378,6 +417,19 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {additional && additional.length > 0 && (
+          <div className="mb-6">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-900">
+              Additional Knowledge
+            </h2>
+            <ul className="list-disc space-y-1 pl-4 text-xs text-gray-700">
+              {additional.map((item, i) => (
+                <li key={item.id ?? i}>{item.description || item.title}</li>
+              ))}
+            </ul>
           </div>
         )}
 
