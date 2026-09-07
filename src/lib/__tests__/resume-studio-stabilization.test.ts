@@ -131,6 +131,34 @@ describe("Stabilization 2: Active Working Version Auto-Resolution", () => {
     const effectiveTargetId = activeVersionId || resumeId;
     expect(effectiveTargetId).toBe("res-fresh");
   });
+
+  it("correctly identifies master version when selectedVersionData is undefined/loading", () => {
+    const activeVersionId = "ver-master";
+    const master = versions.find((v) => v.is_master);
+    const selectedVersionData = undefined; // still loading from useVersion query
+
+    const isEditingMaster =
+      !activeVersionId ||
+      activeVersionId === master?.id ||
+      Boolean((selectedVersionData as any)?.version?.is_master) ||
+      Boolean(versions.find((v) => v.id === activeVersionId)?.is_master);
+
+    expect(isEditingMaster).toBe(true);
+  });
+
+  it("correctly identifies derived version as not editing master", () => {
+    const activeVersionId = "ver-derived";
+    const master = versions.find((v) => v.is_master);
+    const selectedVersionData = { version: derivedVersion };
+
+    const isEditingMaster =
+      !activeVersionId ||
+      activeVersionId === master?.id ||
+      Boolean(selectedVersionData?.version?.is_master) ||
+      Boolean(versions.find((v) => v.id === activeVersionId)?.is_master);
+
+    expect(isEditingMaster).toBe(false);
+  });
 });
 
 describe("Stabilization 3: Candidate Evidence Decoupling & Absence Safety", () => {

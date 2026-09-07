@@ -441,7 +441,11 @@ function ResumeWorkspace() {
       // Version-safe manual save: master is immutable, so derive first
       // (mirrors handleApplySuggestion). The canonical save-content endpoint
       // recompiles PDF/DOCX and only persists when the artifact exists.
-      const isEditingMaster = !activeVersionId || selectedVersionData?.version.is_master;
+      const isEditingMaster =
+        !activeVersionId ||
+        activeVersionId === masterVersion?.id ||
+        Boolean(selectedVersionData?.version?.is_master) ||
+        Boolean(versions.find((v) => v.id === activeVersionId)?.is_master);
       let targetVersionId = activeVersionId;
       if (isEditingMaster) {
         const newVersion = await createVersionMutation.mutateAsync({
@@ -680,7 +684,11 @@ function ResumeWorkspace() {
       const prevResumeData = resumeData;
       const prevProfile = profile;
       const prevDirty = isDirty;
-      const isEditingMaster = !activeVersionId || selectedVersionData?.version.is_master;
+      const isEditingMaster =
+        !activeVersionId ||
+        activeVersionId === masterVersion?.id ||
+        Boolean(selectedVersionData?.version?.is_master) ||
+        Boolean(versions.find((v) => v.id === activeVersionId)?.is_master);
       let targetVersionId = activeVersionId;
 
       if (isEditingMaster) {
