@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import {
   Sparkles,
@@ -11,7 +11,6 @@ import {
   ListChecks,
   Gauge,
   Loader2,
-  GripVertical,
   Plus,
   Wand2,
   TrendingUp,
@@ -28,16 +27,11 @@ import { useToast } from "@/components/ui/use-tooltip";
 import { useVersions } from "@/hooks/api/useVersions";
 import { getErrorMessage } from "@/utils/api-error";
 import { optimizationApi } from "@/api/optimization";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  useGenerateSkillsOptimization,
-  useGenerateSummaryOptimization,
-} from "@/hooks/api/useOptimization";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   OptimizationSuggestion,
   TailoringPlanItem,
   TailorResumeResponse,
-  ATSScoreComparison,
 } from "@/types/optimization";
 import type { AtsAnalysisResult } from "@/api/ats";
 import { buildAtsRequirementViews, atsRequirementDomId } from "@/lib/ats-evidence-view";
@@ -73,15 +67,16 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
             ATS Clean Layout
           </Badge>
         </div>
-        <Badge variant="outline" className={`rounded text-[9.5px] font-semibold uppercase ${actionColor}`}>
+        <Badge
+          variant="outline"
+          className={`rounded text-[9.5px] font-semibold uppercase ${actionColor}`}
+        >
           {planItem.action}
         </Badge>
       </div>
 
       {planItem.reasoning && (
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
-          {planItem.reasoning}
-        </p>
+        <p className="text-[11px] leading-relaxed text-muted-foreground">{planItem.reasoning}</p>
       )}
 
       {planItem.currentText && (
@@ -128,7 +123,6 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
   );
 }
 
-
 function PaneSection({
   icon: Icon,
   title,
@@ -153,191 +147,6 @@ function PaneSection({
       </div>
       {children}
     </motion.section>
-  );
-}
-
-function SuggestionCard({
-  suggestion,
-  onAccept,
-  onReject,
-  isPending,
-}: {
-  suggestion: OptimizationSuggestion;
-  onAccept: () => void;
-  onReject: () => void;
-  isPending: boolean;
-}) {
-  const [state, setState] = useState<"idle" | "accepting" | "rejecting">("idle");
-  const reducedMotion = useReducedMotion();
-
-  const handleAccept = () => {
-    if (reducedMotion) {
-      onAccept();
-      return;
-    }
-    setState("accepting");
-    setTimeout(() => onAccept(), 220);
-  };
-  const handleReject = () => {
-    if (reducedMotion) {
-      onReject();
-      return;
-    }
-    setState("rejecting");
-    setTimeout(() => onReject(), 220);
-  };
-
-  const evidenceList = Array.isArray(suggestion.evidence)
-    ? suggestion.evidence.filter(Boolean).join(", ")
-    : typeof suggestion.evidence === "string"
-      ? suggestion.evidence
-      : "";
-
-  const keywords = Array.isArray(suggestion.affectedKeywords)
-    ? suggestion.affectedKeywords.filter(Boolean)
-    : [];
-
-  // Determine action button label
-  const section = (suggestion.section || suggestion.type || "").toLowerCase();
-  const isSummary = section.includes("summary") || suggestion.type === "professional_summary";
-  const isBullet =
-    section.includes("experience") ||
-    suggestion.type === "experience_bullet" ||
-    section.includes("internship");
-  const isSkills =
-    section.includes("skill") ||
-    suggestion.type === "skills_alignment" ||
-    suggestion.type === "keyword_placement";
-
-  const actionLabel = isSummary
-    ? "Replace Summary"
-    : isBullet
-      ? "Replace Bullet"
-      : isSkills
-        ? "Add to Skills"
-        : "Apply";
-
-  return (
-    <motion.div
-      animate={{
-        opacity: state === "idle" ? 1 : 0,
-        x: state === "accepting" ? 20 : state === "rejecting" ? -20 : 0,
-        scale: state === "idle" ? 1 : 0.96,
-      }}
-      transition={{ duration: 0.2, ease: [0.45, 0, 0.55, 1] }}
-    >
-      <div
-        draggable={true}
-        onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
-          const payload = JSON.stringify(suggestion);
-          e.dataTransfer.setData("application/json", payload);
-          e.dataTransfer.setData("text/plain", suggestion.suggestedText || "");
-          e.dataTransfer.effectAllowed = "copy";
-        }}
-        className="space-y-2.5 p-3 text-left transition-all hover:bg-surface-elevated/50 rounded-lg border border-border/50 bg-surface/40 cursor-grab active:cursor-grabbing hover:border-primary/40 shadow-2xs"
-      >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
-            <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
-            <Badge
-              variant="outline"
-              className="rounded-md border-border/60 bg-background/60 px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wider text-primary"
-            >
-              {suggestion.section || suggestion.type}
-            </Badge>
-          </div>
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {suggestion.priority} priority
-          </span>
-        </div>
-
-        {suggestion.currentText && (
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Current / Weak
-            </span>
-            <div className="text-xs text-muted-foreground/85 line-through decoration-destructive/60 rounded bg-destructive/5 border border-destructive/15 p-2 leading-relaxed">
-              {suggestion.currentText}
-            </div>
-          </div>
-        )}
-
-        {suggestion.suggestedText && (
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              Proposed Improvement
-            </span>
-            <div className="text-xs font-medium text-foreground rounded bg-emerald-500/10 border border-emerald-500/20 p-2 leading-relaxed">
-              {suggestion.suggestedText}
-            </div>
-          </div>
-        )}
-
-        {suggestion.explanation && (
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Why It Matters
-            </span>
-            <p className="text-[11px] leading-relaxed text-muted-foreground">
-              {suggestion.explanation}
-            </p>
-          </div>
-        )}
-
-        {evidenceList && (
-          <div className="rounded bg-surface-elevated/50 border border-border/50 p-2 text-[10.5px] text-muted-foreground leading-relaxed">
-            <span className="font-semibold text-foreground/90">Resume Evidence: </span>
-            {evidenceList}
-          </div>
-        )}
-
-        {keywords.length > 0 && (
-          <div className="space-y-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Target Keywords
-            </span>
-            <div className="flex flex-wrap gap-1">
-              {keywords.map((kw) => (
-                <Badge
-                  key={kw}
-                  variant="secondary"
-                  className="rounded text-[9.5px] font-normal px-1.5 py-0 border border-border/60"
-                >
-                  {kw}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="pt-1 flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 flex-1 rounded-md text-xs font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-              onClick={handleAccept}
-              disabled={isPending}
-            >
-              {actionLabel}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 w-16 rounded-md text-xs font-medium text-destructive hover:bg-destructive/10"
-              onClick={handleReject}
-              disabled={isPending}
-            >
-              Reject
-            </Button>
-          </div>
-          <div className="text-[9.5px] text-muted-foreground/70 flex items-center justify-center gap-1 italic select-none">
-            <GripVertical className="h-2.5 w-2.5" />
-            <span>Drag to section or click {actionLabel}</span>
-          </div>
-        </div>
-      </div>
-    </motion.div>
   );
 }
 
@@ -756,117 +565,70 @@ export function LeftPane({
     };
   }, [tailorMutation.isPending]);
 
-  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
-    queryKey: ["optimization", "sessions", currentId],
-    queryFn: () => optimizationApi.getSessions(currentId),
-    enabled: Boolean(currentId),
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: ({ sessionId, suggestionId }: { sessionId: string; suggestionId: string }) =>
-      optimizationApi.reject({ sessionId, suggestionId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["optimization", "sessions", currentId] });
-      toast.success("Suggestion rejected");
-    },
-    onError: () => toast.error("Failed to reject suggestion"),
-  });
-
-  const generateSkillsMutation = useGenerateSkillsOptimization();
-  const generateSummaryMutation = useGenerateSummaryOptimization();
-
   const versions = versionsData?.versions ?? [];
-
-  const latestSession = useMemo(() => {
-    if (!sessionsData?.sessions?.length) return null;
-    return sessionsData.sessions[0];
-  }, [sessionsData]);
-
-  // Combine active suggestions passed directly from mutation with session query suggestions
-  const effectiveSuggestions: OptimizationSuggestion[] = useMemo(() => {
-    if (activeSuggestions && activeSuggestions.length > 0) {
-      return activeSuggestions;
-    }
-    return latestSession?.suggestions?.map((s) => s.suggestion) ?? [];
-  }, [activeSuggestions, latestSession]);
-
-  const effectiveSessionId = activeSessionId || latestSession?.id;
-
-  // Clear grouping: Summary, Experience bullets, Skills & Keywords, Other
-  const groupedSuggestions = useMemo(() => {
-    const summary: OptimizationSuggestion[] = [];
-    const experience: OptimizationSuggestion[] = [];
-    const skills: OptimizationSuggestion[] = [];
-    const other: OptimizationSuggestion[] = [];
-
-    for (const s of effectiveSuggestions) {
-      const sec = (s.section || s.type || "").toLowerCase();
-      if (sec.includes("summary") || s.type === "professional_summary") {
-        summary.push(s);
-      } else if (
-        sec.includes("experience") ||
-        s.type === "experience_bullet" ||
-        sec.includes("internship")
-      ) {
-        experience.push(s);
-      } else if (
-        sec.includes("skill") ||
-        s.type === "skills_alignment" ||
-        s.type === "keyword_placement"
-      ) {
-        skills.push(s);
-      } else {
-        other.push(s);
-      }
-    }
-
-    return { summary, experience, skills, other };
-  }, [effectiveSuggestions]);
-
-  // State machine for Run Optimization button: IDLE -> GENERATING -> RESULTS_AVAILABLE
-  type OptimizationStatus = "IDLE" | "GENERATING" | "RESULTS_AVAILABLE";
-  const optimizationStatus: OptimizationStatus = useMemo(() => {
-    if (isGeneratingOptimization) return "GENERATING";
-    if (effectiveSuggestions.length > 0) return "RESULTS_AVAILABLE";
-    return "IDLE";
-  }, [isGeneratingOptimization, effectiveSuggestions.length]);
 
   const hasJobContext = Boolean(targetJobTitle && targetJobDescription?.trim());
   const tailoringContextKey = `${currentId}|${targetJobTitle?.trim() || ""}|${targetCompany?.trim() || ""}|${targetJobDescription?.trim() || ""}`;
 
-  // Job-targeted Studio opens are autonomous: reuse an existing derived
-  // artifact, otherwise generate once and immediately compile it. The context
-  // key deliberately excludes the active version to prevent derived-version
-  // recursion after the successful switch.
-  // Manual retry after a tailor failure: unlatch this context so the
-  // autonomous effect below may fire again, then re-run explicitly. Failed
-  // attempts stay latched otherwise, leaving the panel with no recovery path.
-  const retryTailoring = useCallback(() => {
-    tailoredContextsRef.current.delete(tailoringContextKey);
+  const currentVersion = useMemo(() => {
+    return versions.find((v) => v.id === currentVersionId);
+  }, [versions, currentVersionId]);
+
+  const isCurrentVersionTailored = Boolean(
+    currentVersion &&
+    !currentVersion.is_master &&
+    currentVersion.job_description &&
+    currentVersion.job_description.trim() === targetJobDescription?.trim(),
+  );
+
+  const handleStartTailoring = useCallback(() => {
+    if (!targetJobDescription?.trim()) {
+      toast.error("Job description is required for tailoring");
+      return;
+    }
     tailorMutation.reset();
     tailorMutation.mutate({
       resumeId: currentId,
       versionId: currentVersionId || undefined,
-      jobDescription: targetJobDescription!,
+      jobDescription: targetJobDescription,
       jobTitle: targetJobTitle || undefined,
       company: targetCompany || undefined,
     });
   }, [
-    tailoringContextKey,
-    tailorMutation,
     currentId,
     currentVersionId,
     targetJobDescription,
     targetJobTitle,
     targetCompany,
+    tailorMutation,
+    toast,
   ]);
 
+  const handleApplyProposal = useCallback(async () => {
+    if (!tailorResult || !onApplyTailoring) return;
+    try {
+      await onApplyTailoring(
+        tailorResult.tailoredProfile,
+        tailorResult.plan,
+        targetJobTitle || undefined,
+        targetCompany || undefined,
+        targetJobDescription || undefined,
+      );
+      setTailorResult(null);
+    } catch {
+      // applyTailoringError is tracked by parent
+    }
+  }, [tailorResult, onApplyTailoring, targetJobTitle, targetCompany, targetJobDescription]);
+
+  const handleDiscardProposal = useCallback(() => {
+    setTailorResult(null);
+    tailorMutation.reset();
+  }, [tailorMutation]);
+
+  // If opening Studio with target JD and an existing tailored version already exists,
+  // select it so the user directly sees the derived artifact.
   useEffect(() => {
-    if (!hasJobContext || tailorMutation.isPending || tailorResult || isApplyingTailoring) return;
-    // Wait for the versions list before deciding there is no existing derived
-    // artifact. Firing while versions are still loading (or errored) missed
-    // the reuse check and compiled duplicate tailored versions on every open.
-    if (versionsLoading || versionsIsError) return;
+    if (!hasJobContext || isApplyingTailoring || versionsLoading || versionsIsError) return;
     const existing = versions.find(
       (version) =>
         !version.is_master &&
@@ -874,55 +636,22 @@ export function LeftPane({
         version.target_company === targetCompany &&
         version.job_description === targetJobDescription,
     );
-    if (existing) {
-      if (existing.id !== currentVersionId) onSelectVersion?.(existing.id);
+    if (existing && existing.id !== currentVersionId) {
+      onSelectVersion?.(existing.id);
       tailoredContextsRef.current.add(tailoringContextKey);
-      return;
     }
-    if (tailoredContextsRef.current.has(tailoringContextKey)) return;
-    tailoredContextsRef.current.add(tailoringContextKey);
-    tailorMutation.mutate({
-      resumeId: currentId,
-      versionId: currentVersionId || undefined,
-      jobDescription: targetJobDescription!,
-      jobTitle: targetJobTitle || undefined,
-      company: targetCompany || undefined,
-    });
   }, [
     hasJobContext,
-    tailorMutation,
-    tailorResult,
     isApplyingTailoring,
     versions,
     versionsLoading,
     versionsIsError,
     currentVersionId,
-    currentId,
     targetJobTitle,
     targetCompany,
     targetJobDescription,
     tailoringContextKey,
     onSelectVersion,
-  ]);
-
-  useEffect(() => {
-    if (!tailorResult || tailorResult.limitedAlignment || isApplyingTailoring || appliedContextsRef.current.has(tailoringContextKey)) return;
-    appliedContextsRef.current.add(tailoringContextKey);
-    void onApplyTailoring?.(
-      tailorResult.tailoredProfile,
-      tailorResult.plan,
-      targetJobTitle || undefined,
-      targetCompany || undefined,
-      targetJobDescription || undefined,
-    );
-  }, [
-    tailorResult,
-    isApplyingTailoring,
-    tailoringContextKey,
-    onApplyTailoring,
-    targetJobTitle,
-    targetCompany,
-    targetJobDescription,
   ]);
 
   useEffect(() => {
@@ -992,44 +721,68 @@ export function LeftPane({
         {hasJobContext && (
           <div className="space-y-3">
             {/* Whole Resume Tailoring Section */}
-            <div className="space-y-2.5 rounded-xl border border-primary/20 bg-primary/[0.03] p-3 shadow-xs">
+            <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-3.5 shadow-xs">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Wand2 className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/90">
-                    Executive Diagnostic Audit
+                <div className="flex items-center gap-2">
+                  <Wand2 className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">
+                    Intelligent Whole-Resume Tailoring
                   </span>
                 </div>
-                {tailorResult && (
-                  <Badge variant="outline" className="rounded-full border-emerald-500/30 bg-emerald-500/10 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                {tailorResult ? (
+                  <Badge
+                    variant="outline"
+                    className="rounded-full border-emerald-500/30 bg-emerald-500/10 text-[9px] font-bold text-emerald-600 dark:text-emerald-400"
+                  >
                     +{Math.round(tailorResult.scoreComparison.delta)}% ATS Projected
                   </Badge>
-                )}
+                ) : isCurrentVersionTailored ? (
+                  <Badge
+                    variant="outline"
+                    className="rounded-full border-primary/30 bg-primary/10 text-[9px] font-semibold text-primary"
+                  >
+                    Tailored Active
+                  </Badge>
+                ) : null}
               </div>
 
-              <p className="text-[11px] leading-relaxed text-muted-foreground">
-                Verified evidence is being aligned and compiled automatically for this target.
-              </p>
-
+              {/* Progress State while Tailoring */}
               {(tailorMutation.isPending || isApplyingTailoring) && (
-                <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-background/80 p-2.5 text-[11px] font-medium text-foreground">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                  {tailoringStep === "analyzing" && "Analyzing JD requirements…"}
-                  {tailoringStep === "synthesizing" && "Reframing candidate evidence…"}
-                  {(tailoringStep === "compiling" || isApplyingTailoring) && "Compiling executive artifact…"}
-                  {tailoringStep === "idle" && "Preparing tailored artifact…"}
+                <div className="space-y-2 rounded-lg border border-primary/20 bg-background/80 p-3">
+                  <div className="flex items-center gap-2 text-xs font-medium text-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+                    <span>
+                      {isApplyingTailoring
+                        ? "Compiling derived PDF artifact & creating version…"
+                        : tailoringStep === "analyzing"
+                          ? "Analyzing job description requirements…"
+                          : tailoringStep === "synthesizing"
+                            ? "Aligning candidate evidence across whole resume…"
+                            : "Synthesizing unified tailored proposal…"}
+                    </span>
+                  </div>
+                  <Progress
+                    value={
+                      isApplyingTailoring
+                        ? 85
+                        : tailoringStep === "analyzing"
+                          ? 30
+                          : tailoringStep === "synthesizing"
+                            ? 65
+                            : 90
+                    }
+                    className="h-1.5 bg-primary/10"
+                  />
                 </div>
               )}
 
-              {/* Tailor-request failure: inline error with manual retry. A
-                  failed tailor previously surfaced only as a transient toast,
-                  leaving a blank panel that looked like it was still working. */}
+              {/* Tailor Mutation Failure */}
               {tailorMutation.isError && !tailorMutation.isPending && (
-                <Card className="glass rounded-2xl border-rose-500/30 bg-rose-500/5 p-3">
+                <Card className="glass rounded-xl border-rose-500/30 bg-rose-500/5 p-3">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-500" />
-                    <div className="space-y-1">
-                      <div className="text-[11px] font-medium text-rose-700 dark:text-rose-300">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                    <div className="space-y-1 text-left">
+                      <div className="text-xs font-medium text-rose-700 dark:text-rose-300">
                         Tailoring failed
                       </div>
                       <div className="text-[11px] leading-relaxed text-muted-foreground">
@@ -1039,7 +792,7 @@ export function LeftPane({
                         size="sm"
                         variant="outline"
                         className="mt-1.5 h-7 rounded-md text-[11px]"
-                        onClick={retryTailoring}
+                        onClick={handleStartTailoring}
                         disabled={tailorMutation.isPending}
                       >
                         Retry tailoring
@@ -1049,20 +802,17 @@ export function LeftPane({
                 </Card>
               )}
 
-              {/* Apply-tailoring failure: inline error with manual retry. The
-                  projected +0% panel below reflects the tailor plan, not a
-                  compiled version — without this card a failed compile looked
-                  exactly like "no improvement found". */}
+              {/* Apply Tailoring Failure */}
               {applyTailoringError && !isApplyingTailoring && (
-                <Card className="glass rounded-2xl border-rose-500/30 bg-rose-500/5 p-3">
+                <Card className="glass rounded-xl border-rose-500/30 bg-rose-500/5 p-3">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-500" />
-                    <div className="space-y-1">
-                      <div className="text-[11px] font-medium text-rose-700 dark:text-rose-300">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                    <div className="space-y-1 text-left">
+                      <div className="text-xs font-medium text-rose-700 dark:text-rose-300">
                         Couldn’t compile the tailored version
                       </div>
                       <div className="text-[11px] leading-relaxed text-muted-foreground">
-                        {applyTailoringError} No new version was created — your resume is unchanged.
+                        {applyTailoringError} Your original resume was not changed.
                       </div>
                       {onRetryApplyTailoring && (
                         <Button
@@ -1080,16 +830,17 @@ export function LeftPane({
                 </Card>
               )}
 
-              {tailorResult && (
+              {/* State 1: Proposal Ready for Review */}
+              {tailorResult && !isApplyingTailoring && (
                 <div className="space-y-3 pt-1">
                   {tailorResult.limitedAlignment && (
                     <div
                       data-testid="limited-alignment-advisory"
-                      className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-amber-800 dark:text-amber-200"
+                      className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-amber-800 dark:text-amber-200 text-left"
                     >
                       <div className="flex items-start gap-2">
                         <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                        <div className="space-y-1 text-left">
+                        <div className="space-y-1">
                           <div className="text-[11px] font-semibold">Role Fit Advisory</div>
                           <p className="text-[10.5px] leading-relaxed text-amber-700/90 dark:text-amber-300/90">
                             {tailorResult.alignmentMessage ||
@@ -1100,7 +851,7 @@ export function LeftPane({
                     </div>
                   )}
 
-                  {/* ATS Score Comparison Badge */}
+                  {/* Projected ATS Score Comparison */}
                   <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-background/80 p-2.5">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -1126,22 +877,29 @@ export function LeftPane({
 
                   <div className="text-[10.5px] text-muted-foreground px-0.5 flex justify-between">
                     <span>
-                      Keywords Matched: <strong className="text-foreground">{tailorResult.scoreComparison.matchedKeywordsCount}</strong>
+                      Keywords Matched:{" "}
+                      <strong className="text-foreground">
+                        {tailorResult.scoreComparison.matchedKeywordsCount}
+                      </strong>
                     </span>
                     <span>
-                      Missing: <strong className="text-foreground">{tailorResult.scoreComparison.missingKeywordsCount}</strong>
+                      Missing:{" "}
+                      <strong className="text-foreground">
+                        {tailorResult.scoreComparison.missingKeywordsCount}
+                      </strong>
                     </span>
                   </div>
 
-                  {/* Tailoring Plan Preview */}
+                  {/* Section-Level Proposed Changes Preview */}
                   <div className="space-y-2">
                     <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
-                      <span>Tailoring Audit</span>
+                      <span>Proposed Document Changes</span>
                       <span className="font-mono text-[9px] text-muted-foreground">
-                        {tailorResult.plan.length}
+                        {tailorResult.plan.length}{" "}
+                        {tailorResult.plan.length === 1 ? "change" : "changes"}
                       </span>
                     </div>
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                       {tailorResult.plan.map((item, idx) => (
                         <TailoringPlanCard key={`${item.section}-${idx}`} planItem={item} />
                       ))}
@@ -1149,110 +907,72 @@ export function LeftPane({
                   </div>
 
                   <Badge className="w-full justify-center rounded-md border border-emerald-500/30 bg-emerald-500/10 py-1.5 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-300">
-                    <Check className="mr-1.5 h-3.5 w-3.5" /> Verified Candidate Facts Only
+                    <Check className="mr-1.5 h-3.5 w-3.5" /> Verified Candidate Facts Only • No
+                    Unsupported Claims
                   </Badge>
-                </div>
-              )}
-            </div>
 
-            {/* Granular Section Optimization */}
-            {onRunOptimization && (
-              <Button
-                size="sm"
-                className="w-full h-8 rounded-lg text-xs font-semibold shadow-xs"
-                onClick={onRunOptimization}
-                disabled={optimizationStatus === "GENERATING"}
-              >
-                {optimizationStatus === "GENERATING" ? (
-                  <>
-                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                    Generating Suggestions...
-                  </>
-                ) : optimizationStatus === "RESULTS_AVAILABLE" ? (
-                  <>
-                    <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" />
-                    Re-run Optimization ({effectiveSuggestions.length} available)
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                    Run Optimization
-                  </>
-                )}
-              </Button>
-            )}
-            {generateOptimizationError && (
-              <Card className="glass rounded-2xl border-rose-500/30 bg-rose-500/5 p-3">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-500" />
-                  <div className="space-y-1">
-                    <div className="text-[11px] font-medium text-rose-700 dark:text-rose-300">
-                      Optimization failed
-                    </div>
-                    <div className="text-[11px] leading-relaxed text-muted-foreground">
-                      {generateOptimizationError}
-                    </div>
-                    {onRunOptimization && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="mt-1.5 h-7 rounded-md text-[11px]"
-                        onClick={onRunOptimization}
-                        disabled={isGeneratingOptimization}
-                      >
-                        Retry
-                      </Button>
-                    )}
+                  {/* One Clear Primary Action to Apply Whole-Resume Tailoring */}
+                  <div className="space-y-1.5 pt-1">
+                    <Button
+                      size="default"
+                      className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+                      onClick={handleApplyProposal}
+                      disabled={isApplyingTailoring}
+                    >
+                      <Wand2 className="h-4 w-4" />
+                      Apply Tailored Resume
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                      onClick={handleDiscardProposal}
+                      disabled={isApplyingTailoring}
+                    >
+                      Discard Proposal
+                    </Button>
                   </div>
                 </div>
-              </Card>
-            )}
-            <div className="grid grid-cols-2 gap-1.5">
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-7 rounded-lg text-[11px]"
-                onClick={() => {
-                  if (!targetJobDescription?.trim()) {
-                    toast.error("Job description is required for AI skills optimization");
-                    return;
-                  }
-                  generateSkillsMutation.mutate({
-                    resumeId: currentId,
-                    versionId: currentVersionId || undefined,
-                    jobDescription: targetJobDescription,
-                    jobTitle: targetJobTitle || undefined,
-                    company: targetCompany || undefined,
-                  });
-                }}
-                disabled={generateSkillsMutation.isPending}
-              >
-                <Sparkles className="mr-1 h-3 w-3" />
-                {generateSkillsMutation.isPending ? "Generating..." : "AI Skills"}
-              </Button>
+              )}
 
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-7 rounded-lg text-[11px]"
-                onClick={() => {
-                  if (!targetJobDescription?.trim()) {
-                    toast.error("Job description is required for AI summary optimization");
-                    return;
-                  }
-                  generateSummaryMutation.mutate({
-                    resumeId: currentId,
-                    versionId: currentVersionId || undefined,
-                    jobDescription: targetJobDescription,
-                    jobTitle: targetJobTitle || undefined,
-                    company: targetCompany || undefined,
-                  });
-                }}
-                disabled={generateSummaryMutation.isPending}
-              >
-                <Sparkles className="mr-1 h-3 w-3" />
-                {generateSummaryMutation.isPending ? "Generating..." : "AI Summary"}
-              </Button>
+              {/* State 2: Tailored Version Active (Already Applied) */}
+              {!tailorResult && !tailorMutation.isPending && isCurrentVersionTailored && (
+                <div className="space-y-2.5">
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    This derived version is tailored specifically for this role. The PDF is compiled
+                    and active.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full h-8 rounded-lg text-xs font-medium gap-1.5"
+                    onClick={handleStartTailoring}
+                    disabled={tailorMutation.isPending || isApplyingTailoring}
+                  >
+                    <Wand2 className="h-3.5 w-3.5 text-primary" />
+                    Re-tailor for this Job
+                  </Button>
+                </div>
+              )}
+
+              {/* State 3: Ready to Tailor (Initial State) */}
+              {!tailorResult && !tailorMutation.isPending && !isCurrentVersionTailored && (
+                <div className="space-y-2.5">
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    Tailor your entire resume to match this role. CareerOS maps job requirements
+                    against your verified experience across summary, skills, and work history.
+                  </p>
+                  <Button
+                    size="default"
+                    className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+                    onClick={handleStartTailoring}
+                    disabled={tailorMutation.isPending || isApplyingTailoring}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Tailor Resume to this Job
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1349,173 +1069,6 @@ export function LeftPane({
                   Set Target Job
                 </Button>
               )}
-            </Card>
-          </PaneSection>
-        )}
-
-        {/* AI Suggestions Section with Clear Groupings */}
-        {hasAnalysis && (
-          <PaneSection
-            icon={Sparkles}
-            title="AI Suggestions"
-            action={
-              <Badge variant="secondary" className="rounded-full text-[10px]">
-                {effectiveSuggestions.length}
-              </Badge>
-            }
-          >
-            {sessionsLoading && !activeSuggestions ? (
-              <div className="space-y-2">
-                {Array.from({ length: 2 }).map((_, i) => (
-                  <Skeleton key={i} className="h-20 w-full rounded-xl" />
-                ))}
-              </div>
-            ) : effectiveSuggestions.length === 0 ? (
-              <Card className="glass rounded-2xl border-border/60 p-4 text-center">
-                <div className="text-xs text-muted-foreground">
-                  Run optimization to get AI-powered suggestions.
-                </div>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {/* 1. Summary Suggestions */}
-                {groupedSuggestions.summary.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
-                      <span>Summary Improvements</span>
-                      <span className="font-mono text-[9px] text-muted-foreground">
-                        {groupedSuggestions.summary.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {groupedSuggestions.summary.map((suggestion) => (
-                        <SuggestionCard
-                          key={suggestion.id}
-                          suggestion={suggestion}
-                          isPending={rejectMutation.isPending}
-                          onAccept={() => {
-                            if (!onApplySuggestion) return;
-                            onApplySuggestion(suggestion, effectiveSessionId);
-                          }}
-                          onReject={() => {
-                            if (!effectiveSessionId) return;
-                            rejectMutation.mutate({
-                              sessionId: effectiveSessionId,
-                              suggestionId: suggestion.id,
-                            });
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. Experience Bullet Suggestions */}
-                {groupedSuggestions.experience.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
-                      <span>Experience Bullet Rewrites</span>
-                      <span className="font-mono text-[9px] text-muted-foreground">
-                        {groupedSuggestions.experience.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {groupedSuggestions.experience.map((suggestion) => (
-                        <SuggestionCard
-                          key={suggestion.id}
-                          suggestion={suggestion}
-                          isPending={rejectMutation.isPending}
-                          onAccept={() => {
-                            if (!onApplySuggestion) return;
-                            onApplySuggestion(suggestion, effectiveSessionId);
-                          }}
-                          onReject={() => {
-                            if (!effectiveSessionId) return;
-                            rejectMutation.mutate({
-                              sessionId: effectiveSessionId,
-                              suggestionId: suggestion.id,
-                            });
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. Skills & Keywords Suggestions */}
-                {groupedSuggestions.skills.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary flex items-center justify-between">
-                      <span>Skills & Keyword Additions</span>
-                      <span className="font-mono text-[9px] text-muted-foreground">
-                        {groupedSuggestions.skills.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {groupedSuggestions.skills.map((suggestion) => (
-                        <SuggestionCard
-                          key={suggestion.id}
-                          suggestion={suggestion}
-                          isPending={rejectMutation.isPending}
-                          onAccept={() => {
-                            if (!onApplySuggestion) return;
-                            onApplySuggestion(suggestion, effectiveSessionId);
-                          }}
-                          onReject={() => {
-                            if (!effectiveSessionId) return;
-                            rejectMutation.mutate({
-                              sessionId: effectiveSessionId,
-                              suggestionId: suggestion.id,
-                            });
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. Other Suggestions */}
-                {groupedSuggestions.other.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground flex items-center justify-between">
-                      <span>Other Suggestions</span>
-                      <span className="font-mono text-[9px] text-muted-foreground">
-                        {groupedSuggestions.other.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {groupedSuggestions.other.map((suggestion) => (
-                        <SuggestionCard
-                          key={suggestion.id}
-                          suggestion={suggestion}
-                          isPending={rejectMutation.isPending}
-                          onAccept={() => {
-                            if (!onApplySuggestion) return;
-                            onApplySuggestion(suggestion, effectiveSessionId);
-                          }}
-                          onReject={() => {
-                            if (!effectiveSessionId) return;
-                            rejectMutation.mutate({
-                              sessionId: effectiveSessionId,
-                              suggestionId: suggestion.id,
-                            });
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </PaneSection>
-        )}
-
-        {!hasAnalysis && hasJobContext && (
-          <PaneSection icon={Sparkles} title="AI Suggestions">
-            <Card className="glass rounded-2xl border-border/60 p-4 text-center">
-              <div className="text-xs text-muted-foreground">
-                Run ATS analysis to generate AI suggestions for your resume.
-              </div>
             </Card>
           </PaneSection>
         )}

@@ -98,7 +98,9 @@ function flattenSkills(skills: Record<string, unknown> | undefined): string[] {
 }
 
 /** Extract categorized skills from backend SkillCategory object */
-function extractSkillCategories(skills: Record<string, unknown> | undefined): Record<string, string[]> {
+function extractSkillCategories(
+  skills: Record<string, unknown> | undefined,
+): Record<string, string[]> {
   if (!skills) return {};
   const categories: Record<string, string[]> = {};
   if (skills.custom && typeof skills.custom === "object") {
@@ -144,14 +146,19 @@ function mapExperience(exp: Record<string, unknown>): ExperienceItem {
   const sub_engagements = rawSubs
     .map((s: any) => {
       if (!s || typeof s !== "object") return null;
-      const sRawBullets = Array.isArray(s.responsibilities) ? s.responsibilities : Array.isArray(s.bullets) ? s.bullets : [];
+      const sRawBullets = Array.isArray(s.responsibilities)
+        ? s.responsibilities
+        : Array.isArray(s.bullets)
+          ? s.bullets
+          : [];
       const sBullets: BulletItem[] = sRawBullets
         .map((b: any) => {
           if (typeof b === "string") return { id: _bulletId(b), text: b };
-          if (b && typeof b === "object" && "text" in b) return { id: b.id || _bulletId(b.text), text: b.text };
+          if (b && typeof b === "object" && "text" in b)
+            return { id: b.id || _bulletId(b.text), text: b.text };
           return null;
         })
-        .filter((b): b is BulletItem => b !== null && b.text !== "");
+        .filter((b: any): b is BulletItem => b !== null && b.text !== "");
       return {
         id: s.id || _bulletId(s.name || ""),
         name: s.name || "",

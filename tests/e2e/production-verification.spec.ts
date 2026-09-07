@@ -5,7 +5,10 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const screenshotsDir = path.resolve(__dirname, "../../playwright/screenshots/prod-full-verification");
+const screenshotsDir = path.resolve(
+  __dirname,
+  "../../playwright/screenshots/prod-full-verification",
+);
 fs.mkdirSync(screenshotsDir, { recursive: true });
 
 const RESUME_ID = "8194099d-a36e-4b5c-9900-f0ecf30c0e03";
@@ -21,10 +24,12 @@ Responsibilities:
 - Coordinate with application reliability engineers and infrastructure teams.
 Requirements:
 - Strong incident management and troubleshooting experience.
-- Experience with JIRA, monitoring tools, and service reliability.`
+- Experience with JIRA, monitoring tools, and service reliability.`,
 };
 
-test("Complete production Resume Studio mutation, reload, and export verification", async ({ page }) => {
+test("Complete production Resume Studio mutation, reload, and export verification", async ({
+  page,
+}) => {
   test.setTimeout(240000);
 
   const consoleLogs: string[] = [];
@@ -36,7 +41,10 @@ test("Complete production Resume Studio mutation, reload, and export verificatio
 
   page.on("response", async (res) => {
     const url = res.url();
-    if (url.includes("/apply-operation") || (url.includes("/versions") && res.request().method() === "POST")) {
+    if (
+      url.includes("/apply-operation") ||
+      (url.includes("/versions") && res.request().method() === "POST")
+    ) {
       console.log(`[NETWORK] ${res.request().method()} ${url} -> ${res.status()}`);
     }
   });
@@ -48,43 +56,60 @@ test("Complete production Resume Studio mutation, reload, and export verificatio
   await page.waitForLoadState("domcontentloaded");
   await page.waitForTimeout(4000);
 
-  await page.screenshot({ path: path.join(screenshotsDir, "01-initial-studio.png"), fullPage: true });
+  await page.screenshot({
+    path: path.join(screenshotsDir, "01-initial-studio.png"),
+    fullPage: true,
+  });
 
-  // 2. Ensure suggestions are present or run optimization
-  let replaceSummaryBtn = page.getByRole("button", { name: "Replace Summary" });
-  if (!(await replaceSummaryBtn.first().isVisible({ timeout: 5000 }).catch(() => false))) {
-    const runOptBtn = page.getByRole("button", { name: /Run Optimization|Generate Suggestions/i });
-    if (await runOptBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log("Generating suggestions...");
-      await runOptBtn.first().click();
-      await page.waitForTimeout(20000);
-    }
-  }
-
-  await page.screenshot({ path: path.join(screenshotsDir, "02-suggestions-loaded.png"), fullPage: true });
-
-  replaceSummaryBtn = page.getByRole("button", { name: "Replace Summary" });
-  const hasReplaceSummary = await replaceSummaryBtn.first().isVisible({ timeout: 10000 }).catch(() => false);
-  console.log(`Replace Summary visible: ${hasReplaceSummary}`);
-
-  if (hasReplaceSummary) {
-    console.log("Clicking 'Replace Summary'...");
-    await replaceSummaryBtn.first().click();
-    // Wait for version creation + operation application + document compilation
+  // 2. Trigger Whole-Resume Tailoring or review existing proposal
+  const tailorBtn = page.getByRole("button", {
+    name: /Tailor Resume to this Job|Re-tailor for this Job/i,
+  });
+  if (
+    await tailorBtn
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
+  ) {
+    console.log("Clicking 'Tailor Resume to this Job'...");
+    await tailorBtn.first().click();
+    // Wait for LLM/AST whole-resume tailoring proposal generation
     await page.waitForTimeout(15000);
-  } else {
-    const anyApplyBtn = page.getByRole("button", { name: /Replace Bullet|Add to Skills|Apply/i });
-    if (await anyApplyBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log("Clicking alternative suggestion button...");
-      await anyApplyBtn.first().click();
-      await page.waitForTimeout(15000);
-    }
   }
 
-  await page.screenshot({ path: path.join(screenshotsDir, "03-after-apply.png"), fullPage: true });
+  await page.screenshot({
+    path: path.join(screenshotsDir, "02-proposal-generated.png"),
+    fullPage: true,
+  });
+
+  // 3. Review proposal & click "Apply Tailored Resume"
+  const applyTailoredBtn = page.getByRole("button", {
+    name: /Apply Tailored Resume/i,
+  });
+  const hasApplyTailored = await applyTailoredBtn
+    .first()
+    .isVisible({ timeout: 15000 })
+    .catch(() => false);
+  console.log(`Apply Tailored Resume visible: ${hasApplyTailored}`);
+
+  if (hasApplyTailored) {
+    console.log("Clicking 'Apply Tailored Resume'...");
+    await applyTailoredBtn.first().click();
+    // Wait for version creation + document compilation (Render free tier / compiler)
+    await page.waitForTimeout(20000);
+  } else {
+    console.log("Proposal was already applied or active.");
+  }
+
+  await page.screenshot({
+    path: path.join(screenshotsDir, "03-after-apply.png"),
+    fullPage: true,
+  });
 
   // 3. Check for error toast
-  const toastLoc = page.locator("[data-sonner-toast], [role=status], [role=alert], .toast, [data-toast]");
+  const toastLoc = page.locator(
+    "[data-sonner-toast], [role=status], [role=alert], .toast, [data-toast]",
+  );
   const count = await toastLoc.count();
   for (let i = 0; i < count; i++) {
     const txt = await toastLoc.nth(i).innerText();

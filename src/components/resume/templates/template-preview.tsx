@@ -271,20 +271,24 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
                         const subBullets = Array.isArray(sub.bullets)
                           ? sub.bullets
                           : Array.isArray(sub.responsibilities)
-                          ? sub.responsibilities
-                          : [];
+                            ? sub.responsibilities
+                            : [];
                         return (
                           <div key={sub.id ?? sIdx} className="space-y-0.5">
                             <div className="flex items-baseline justify-between text-xs">
                               <span className="font-semibold text-gray-800">{subName}</span>
                               {(sub.duration || sub.role) && (
-                                <span className="text-gray-500 text-[11px]">{sub.duration || sub.role}</span>
+                                <span className="text-gray-500 text-[11px]">
+                                  {sub.duration || sub.role}
+                                </span>
                               )}
                             </div>
                             {subBullets.length > 0 && (
                               <ul className="list-disc space-y-0.5 pl-4 text-xs text-gray-600">
                                 {subBullets.map((b: any, bIdx: number) => (
-                                  <li key={b?.id ?? bIdx}>{typeof b === "string" ? b : b?.text || ""}</li>
+                                  <li key={b?.id ?? bIdx}>
+                                    {typeof b === "string" ? b : b?.text || ""}
+                                  </li>
                                 ))}
                               </ul>
                             )}
@@ -563,8 +567,12 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
           <Badge variant="outline" className="rounded-full">
             {activeTemplate.name}
           </Badge>
-          {activeTemplate.license && <span>License: {activeTemplate.license}</span>}
-          {activeTemplate.author && <span>By {activeTemplate.author}</span>}
+          {"license" in activeTemplate && Boolean(activeTemplate.license) && (
+            <span>License: {String(activeTemplate.license)}</span>
+          )}
+          {"author" in activeTemplate && Boolean(activeTemplate.author) && (
+            <span>By {String(activeTemplate.author)}</span>
+          )}
         </div>
       </div>
     </Card>
