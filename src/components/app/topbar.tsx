@@ -46,7 +46,7 @@ export function AppTopbar({ onOpenCommand }: { onOpenCommand: () => void }) {
 
       <button
         onClick={onOpenCommand}
-        className="group flex h-8.5 flex-1 items-center gap-2.5 rounded-lg border border-border/80 bg-surface-instrument/80 px-3 text-left text-xs text-muted-foreground transition-all hover:border-primary/40 hover:bg-surface-elevated/80 hover:text-foreground sm:max-w-md shadow-inner-recessed"
+        className="group flex h-8.5 min-w-0 flex-1 items-center gap-2.5 rounded-lg border border-border/80 bg-surface-instrument/80 px-3 text-left text-xs text-muted-foreground transition-all hover:border-primary/40 hover:bg-surface-elevated/80 hover:text-foreground sm:max-w-md shadow-inner-recessed"
       >
         <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70 group-hover:text-primary transition-colors" />
         <span className="truncate text-xs font-normal">

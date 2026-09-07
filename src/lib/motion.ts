@@ -17,16 +17,14 @@ export const ease = {
   inOut: [0.45, 0, 0.55, 1] as [number, number, number, number],
 };
 
-// Page transitions — direction-aware slide + fade
+// Page transitions — clean opacity fade only. No slide/scale transforms:
+// transforms shift layout boundaries (scrollbars, sticky chrome) and make
+// route changes read as jarring "layout jumps". A short opacity crossfade
+// keeps the chrome stable and the new page perceptible immediately.
 export const pageVariants: Variants = {
-  initial: { opacity: 0, y: 12, scale: 0.995 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] } },
-  exit: {
-    opacity: 0,
-    y: -8,
-    scale: 1.002,
-    transition: { duration: 0.14, ease: [0.45, 0, 0.55, 1] },
-  },
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.15, ease: "easeOut" } },
+  exit: { opacity: 0, transition: { duration: 0.1, ease: "easeIn" } },
 };
 
 // Stagger container

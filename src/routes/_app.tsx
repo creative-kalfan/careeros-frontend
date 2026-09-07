@@ -66,8 +66,12 @@ function AppLayout() {
     navigate,
   ]);
 
-  // Show loading while initializing or loading profile
-  if (!isInitialized || isLoading || (isAuthenticated && isProfileLoading)) {
+  // Show loading while initializing. A background profile refetch
+  // (isProfileLoading) must NOT unmount the whole layout when a cached
+  // profile already exists — that would flash the sidebar/topbar out and
+  // remount them on every route change. The `!profile` gate below still
+  // hard-blocks protected content until a confirmed profile arrives.
+  if (!isInitialized || isLoading) {
     return <AuthLoadingSpinner />;
   }
 
@@ -104,7 +108,7 @@ function AppLayout() {
           <AppSidebar />
           <SidebarInset className="flex min-w-0 flex-1 flex-col">
             <AppTopbar onOpenCommand={() => setCmdOpen(true)} />
-            <main className="flex-1">
+            <main className="min-w-0 flex-1">
               <PageTransition>
                 <Outlet />
               </PageTransition>

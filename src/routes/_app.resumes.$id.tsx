@@ -1079,7 +1079,7 @@ function ResumeWorkspace() {
     <div className="font-sans antialiased flex h-screen flex-col bg-background">
       <header className="glass-topbar border-b border-border/80 px-4 py-2.5 flex-shrink-0 z-30 select-none">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
+          <div className="flex min-w-0 items-center gap-2.5">
             <Button
               asChild
               variant="ghost"
@@ -1091,8 +1091,8 @@ function ResumeWorkspace() {
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_var(--color-success)]" />
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_6px_var(--color-success)]" />
               <h1 className="truncate text-sm font-semibold tracking-tight text-foreground">
                 {jobTitle || formatResumeDisplayName(record?.original_filename, record?.title)}
               </h1>
@@ -1106,7 +1106,7 @@ function ResumeWorkspace() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {showSaved ? (
               <Badge
                 variant="outline"
@@ -1219,7 +1219,7 @@ function ResumeWorkspace() {
           />
         </div>
         <div
-          className="flex-1 overflow-hidden document-workbench"
+          className="min-w-0 flex-1 overflow-hidden document-workbench"
           style={{
             background:
               "radial-gradient(ellipse 80% 60% at 50% 20%, oklch(0.175 0.018 265 / 0.4), transparent 70%)",

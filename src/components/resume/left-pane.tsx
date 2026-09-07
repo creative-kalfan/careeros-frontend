@@ -76,7 +76,9 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
       </div>
 
       {planItem.reasoning && (
-        <p className="text-[11px] leading-relaxed text-muted-foreground">{planItem.reasoning}</p>
+        <p className="whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
+          {planItem.reasoning}
+        </p>
       )}
 
       {planItem.currentText && (
@@ -84,7 +86,7 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
           <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Current
           </span>
-          <div className="text-xs text-muted-foreground/85 line-through decoration-destructive/60 rounded bg-destructive/5 border border-destructive/15 p-2 leading-relaxed">
+          <div className="whitespace-normal break-words text-xs text-muted-foreground/85 line-through decoration-destructive/60 rounded bg-destructive/5 border border-destructive/15 p-2 leading-relaxed">
             {planItem.currentText}
           </div>
         </div>
@@ -95,7 +97,7 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
           <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
             Tailored Text
           </span>
-          <div className="text-xs font-medium text-foreground rounded bg-emerald-500/10 border border-emerald-500/20 p-2 leading-relaxed">
+          <div className="whitespace-normal break-words text-xs font-medium text-foreground rounded bg-emerald-500/10 border border-emerald-500/20 p-2 leading-relaxed">
             {planItem.suggestedText}
           </div>
         </div>
@@ -153,7 +155,7 @@ function PaneSection({
 function ScoreCell({ label, score }: { label: string; score: number }) {
   const clamped = Math.max(0, Math.min(100, Math.round(score ?? 0)));
   return (
-    <div className="space-y-1.5 rounded-lg workstation-instrument p-2 border border-border/60">
+    <div className="min-w-0 space-y-1.5 rounded-lg workstation-instrument p-2 border border-border/60">
       <div className="flex items-center justify-between text-[10px] text-muted-foreground">
         <span className="font-medium">{label}</span>
         <span className="font-mono font-semibold text-foreground">{clamped}%</span>
@@ -255,26 +257,28 @@ function AtsAnalysisSummary({
   return (
     <div className="space-y-3">
       <Card className="workstation-panel rounded-xl border border-border/80 p-3.5 shadow-xs">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Gauge className="h-4 w-4 text-primary" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <Gauge className="h-4 w-4 shrink-0 text-primary" />
+            <span className="whitespace-normal break-words text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80">
               ATS Match Score
             </span>
           </div>
-          <span className="font-mono text-xl font-bold text-foreground drop-shadow-[0_0_8px_var(--color-primary)]">
+          <span className="shrink-0 whitespace-nowrap font-mono text-xl font-bold text-foreground drop-shadow-[0_0_8px_var(--color-primary)]">
             {overall}%
           </span>
         </div>
-        <p className="mb-2 text-[11px] font-semibold text-foreground/90">{scoreBand.label}</p>
+        <p className="mb-2 whitespace-normal break-words text-[11px] font-semibold text-foreground/90">
+          {scoreBand.label}
+        </p>
         <Progress value={overall} className="h-2 bg-muted/80" />
         {coverage.importantTotal > 0 && (
-          <p className="mt-2 text-[11px] text-muted-foreground font-medium">
+          <p className="mt-2 whitespace-normal break-words text-[11px] text-muted-foreground font-medium">
             {coverage.importantAddressed} of {coverage.importantTotal} key requirements addressed
           </p>
         )}
         {explanation?.overall && (
-          <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+          <p className="mt-2 whitespace-normal break-words text-[11px] text-muted-foreground leading-relaxed">
             {explanation.overall}
           </p>
         )}
@@ -286,7 +290,7 @@ function AtsAnalysisSummary({
         )}
       </Card>
 
-      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <ScoreCell label="Keywords" score={analysis.keyword_match_score} />
         <ScoreCell label="Skills" score={analysis.skills_match_score} />
         <ScoreCell label="Experience" score={analysis.experience_relevance_score} />
@@ -667,7 +671,7 @@ export function LeftPane({
   return (
     <ScrollArea className="h-full">
       <motion.div
-        className="flex flex-col gap-6 p-4"
+        className="flex w-full min-w-0 max-w-full flex-col gap-6 p-4"
         variants={staggerContainer}
         initial="hidden"
         animate="show"
@@ -687,6 +691,7 @@ export function LeftPane({
             </div>
             {onOpenATSDialog && (
               <Button
+                type="button"
                 size="sm"
                 variant="ghost"
                 className="h-7 px-2 text-[11px] font-medium text-primary hover:text-primary hover:bg-primary/10 shrink-0"
@@ -702,7 +707,7 @@ export function LeftPane({
               <Target className="h-5 w-5" />
             </div>
             <div className="text-xs font-semibold mb-1">No job target set</div>
-            <div className="text-[11px] text-muted-foreground leading-relaxed">
+            <div className="whitespace-normal break-words text-[11px] text-muted-foreground leading-relaxed">
               Compare your resume with a job to unlock ATS analysis and AI suggestions.
             </div>
             {onOpenATSDialog && (
@@ -722,10 +727,10 @@ export function LeftPane({
           <div className="space-y-3">
             {/* Whole Resume Tailoring Section */}
             <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-3.5 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Wand2 className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Wand2 className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="whitespace-normal break-words text-xs font-semibold uppercase tracking-[0.12em] text-foreground">
                     Intelligent Whole-Resume Tailoring
                   </span>
                 </div>
@@ -842,7 +847,7 @@ export function LeftPane({
                         <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                         <div className="space-y-1">
                           <div className="text-[11px] font-semibold">Role Fit Advisory</div>
-                          <p className="text-[10.5px] leading-relaxed text-amber-700/90 dark:text-amber-300/90">
+                          <p className="whitespace-normal break-words text-[10.5px] leading-relaxed text-amber-700/90 dark:text-amber-300/90">
                             {tailorResult.alignmentMessage ||
                               "Limited alignment found; consider whether this resume is a strong fit for this role."}
                           </p>
@@ -852,8 +857,8 @@ export function LeftPane({
                   )}
 
                   {/* Projected ATS Score Comparison */}
-                  <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-background/80 p-2.5">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/20 bg-background/80 p-2.5">
+                    <div className="flex min-w-0 items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <div>
                         <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -869,13 +874,13 @@ export function LeftPane({
                       </div>
                     </div>
                     {tailorResult.scoreComparison.delta >= 0 && (
-                      <Badge className="rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10.5px] font-bold">
+                      <Badge className="shrink-0 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10.5px] font-bold whitespace-nowrap">
                         +{Math.round(tailorResult.scoreComparison.delta)}% Match
                       </Badge>
                     )}
                   </div>
 
-                  <div className="text-[10.5px] text-muted-foreground px-0.5 flex justify-between">
+                  <div className="text-[10.5px] text-muted-foreground px-0.5 flex flex-wrap justify-between gap-x-3 gap-y-0.5">
                     <span>
                       Keywords Matched:{" "}
                       <strong className="text-foreground">
@@ -914,13 +919,14 @@ export function LeftPane({
                   {/* One Clear Primary Action to Apply Whole-Resume Tailoring */}
                   <div className="space-y-1.5 pt-1">
                     <Button
+                      type="button"
                       size="default"
                       className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
                       onClick={handleApplyProposal}
                       disabled={isApplyingTailoring}
                     >
-                      <Wand2 className="h-4 w-4" />
-                      Apply Tailored Resume
+                      <Wand2 className="h-4 w-4 shrink-0" />
+                      <span className="whitespace-normal break-words">Apply Tailored Resume</span>
                     </Button>
                     <Button
                       size="sm"
@@ -938,18 +944,19 @@ export function LeftPane({
               {/* State 2: Tailored Version Active (Already Applied) */}
               {!tailorResult && !tailorMutation.isPending && isCurrentVersionTailored && (
                 <div className="space-y-2.5">
-                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                  <p className="whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
                     This derived version is tailored specifically for this role. The PDF is compiled
                     and active.
                   </p>
                   <Button
+                    type="button"
                     size="sm"
                     variant="outline"
                     className="w-full h-8 rounded-lg text-xs font-medium gap-1.5"
                     onClick={handleStartTailoring}
                     disabled={tailorMutation.isPending || isApplyingTailoring}
                   >
-                    <Wand2 className="h-3.5 w-3.5 text-primary" />
+                    <Wand2 className="h-3.5 w-3.5 shrink-0 text-primary" />
                     Re-tailor for this Job
                   </Button>
                 </div>
@@ -958,18 +965,19 @@ export function LeftPane({
               {/* State 3: Ready to Tailor (Initial State) */}
               {!tailorResult && !tailorMutation.isPending && !isCurrentVersionTailored && (
                 <div className="space-y-2.5">
-                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                  <p className="whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
                     Tailor your entire resume to match this role. CareerOS maps job requirements
                     against your verified experience across summary, skills, and work history.
                   </p>
                   <Button
+                    type="button"
                     size="default"
                     className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
                     onClick={handleStartTailoring}
                     disabled={tailorMutation.isPending || isApplyingTailoring}
                   >
-                    <Sparkles className="h-4 w-4" />
-                    Tailor Resume to this Job
+                    <Sparkles className="h-4 w-4 shrink-0" />
+                    <span className="whitespace-normal break-words">Tailor Resume to this Job</span>
                   </Button>
                 </div>
               )}
@@ -981,7 +989,7 @@ export function LeftPane({
           <PaneSection icon={Gauge} title="ATS Analysis">
             {isAnalyzing ? (
               <div className="space-y-2">
-                <p className="text-[11px] text-muted-foreground" aria-live="polite">
+                <p className="whitespace-normal break-words text-[11px] text-muted-foreground" aria-live="polite">
                   {targetJobTitle?.trim()
                     ? `Analyzing your resume against ${targetJobTitle.trim()}${
                         targetCompany?.trim() ? ` at ${targetCompany.trim()}` : ""
