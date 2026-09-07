@@ -218,6 +218,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const signInWithOAuth = useCallback(async (provider: "google" | "github") => {
+    // Initiates the Supabase OAuth redirect. On success the browser leaves
+    // the app; on return the onAuthStateChange listener above establishes
+    // the session (SIGNED_IN). Only failures reach the code below.
+    try {
+      setStatus("loading");
+      setError(null);
+      await authService.signInWithOAuth(provider);
+    } catch (err: any) {
+      const authError: AuthError = {
+        code: err?.code || "UNKNOWN_ERROR",
+        message: err?.message || `Failed to sign in with ${provider}. Please try again.`,
+        statusCode: err?.statusCode || 400,
+      };
+      setError(authError);
+      setStatus("error");
+      throw authError;
+    }
+  }, []);
+
   const forgotPassword = useCallback(async (email: string) => {
     try {
       setStatus("loading");
@@ -371,6 +391,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       register,
+      signInWithOAuth,
       forgotPassword,
       resetPassword,
       verifyEmail,
@@ -393,6 +414,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       register,
+      signInWithOAuth,
       forgotPassword,
       resetPassword,
       verifyEmail,

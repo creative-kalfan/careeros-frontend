@@ -104,6 +104,28 @@ export const authService = {
     }
   },
 
+  signInWithOAuth: async (provider: "google" | "github"): Promise<void> => {
+    // Redirects the browser to the provider. Supabase exchanges the OAuth
+    // callback automatically on return (detectSessionInUrl) and the
+    // AuthProvider onAuthStateChange listener picks up the SIGNED_IN event.
+    // `window.location.origin` keeps local dev and production working
+    // without hardcoded URLs.
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+
+    if (error) {
+      throw {
+        code: "UNKNOWN_ERROR",
+        message: error.message,
+        statusCode: 400,
+      };
+    }
+  },
+
   register: async (data: RegisterRequest): Promise<{ user: User; tokens: Tokens }> => {
     const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,

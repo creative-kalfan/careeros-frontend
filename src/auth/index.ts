@@ -57,6 +57,7 @@ export { GuestRoute } from "./GuestRoute";
 
 // Components
 export { AuthLoadingSpinner } from "./components/AuthLoadingSpinner";
+export { SocialAuthButtons } from "./components/SocialAuthButtons";
 export { PermissionDeniedScreen } from "./components/PermissionDeniedScreen";
 export { UnauthorizedScreen } from "./components/UnauthorizedScreen";
 export { SessionExpiredDialog } from "./components/SessionExpiredDialog";

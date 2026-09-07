@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "../auth/useAuth";
+import { SocialAuthButtons } from "../auth/components/SocialAuthButtons";
 import {
   ArrowRight,
   Eye,
@@ -131,6 +132,8 @@ function LoginPage() {
             </h2>
             <p className="mt-1 text-xs text-[#A8A49A]">Access your career intelligence workspace</p>
           </div>
+
+          <SocialAuthButtons className="mb-6" />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (

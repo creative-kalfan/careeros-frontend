@@ -20,6 +20,7 @@ export function useAuth() {
     login: context.login,
     logout: context.logout,
     register: context.register,
+    signInWithOAuth: context.signInWithOAuth,
     forgotPassword: context.forgotPassword,
     resetPassword: context.resetPassword,
     verifyEmail: context.verifyEmail,
