@@ -61,6 +61,7 @@ export const API_ENDPOINTS = {
       `/applications/${id}/${kind}/${childId}`,
   },
   DASHBOARD: {
+    TELEMETRY: "/api/dashboard",
     STATS: "/dashboard/stats",
     ACTIVITY: "/dashboard/activity",
     WEEKLY_PROGRESS: "/dashboard/weekly-progress",
@@ -74,6 +75,7 @@ export const API_ENDPOINTS = {
     PREFERENCES: "/notification-preferences",
   },
   COPILOT: {
+    CHAT: "/api/copilot/chat",
     SEND_MESSAGE: "/copilot/message",
     SESSION: (id: string) => `/copilot/sessions/${id}`,
     SESSIONS: "/copilot/sessions",

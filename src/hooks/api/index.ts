@@ -19,6 +19,12 @@ export {
 export { useAnalyzeResume, atsQueryKeys } from "./useATS";
 
 export {
+  useDashboardTelemetry,
+  mapTelemetryToTimeline,
+  dashboardTelemetryQueryKey,
+} from "./useDashboardTelemetry";
+
+export {
   useGenerateOptimization,
   useAcceptSuggestion,
   useRejectSuggestion,

@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { copilotApi } from "@/api/copilot";
+import { getErrorMessage, isApiError } from "@/utils/api-error";
 import {
   ArrowUp,
   ChevronDown,
@@ -15,7 +19,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  generateMockResponse,
   mockConversations,
   moduleFromPath,
   moduleMeta,
@@ -34,6 +37,25 @@ import { ThinkingIndicator } from "./thinking";
 const MIN_W = 380;
 const MAX_W = 640;
 
+/** Backend returns plain label strings; tolerate object-shaped chips defensively. */
+function normalizeChips(actions: unknown): string[] {
+  if (!Array.isArray(actions)) return [];
+  const out: string[] = [];
+  for (const a of actions) {
+    if (typeof a === "string" && a.trim()) out.push(a.trim());
+    else if (
+      a !== null &&
+      typeof a === "object" &&
+      typeof (a as { label?: unknown }).label === "string" &&
+      (a as { label: string }).label.trim()
+    ) {
+      out.push((a as { label: string }).label.trim());
+    }
+    if (out.length >= 4) break;
+  }
+  return out;
+}
+
 export function CopilotPanel() {
   const { open, setOpen, pinned, togglePinned, pendingPrompt, clearPendingPrompt } = useCopilot();
   const isMobile = useIsMobile();
@@ -45,8 +67,15 @@ export function CopilotPanel() {
   const [showHistory, setShowHistory] = useState(false);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [suggested, setSuggested] = useState<string[]>([]);
+  const [chatError, setChatError] = useState<string | null>(null);
   const [width, setWidth] = useState(460);
   const [resizing, setResizing] = useState(false);
+  const lastPromptRef = useRef<string>("");
+
+  const chat = useMutation({
+    mutationFn: copilotApi.sendChat,
+  });
 
   const active = useMemo(
     () => conversations.find((c) => c.id === activeId) ?? conversations[0],
@@ -80,37 +109,76 @@ export function CopilotPanel() {
 
   function submit(prompt: string) {
     const text = prompt.trim();
-    if (!text) return;
+    if (!text || thinking) return;
+    const targetId = active.id;
     const userMsg: ChatMessage = {
       id: `u-${Date.now()}`,
       role: "user",
       content: text,
       timestamp: "now",
     };
+    const nextMessages = [...active.messages, userMsg];
     setConversations((prev) =>
-      prev.map((c) =>
-        c.id === active.id ? { ...c, messages: [...c.messages, userMsg], updatedAt: "now" } : c,
-      ),
+      prev.map((c) => (c.id === targetId ? { ...c, messages: nextMessages, updatedAt: "now" } : c)),
     );
     setInput("");
     setThinking(true);
-    // TODO(API): Replace with streaming request to backend Copilot endpoint.
-    setTimeout(() => {
-      const { content, card } = generateMockResponse(text);
-      const aiMsg: ChatMessage = {
-        id: `a-${Date.now()}`,
-        role: "assistant",
-        content,
-        card,
-        timestamp: "now",
-      };
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === active.id ? { ...c, messages: [...c.messages, aiMsg], updatedAt: "now" } : c,
-        ),
-      );
-      setThinking(false);
-    }, 900);
+    setSuggested([]);
+    setChatError(null);
+    lastPromptRef.current = text;
+
+    // Active context: current page always; resume_id when inside Resume Studio.
+    const resumeMatch = pathname.match(/^\/resumes\/([^/?#]+)/);
+    chat.mutate(
+      {
+        messages: nextMessages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
+        context: {
+          current_page: pathname,
+          ...(resumeMatch ? { resume_id: resumeMatch[1] } : {}),
+        },
+      },
+      {
+        onSuccess: (res) => {
+          const aiMsg: ChatMessage = {
+            id: `a-${Date.now()}`,
+            role: "assistant",
+            content: res.data.message,
+            timestamp: "now",
+          };
+          setConversations((prev) =>
+            prev.map((c) =>
+              c.id === targetId ? { ...c, messages: [...c.messages, aiMsg], updatedAt: "now" } : c,
+            ),
+          );
+          setSuggested(normalizeChips(res.data.suggested_actions));
+        },
+        onError: (err) => {
+          const code = isApiError(err) ? err.code : undefined;
+          const status = isApiError(err) ? err.statusCode : undefined;
+          const unavailable =
+            code === "LLM_UNAVAILABLE" ||
+            code === "LLM_TIMEOUT" ||
+            status === 503 ||
+            code === "TIMEOUT";
+          const message = unavailable
+            ? "The AI assistant is temporarily unavailable. Please try again in a moment."
+            : getErrorMessage(err);
+          setChatError(message);
+          if (unavailable) {
+            toast.error("Copilot is temporarily unavailable", {
+              description: "The AI service timed out. You can retry your question.",
+            });
+          } else {
+            toast.error("Copilot request failed", { description: message });
+          }
+        },
+        onSettled: () => setThinking(false),
+      },
+    );
+  }
+
+  function retryLast() {
+    if (lastPromptRef.current) submit(lastPromptRef.current);
   }
 
   useEffect(() => {
@@ -171,6 +239,9 @@ export function CopilotPanel() {
     showHistory,
     conversations,
     activeId,
+    suggested,
+    chatError,
+    onRetry: retryLast,
     onSelectConversation: (id: string) => {
       setActiveId(id);
       setShowHistory(false);
@@ -338,6 +409,9 @@ function PanelBody({
   showHistory,
   conversations,
   activeId,
+  suggested,
+  chatError,
+  onRetry,
   onSelectConversation,
 }: {
   active: Conversation;
@@ -353,6 +427,9 @@ function PanelBody({
   showHistory: boolean;
   conversations: Conversation[];
   activeId: string;
+  suggested: string[];
+  chatError: string | null;
+  onRetry: () => void;
   onSelectConversation: (id: string) => void;
 }) {
   const isEmpty = active.messages.length === 0;
@@ -380,6 +457,21 @@ function PanelBody({
                 <ChatBubble key={m.id} message={m} />
               ))}
               {thinking && <ThinkingIndicator />}
+              {chatError && !thinking && (
+                <div
+                  role="alert"
+                  className="rounded-xl border border-destructive/40 bg-destructive/5 p-3"
+                >
+                  <p className="text-xs leading-relaxed text-foreground">{chatError}</p>
+                  <button
+                    type="button"
+                    onClick={onRetry}
+                    className="mt-2 inline-flex items-center gap-1 rounded-lg border border-border/70 bg-surface-elevated/60 px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:border-primary/40 hover:bg-primary/10"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -398,6 +490,25 @@ function PanelBody({
                   </button>
                 );
               })}
+            </div>
+          </div>
+        )}
+        {suggested.length > 0 && !thinking && (
+          <div className="border-t border-border/60 px-3 py-2">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Suggested follow-ups
+            </p>
+            <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {suggested.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => onPrompt(chip)}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] text-foreground transition hover:bg-primary/20"
+                >
+                  <Sparkles className="h-3 w-3 text-primary" /> {chip}
+                </button>
+              ))}
             </div>
           </div>
         )}

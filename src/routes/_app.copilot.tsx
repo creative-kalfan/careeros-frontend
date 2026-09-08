@@ -18,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { request } from "@/utils/request";
-import { API_ENDPOINTS } from "@/constants/api";
+import { toast } from "sonner";
+import { copilotApi } from "@/api/copilot";
+import { getErrorMessage, isApiError } from "@/utils/api-error";
 
 export const Route = createFileRoute("/_app/copilot")({
   head: () => ({
@@ -87,6 +88,7 @@ function CopilotPage() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [suggested, setSuggested] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -107,33 +109,52 @@ function CopilotPage() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
     setInput("");
+    setSuggested([]);
     setIsLoading(true);
 
     try {
-      const data = await request<{ response: string; message: string }>({
-        method: "POST",
-        path: API_ENDPOINTS.COPILOT.SEND_MESSAGE,
-        body: { message: messageText },
+      // Live backend: POST /api/copilot/chat with recent history + page context.
+      const res = await copilotApi.sendChat({
+        messages: nextMessages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
+        context: { current_page: "/copilot" },
       });
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.response || data.message || "I'm sorry, I couldn't process that request.",
+        content: res.data.message,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      const chips = Array.isArray(res.data.suggested_actions)
+        ? res.data.suggested_actions.filter(
+            (a): a is string => typeof a === "string" && a.trim().length > 0,
+          )
+        : [];
+      setSuggested(chips.slice(0, 4));
     } catch (error) {
+      const code = isApiError(error) ? error.code : undefined;
+      const unavailable =
+        code === "LLM_UNAVAILABLE" || code === "LLM_TIMEOUT" || code === "TIMEOUT";
+      const content = unavailable
+        ? "The AI assistant is temporarily unavailable. Please try again in a moment."
+        : getErrorMessage(error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I'm sorry, I encountered an error. Please try again.",
+        content,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
+      if (unavailable) {
+        toast.error("Copilot is temporarily unavailable", {
+          description: "The AI service timed out. You can retry your question.",
+        });
+      }
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -243,6 +264,28 @@ function CopilotPage() {
                 </button>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Live follow-up chips from POST /api/copilot/chat */}
+      {suggested.length > 0 && !isLoading && (
+        <div className="border-t border-border/70 p-4 pb-0">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Suggested follow-ups
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {suggested.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => handleSend(chip)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-primary/20"
+              >
+                <Sparkles className="h-3 w-3 text-primary" />
+                {chip}
+              </button>
+            ))}
           </div>
         </div>
       )}

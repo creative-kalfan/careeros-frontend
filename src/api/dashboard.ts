@@ -1,3 +1,5 @@
+import { request } from "../utils/request";
+import { API_ENDPOINTS } from "../constants/api";
 import { apiConfig } from "./config";
 import type { ApiResponse, PaginatedResponse, PaginationParams } from "../types/api/index.ts";
 
@@ -49,3 +51,35 @@ export const dashboardApi: DashboardApi = {
     throw new Error("Not implemented");
   },
 };
+
+// ─── Live telemetry (GET /api/dashboard) ───────────────────────────────
+// Matches the backend SuccessResponse envelope
+// ({ success: true, data: {...} }) from app/schemas/dashboard.py.
+
+export type TelemetryTimelineItem = {
+  action: string;
+  description: string;
+  timestamp: string;
+  metadata?: Record<string, unknown>;
+};
+
+export type DashboardTelemetry = {
+  total_resumes: number;
+  tailored_versions: number;
+  applications_tracked: number;
+  average_ats_score: number | null;
+  active_jobs_in_queue: number;
+  activity_timeline: TelemetryTimelineItem[];
+};
+
+export type DashboardTelemetryEnvelope = {
+  success: boolean;
+  data: DashboardTelemetry;
+};
+
+export async function fetchDashboardTelemetry(): Promise<DashboardTelemetryEnvelope> {
+  return request<DashboardTelemetryEnvelope>({
+    method: "GET",
+    path: API_ENDPOINTS.DASHBOARD.TELEMETRY,
+  });
+}

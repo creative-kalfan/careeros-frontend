@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Career3DTopology } from "@/components/dashboard/career-3d-topology";
 import {
   Widget,
@@ -16,6 +17,7 @@ import {
   InsightPill,
 } from "@/components/dashboard/widgets";
 import { useDashboardData } from "@/hooks/api/useDashboardData";
+import { useDashboardTelemetry, mapTelemetryToTimeline } from "@/hooks/api/useDashboardTelemetry";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
@@ -33,6 +35,12 @@ export const Route = createFileRoute("/_app/dashboard")({
 
 function Dashboard() {
   const { data, isLoading, isError, refetch } = useDashboardData();
+  // Live backend telemetry (GET /api/dashboard). Values below prefer these
+  // real counts; the aggregated hook above remains as graceful degradation.
+  const telemetryQuery = useDashboardTelemetry();
+  const telemetry = telemetryQuery.data?.data;
+  const telemetryLoading = telemetryQuery.isLoading && !telemetryQuery.data;
+  const telemetryFailed = telemetryQuery.isError && !telemetry;
 
   const fallbackData = {
     greeting: "Welcome back",
@@ -103,6 +111,12 @@ function Dashboard() {
   };
 
   const activeData = data || fallbackData;
+  // Real backend timeline wins when telemetry loaded; otherwise keep the
+  // aggregated activity (or the empty state below when there is nothing).
+  const timelineItems = telemetry
+    ? mapTelemetryToTimeline(telemetry.activity_timeline)
+    : activeData.recentActivity;
+  const liveAtsScore = telemetry?.average_ats_score ?? activeData.healthScore.resume;
   const matchCount = activeData.jobMatchDistribution.reduce((s, d) => s + d.value, 0);
   const highFitCount =
     activeData.jobMatchDistribution.find((d) => d.label.includes("High") || d.label.includes("90"))
@@ -123,12 +137,39 @@ function Dashboard() {
     );
   }
 
+  if (telemetryLoading) {
+    return (
+      <div className="w-full max-w-[1536px] mx-auto flex flex-col gap-5 px-4 sm:px-6 lg:px-8 py-5">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-40 rounded-md" />
+            <Skeleton className="h-7 w-72 rounded-lg" />
+            <Skeleton className="h-3 w-96 max-w-full rounded-md" />
+          </div>
+          <Skeleton className="h-8 w-32 rounded-lg" />
+        </div>
+        <Skeleton className="h-44 w-full rounded-xl" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-20 rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+          <Skeleton className="h-64 rounded-xl lg:col-span-5" />
+          <Skeleton className="h-64 rounded-xl lg:col-span-7" />
+        </div>
+      </div>
+    );
+  }
+
   // Structured High-Leverage Career Directives
   const careerDirectives = [
     {
       id: "d-tailor",
       title: "Tailor Resume for Top Match",
-      detail: "Lead Platform Engineer (94% fit) · 3 suggested bullet refinements ready.",
+      detail: telemetry
+        ? `${telemetry.tailored_versions} tailored variant${telemetry.tailored_versions === 1 ? "" : "s"} across ${telemetry.total_resumes} resume${telemetry.total_resumes === 1 ? "" : "s"} in your workspace.`
+        : "Lead Platform Engineer (94% fit) · 3 suggested bullet refinements ready.",
       scoreImpact: "+12% Match Fit",
       badge: "Urgent Directive",
       tone: "primary" as const,
@@ -205,12 +246,50 @@ function Dashboard() {
           overall: activeData.healthScore.overall || 88,
           delta: (activeData.healthScore as any).delta ?? 4,
         }}
-        resumeScore={activeData.healthScore.resume || 85}
+        resumeScore={liveAtsScore || 85}
         matchPoolCount={matchCount || 22}
         highFitCount={highFitCount}
         weeklyProgress={activeData.healthScore.weeklyProgress || 70}
         weeklyGoalLabel={activeData.healthScore.weeklyGoalLabel || "5 of 7 actions completed"}
       />
+
+      {/* 1b. LIVE WORKSPACE TELEMETRY (GET /api/dashboard) */}
+      <motion.div variants={staggerItem}>
+        {telemetry ? (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {[
+              { label: "Resumes", value: telemetry.total_resumes },
+              { label: "Tailored Variants", value: telemetry.tailored_versions },
+              { label: "Applications Tracked", value: telemetry.applications_tracked },
+              { label: "Parse Queue", value: telemetry.active_jobs_in_queue },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="flex items-center justify-between rounded-xl border border-border/60 bg-surface px-4 py-3 shadow-elevation-1"
+              >
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                  {stat.label}
+                </span>
+                <span className="font-mono text-lg font-bold text-foreground">{stat.value}</span>
+              </div>
+            ))}
+          </div>
+        ) : telemetryFailed ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-warning/30 bg-warning/5 px-4 py-2.5">
+            <p className="text-[11px] text-muted-foreground">
+              Live telemetry unavailable — showing cached workspace data.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => telemetryQuery.refetch()}
+              className="h-7 rounded-lg text-[11px]"
+            >
+              Retry Telemetry
+            </Button>
+          </div>
+        ) : null}
+      </motion.div>
 
       {/* 2. PRIMARY COMMAND HORIZON: 2-Column Cockpit Layout */}
       <motion.div variants={staggerItem} className="grid grid-cols-1 gap-5 xl:grid-cols-12">
@@ -273,8 +352,8 @@ function Dashboard() {
             </Button>
           }
         >
-          {activeData.recentActivity.length > 0 ? (
-            <ActivityTimeline items={activeData.recentActivity} />
+          {timelineItems.length > 0 ? (
+            <ActivityTimeline items={timelineItems} />
           ) : (
             <div className="flex flex-col items-center justify-center p-6 text-center text-xs text-muted-foreground">
               <Activity className="h-6 w-6 text-primary/60 mb-2 animate-pulse" />
