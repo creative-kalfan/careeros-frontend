@@ -455,7 +455,7 @@ export const insights: CareerInsight[] = [
 export const quickActions = [
   { id: "qa-1", label: "Upload resume", icon: "upload", href: "/resumes" },
   { id: "qa-2", label: "Search jobs", icon: "search", href: "/jobs" },
-  { id: "qa-3", label: "Optimize resume", icon: "sparkles", href: "/ats" },
+  { id: "qa-3", label: "Optimize resume", icon: "sparkles", href: "/resumes" },
   { id: "qa-4", label: "Cover letter", icon: "file", href: "/recommendations" },
   { id: "qa-5", label: "Open Copilot", icon: "bot", href: "#copilot" },
   { id: "qa-6", label: "Application tracker", icon: "kanban", href: "/applications" },

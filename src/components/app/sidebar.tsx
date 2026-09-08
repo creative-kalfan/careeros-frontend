@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   FileText,
-  Gauge,
   Briefcase,
   Sparkles,
   KanbanSquare,
@@ -37,7 +36,6 @@ type NavItem = {
 const workspace: NavItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Resume Studio", url: "/resumes", icon: FileText, badge: "Flagship" },
-  { title: "ATS Studio", url: "/ats", icon: Gauge },
 ];
 
 const intelligence: NavItem[] = [

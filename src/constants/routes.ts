@@ -7,8 +7,10 @@ export const ROUTES = {
     NEW: "/resume/new",
   },
   ATS: {
-    ANALYZER: "/ats",
-    HISTORY: "/ats/history",
+    // Deprecated: ATS Studio route now redirects to Resume Studio, which owns
+    // all match intelligence in its left pane. Kept for backward-compat links.
+    ANALYZER: "/resumes",
+    HISTORY: "/ats-history",
   },
   JOBS: {
     SEARCH: "/jobs",

@@ -252,8 +252,8 @@ export function ExecutiveTelemetryRibbon({
                 size="sm"
                 className="h-8 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated text-muted-foreground hover:text-foreground"
               >
-                <Link to="/ats">
-                  <Target className="mr-1.5 h-3.5 w-3.5 text-accent" /> ATS Studio
+                <Link to="/resumes">
+                  <Target className="mr-1.5 h-3.5 w-3.5 text-accent" /> Match Intelligence
                 </Link>
               </Button>
             </div>

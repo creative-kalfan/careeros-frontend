@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useGenerateInterviewPrep, useInterviewPrepSessions } from "@/hooks/api/useInterviewPrep";
 import { useApplications } from "@/hooks/api/useApplications";
 import { INTERVIEW_TYPE_LABELS } from "@/types/interview-prep";
+import { PracticeGauntlet } from "@/components/interview-prep/practice-gauntlet";
 
 export interface InterviewPrepSearchParams {
   applicationId?: string;
@@ -69,8 +70,8 @@ function InterviewPrepListPage() {
     <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-6">
       <PageHeader
         eyebrow="Interview Intelligence"
-        title="Interview Prep"
-        description="Role-specific questions grounded in your resume and the job — never generic."
+        title="Interview Prep — Practice Gauntlet"
+        description="Role-specific drills grounded in your resume, with instant STAR coaching on every response."
         actions={
           contextApp && (
             <Button
@@ -101,6 +102,8 @@ function InterviewPrepListPage() {
           </Link>
         </div>
       )}
+
+      <PracticeGauntlet />
 
       {isLoading ? (
         <div className="space-y-2.5">

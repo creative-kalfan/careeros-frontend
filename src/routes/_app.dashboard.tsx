@@ -185,7 +185,7 @@ function Dashboard() {
       badge: "High Impact",
       tone: "accent" as const,
       actionLabel: "Run Scan",
-      href: "/ats",
+      href: "/resumes",
       icon: "ats" as const,
     },
     {
@@ -327,7 +327,7 @@ function Dashboard() {
           <QuickActionsGrid
             items={[
               { id: "qa-1", label: "Upload / Sync Resume", icon: "upload", href: "/resumes" },
-              { id: "qa-2", label: "Run ATS Diagnostics", icon: "sparkles", href: "/ats" },
+              { id: "qa-2", label: "Run ATS Diagnostics", icon: "sparkles", href: "/resumes" },
               { id: "qa-3", label: "Explore Match Pool", icon: "search", href: "/jobs" },
               { id: "qa-4", label: "Open Copilot Studio", icon: "bot", href: "/copilot" },
               {

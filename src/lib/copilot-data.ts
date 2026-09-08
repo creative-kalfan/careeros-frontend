@@ -49,7 +49,7 @@ export const moduleMeta: Record<CopilotModule, { title: string; icon: LucideIcon
   {
     dashboard: { title: "Dashboard", icon: Compass, hint: "Overview & activity" },
     resumes: { title: "Resume Workspace", icon: FileText, hint: "Editor context active" },
-    ats: { title: "ATS Studio", icon: Gauge, hint: "Score diagnostics active" },
+    ats: { title: "Match Intelligence", icon: Gauge, hint: "Resume Studio diagnostics active" },
     jobs: { title: "Job Intelligence", icon: Briefcase, hint: "Job feed active" },
     applications: { title: "Applications", icon: KanbanSquare, hint: "Pipeline active" },
     recommendations: { title: "Recommendations", icon: Sparkles, hint: "Match feed active" },
@@ -664,7 +664,7 @@ export function generateMockResponse(prompt: string): { content: string; card?: 
 
 export function moduleFromPath(pathname: string): CopilotModule {
   if (pathname.startsWith("/resumes")) return "resumes";
-  if (pathname.startsWith("/ats")) return "ats";
+  if (pathname.startsWith("/ats")) return "resumes";
   if (pathname.startsWith("/jobs")) return "jobs";
   if (pathname.startsWith("/applications")) return "applications";
   if (pathname.startsWith("/recommendations")) return "recommendations";

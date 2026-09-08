@@ -204,7 +204,7 @@ function ATSHistoryPage() {
             Run an ATS analysis to see your history here.
           </p>
           <Button asChild>
-            <Link to="/ats">Open ATS Studio</Link>
+            <Link to="/resumes">Open Resume Studio</Link>
           </Button>
         </div>
       ) : (

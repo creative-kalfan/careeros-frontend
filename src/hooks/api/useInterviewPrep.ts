@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { interviewPrepApi } from "../../api/interview-prep";
-import type { GeneratePrepRequest } from "../../types/interview-prep";
+import type {
+  CritiqueResponseRequest,
+  GenerateDrillsRequest,
+  GeneratePrepRequest,
+} from "../../types/interview-prep";
 
 export const interviewPrepQueryKeys = {
   all: ["interview-prep"] as const,
@@ -61,6 +65,24 @@ export function useGenerateInterviewPrep() {
   return useMutation({
     mutationFn: (data: GeneratePrepRequest) => interviewPrepApi.generate(data),
     onSuccess: () => invalidatePrepQueries(queryClient),
+  });
+}
+
+/**
+ * Generate stateless role-specific practice drills (no application needed).
+ */
+export function useGenerateDrills() {
+  return useMutation({
+    mutationFn: (data: GenerateDrillsRequest) => interviewPrepApi.generateDrills(data),
+  });
+}
+
+/**
+ * Critique one typed STAR practice response (qualitative coaching only).
+ */
+export function useCritiqueResponse() {
+  return useMutation({
+    mutationFn: (data: CritiqueResponseRequest) => interviewPrepApi.critique(data),
   });
 }
 

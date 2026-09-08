@@ -109,6 +109,8 @@ export const API_ENDPOINTS = {
   },
   INTERVIEW_PREP: {
     GENERATE: "/api/interview-prep/generate",
+    GENERATE_DRILLS: "/api/interview-prep/generate-drills",
+    CRITIQUE: "/api/interview-prep/critique",
     SESSIONS: "/api/interview-prep/sessions",
     SESSION: (id: string) => `/api/interview-prep/sessions/${id}`,
     REGENERATE: (id: string) => `/api/interview-prep/sessions/${id}/regenerate`,

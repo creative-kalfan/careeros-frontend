@@ -12,7 +12,8 @@ function getRouteContext(pathname: string) {
   if (pathname.startsWith("/resumes/")) return { area: "Resume Studio", doc: "Editor & Preview" };
   if (pathname === "/resumes") return { area: "Resume Studio", doc: "Workspace Index" };
   if (pathname === "/resumes/setup") return { area: "Resume Setup", doc: "Onboarding Studio" };
-  if (pathname === "/ats") return { area: "ATS Intelligence", doc: "Scoring Engine" };
+  if (pathname === "/ats" || pathname === "/ats-history")
+    return { area: "Resume Studio", doc: "Match Intelligence" };
   if (pathname === "/jobs") return { area: "Job Intelligence", doc: "Match Pipeline" };
   if (pathname === "/recommendations")
     return { area: "AI Recommendations", doc: "Strategic Actions" };
@@ -50,7 +51,7 @@ export function AppTopbar({ onOpenCommand }: { onOpenCommand: () => void }) {
       >
         <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70 group-hover:text-primary transition-colors" />
         <span className="truncate text-xs font-normal">
-          Search command bar, resumes, jobs, ATS…
+          Search command bar, resumes, jobs, interviews…
         </span>
         <span className="ml-auto hidden items-center gap-1 sm:flex">
           <Kbd className="bg-muted text-xs px-1.5 py-0.5 font-mono">⌘K</Kbd>

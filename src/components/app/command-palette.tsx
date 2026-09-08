@@ -13,7 +13,6 @@ import {
   Bell,
   Briefcase,
   FileText,
-  Gauge,
   KanbanSquare,
   LayoutDashboard,
   Settings,
@@ -24,7 +23,6 @@ import {
 const items = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, group: "Navigate" },
   { label: "Resumes", to: "/resumes", icon: FileText, group: "Navigate" },
-  { label: "ATS Studio", to: "/ats", icon: Gauge, group: "Navigate" },
   { label: "Jobs", to: "/jobs", icon: Briefcase, group: "Navigate" },
   { label: "Recommendations", to: "/recommendations", icon: Sparkles, group: "Navigate" },
   { label: "Applications", to: "/applications", icon: KanbanSquare, group: "Navigate" },

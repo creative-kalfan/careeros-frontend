@@ -94,6 +94,84 @@ export interface InterviewPrepListResponse {
   total: number;
 }
 
+// ---------------------------------------------------------------------------
+// Practice Gauntlet: role-specific drills + STAR critique (stateless)
+// ---------------------------------------------------------------------------
+
+export type DrillType = "technical_screen" | "behavioral_star" | "live_scenario";
+
+export type StarCoverage = "present" | "partial" | "missing";
+
+export type StarDimension = "Situation" | "Task" | "Action" | "Result";
+
+export interface DrillQuestion {
+  drill_type: DrillType;
+  category: InterviewPrepCategory;
+  question: string;
+  difficulty: InterviewPrepDifficulty;
+  rationale: string;
+  talking_points: string[];
+  answer_framework: AnswerFramework;
+  star_guidance: string | null;
+  resume_evidence: string[];
+  related_jd_requirements: string[];
+  gaps: string[];
+}
+
+export interface GenerateDrillsRequest {
+  target_role: string;
+  seniority?: string;
+  job_description?: string;
+  resume_id?: string;
+  question_count?: number;
+}
+
+export interface GenerateDrillsResponse {
+  drills: DrillQuestion[];
+  target_role: string;
+  seniority: string;
+  gaps: string[];
+  assumption_note: string;
+}
+
+export interface StarDimensionFeedback {
+  dimension: StarDimension;
+  coverage: StarCoverage;
+  feedback: string;
+  suggestion: string;
+  evidence_quote: string;
+}
+
+export interface CritiqueResponseRequest {
+  question: string;
+  category?: string;
+  response_text: string;
+  target_role?: string;
+  job_description?: string;
+}
+
+export interface CritiqueResponseResult {
+  dimensions: StarDimensionFeedback[];
+  strengths: string[];
+  improvements: string[];
+  honest_note: string;
+}
+
+export const DRILL_TYPE_LABELS: Record<DrillType, string> = {
+  technical_screen: "Technical Screen",
+  behavioral_star: "Behavioral / STAR",
+  live_scenario: "Live Prompt / Scenario",
+};
+
+export const SENIORITY_OPTIONS = [
+  { id: "intern", label: "Intern" },
+  { id: "junior", label: "Junior" },
+  { id: "mid", label: "Mid-level" },
+  { id: "senior", label: "Senior" },
+  { id: "staff", label: "Staff" },
+  { id: "principal", label: "Principal" },
+] as const;
+
 export const INTERVIEW_PREP_CATEGORIES: {
   id: InterviewPrepCategory;
   label: string;

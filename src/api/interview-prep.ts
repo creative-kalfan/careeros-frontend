@@ -1,6 +1,11 @@
 import { request } from "../utils/request";
 import { API_ENDPOINTS } from "../constants/api";
+import { LONG_REQUEST_TIMEOUT_MS } from "./config";
 import type {
+  CritiqueResponseRequest,
+  CritiqueResponseResult,
+  GenerateDrillsRequest,
+  GenerateDrillsResponse,
   GeneratePrepRequest,
   InterviewPrepListResponse,
   InterviewPrepQuestion,
@@ -13,6 +18,8 @@ import type {
 
 export type InterviewPrepApi = {
   generate: (data: GeneratePrepRequest) => Promise<InterviewPrepSession>;
+  generateDrills: (data: GenerateDrillsRequest) => Promise<GenerateDrillsResponse>;
+  critique: (data: CritiqueResponseRequest) => Promise<CritiqueResponseResult>;
   list: (applicationId?: string) => Promise<InterviewPrepListResponse>;
   getById: (id: string) => Promise<InterviewPrepSession>;
   regenerate: (id: string) => Promise<InterviewPrepSession>;
@@ -40,6 +47,27 @@ export const interviewPrepApi: InterviewPrepApi = {
       method: "POST",
       path: API_ENDPOINTS.INTERVIEW_PREP.GENERATE,
       body: data,
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
+    });
+    return res.data;
+  },
+
+  generateDrills: async (data: GenerateDrillsRequest) => {
+    const res = await request<BackendResponse<GenerateDrillsResponse>>({
+      method: "POST",
+      path: API_ENDPOINTS.INTERVIEW_PREP.GENERATE_DRILLS,
+      body: data,
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
+    });
+    return res.data;
+  },
+
+  critique: async (data: CritiqueResponseRequest) => {
+    const res = await request<BackendResponse<CritiqueResponseResult>>({
+      method: "POST",
+      path: API_ENDPOINTS.INTERVIEW_PREP.CRITIQUE,
+      body: data,
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
     return res.data;
   },
