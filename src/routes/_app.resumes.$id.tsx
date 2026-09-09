@@ -12,6 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-tooltip";
+import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { LeftPane } from "@/components/resume/left-pane";
 import { PreviewPane, A4DocumentSkeleton } from "@/components/resume/preview-pane";
 import { useResumeDetail, resumeQueryKeys } from "@/hooks/api/useResumes";
@@ -1174,6 +1175,10 @@ function ResumeWorkspace() {
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="w-[390px] xl:w-[430px] flex-shrink-0 border-r border-border/80 bg-surface/90 backdrop-blur-md overflow-hidden flex flex-col z-20 shadow-elevation-1">
+          <ErrorBoundary
+            fallbackTitle="Match intelligence hit a hiccup"
+            fallbackDescription="The resume preview on the right is unaffected. Retry to reload scores and tailoring."
+          >
           <LeftPane
             currentId={id}
             currentVersionId={activeVersionId}
@@ -1226,6 +1231,7 @@ function ResumeWorkspace() {
             applyTailoringError={applyTailoringError}
             onRetryApplyTailoring={handleRetryApplyTailoring}
           />
+          </ErrorBoundary>
         </div>
         <div
           className="min-w-0 flex-1 overflow-hidden document-workbench"

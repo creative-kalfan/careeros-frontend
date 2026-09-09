@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/react";
 import { browserTracingIntegration } from "@sentry/react";
+import { isPerformanceTelemetrySafe } from "./performance-shield";
 
 export function initSentry() {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
@@ -50,13 +51,26 @@ export function initSentry() {
     return event;
   };
 
-  Sentry.init({
-    dsn,
-    environment,
-    integrations: [browserTracingIntegration()],
-    tracesSampleRate: 1.0,
-    beforeSend,
-  });
+  try {
+    // browserTracingIntegration drives PerformanceObservers. In locked-down
+    // contexts (incognito) entry reads can resolve undefined and crash on
+    // `entry.startTime`, so only enable tracing when the environment proves
+    // compliant. Error reporting stays on either way.
+    const integrations = isPerformanceTelemetrySafe() ? [browserTracingIntegration()] : [];
+    if (integrations.length === 0) {
+      console.warn("Web-vitals monitoring disabled due to environment mismatch");
+    }
 
-  console.info(`Sentry initialized for environment: ${environment}`);
+    Sentry.init({
+      dsn,
+      environment,
+      integrations,
+      tracesSampleRate: 1.0,
+      beforeSend,
+    });
+
+    console.info(`Sentry initialized for environment: ${environment}`);
+  } catch (err) {
+    console.warn("Sentry initialization failed; continuing without telemetry", err);
+  }
 }

@@ -1,7 +1,13 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
+import { installPerformanceErrorShield } from "./lib/performance-shield";
 import { initSentry } from "./lib/sentry";
+
+// Install first: swallows the known non-critical performance-observer
+// `startTime` crash (incognito) before any telemetry or hydration runs, so a
+// third-party observer timeout can never interrupt React's commit phase.
+installPerformanceErrorShield();
 
 // Initialize Sentry
 initSentry();
