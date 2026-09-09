@@ -1,6 +1,4 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { staggerContainer, staggerItem } from "@/lib/motion";
 import {
   Sparkles,
   Target,
@@ -139,18 +137,16 @@ function PaneSection({
   children: React.ReactNode;
 }) {
   return (
-    <motion.section variants={staggerItem} initial="hidden" animate="show">
-      <div className="mb-2.5 flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <Icon className="h-3.5 w-3.5 text-primary" />
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {title}
-          </h3>
-        </div>
-        {action}
+    <section className="min-w-0 w-full">
+      <div className="mb-3 flex min-w-0 items-center gap-2">
+        <Icon className="h-3.5 w-3.5 shrink-0 text-primary" />
+        <h3 className="min-w-0 flex-1 truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          {title}
+        </h3>
+        {action && <div className="shrink-0">{action}</div>}
       </div>
-      {children}
-    </motion.section>
+      <div className="min-w-0 w-full">{children}</div>
+    </section>
   );
 }
 
@@ -397,14 +393,14 @@ function AtsAnalysisSummary({
           {high.length > 0 && (
             <ul className="space-y-1 text-xs">
               {high.map((r) => (
-                <li key={`h-${r}`} className="flex items-start gap-1.5">
+                <li key={`h-${r}`} className="flex min-w-0 items-start gap-1.5">
                   <Badge
                     variant="outline"
                     className="shrink-0 rounded-full border-rose-500/40 bg-rose-500/10 px-1.5 py-0 text-[9px] text-rose-700 dark:text-rose-300"
                   >
                     High
                   </Badge>
-                  <span className="text-foreground/90">{r}</span>
+                  <span className="min-w-0 flex-1 break-words text-foreground/90">{r}</span>
                 </li>
               ))}
             </ul>
@@ -412,14 +408,14 @@ function AtsAnalysisSummary({
           {medium.length > 0 && (
             <ul className="space-y-1 text-xs">
               {medium.map((r) => (
-                <li key={`m-${r}`} className="flex items-start gap-1.5">
+                <li key={`m-${r}`} className="flex min-w-0 items-start gap-1.5">
                   <Badge
                     variant="outline"
                     className="shrink-0 rounded-full border-amber-500/40 bg-amber-500/10 px-1.5 py-0 text-[9px] text-amber-700 dark:text-amber-300"
                   >
                     Med
                   </Badge>
-                  <span className="text-foreground/90">{r}</span>
+                  <span className="min-w-0 flex-1 break-words text-foreground/90">{r}</span>
                 </li>
               ))}
             </ul>
@@ -427,14 +423,14 @@ function AtsAnalysisSummary({
           {low.length > 0 && (
             <ul className="space-y-1 text-xs">
               {low.map((r) => (
-                <li key={`l-${r}`} className="flex items-start gap-1.5">
+                <li key={`l-${r}`} className="flex min-w-0 items-start gap-1.5">
                   <Badge
                     variant="outline"
                     className="shrink-0 rounded-full border-sky-500/40 bg-sky-500/10 px-1.5 py-0 text-[9px] text-sky-700 dark:text-sky-300"
                   >
                     Low
                   </Badge>
-                  <span className="text-foreground/90">{r}</span>
+                  <span className="min-w-0 flex-1 break-words text-foreground/90">{r}</span>
                 </li>
               ))}
             </ul>
@@ -574,7 +570,7 @@ export function LeftPane({
 
   const versions = versionsData?.versions ?? [];
 
-  const hasJobContext = Boolean(targetJobTitle && targetJobDescription?.trim());
+  const hasJobContext = Boolean(targetJobTitle?.trim() || targetJobDescription?.trim());
   const tailoringContextKey = `${currentId}|${targetJobTitle?.trim() || ""}|${targetCompany?.trim() || ""}|${targetJobDescription?.trim() || ""}`;
   const isTailoring = tailorMutation.isPending || Boolean(isApplyingTailoring);
 
@@ -678,13 +674,8 @@ export function LeftPane({
   }, [selectedAtsIssue]);
 
   return (
-    <ScrollArea className="h-full w-full">
-      <motion.div
-        className="flex w-full min-w-0 max-w-full flex-col gap-6 overflow-x-hidden p-4"
-        variants={staggerContainer}
-        initial="hidden"
-        animate="show"
-      >
+    <ScrollArea className="h-full w-full min-w-0">
+      <div className="min-w-0 w-full min-h-full p-4 space-y-6">
         {hasJobContext ? (
           <div className="flex items-center justify-between gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] p-2.5">
             <div className="flex items-center gap-2 min-w-0">
@@ -1182,7 +1173,7 @@ export function LeftPane({
             </div>
           )}
         </PaneSection>
-      </motion.div>
+      </div>
     </ScrollArea>
   );
 }
