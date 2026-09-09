@@ -576,6 +576,7 @@ export function LeftPane({
 
   const hasJobContext = Boolean(targetJobTitle && targetJobDescription?.trim());
   const tailoringContextKey = `${currentId}|${targetJobTitle?.trim() || ""}|${targetCompany?.trim() || ""}|${targetJobDescription?.trim() || ""}`;
+  const isTailoring = tailorMutation.isPending || Boolean(isApplyingTailoring);
 
   const currentVersion = useMemo(() => {
     return versions.find((v) => v.id === currentVersionId);
@@ -961,7 +962,7 @@ export function LeftPane({
                     variant="outline"
                     className="w-full h-8 rounded-lg text-xs font-medium gap-1.5"
                     onClick={handleStartTailoring}
-                    disabled={tailorMutation.isPending || isApplyingTailoring}
+                    disabled={isTailoring}
                   >
                     <Wand2 className="h-3.5 w-3.5 shrink-0 text-primary" />
                     <span className="text-xs font-medium">Re-tailor for this Job</span>
@@ -969,8 +970,8 @@ export function LeftPane({
                 </div>
               )}
 
-              {/* State 3: Ready to Tailor (Initial State) */}
-              {!tailorResult && !tailorMutation.isPending && !isCurrentVersionTailored && (
+              {/* State 3: Ready to Tailor — stays mounted during pending so the button is never blank */}
+              {!tailorResult && !isCurrentVersionTailored && (
                 <div className="w-full min-w-0 space-y-2.5">
                   <p className="text-xs text-muted-foreground whitespace-normal break-words leading-relaxed">
                     Tailor your entire resume to match this role. CareerOS maps job requirements and crafts high-impact bullet points.
@@ -978,11 +979,20 @@ export function LeftPane({
                   <Button
                     type="button"
                     className="w-full h-10 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                    disabled={isTailoring}
                     onClick={handleStartTailoring}
-                    disabled={Boolean(isApplyingTailoring)}
                   >
-                    <Sparkles className="h-4 w-4 text-white shrink-0" />
-                    <span className="text-white">Tailor Resume for this Role</span>
+                    {isTailoring ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin text-white shrink-0" />
+                        <span className="text-white">Analyzing &amp; Tailoring…</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 text-white shrink-0" />
+                        <span className="text-white">Tailor Resume for this Role</span>
+                      </>
+                    )}
                   </Button>
                 </div>
               )}
