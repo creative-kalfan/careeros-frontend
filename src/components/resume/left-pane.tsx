@@ -972,27 +972,17 @@ export function LeftPane({
               {/* State 3: Ready to Tailor (Initial State) */}
               {!tailorResult && !tailorMutation.isPending && !isCurrentVersionTailored && (
                 <div className="w-full min-w-0 space-y-2.5">
-                  <p className="whitespace-normal break-words text-xs text-muted-foreground leading-relaxed [overflow-wrap:anywhere]">
+                  <p className="text-xs text-muted-foreground whitespace-normal break-words leading-relaxed">
                     Tailor your entire resume to match this role. CareerOS maps job requirements and crafts high-impact bullet points.
                   </p>
                   <Button
                     type="button"
-                    size="default"
-                    className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-white gap-2 flex items-center justify-center cursor-pointer"
+                    className="w-full h-10 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                     onClick={handleStartTailoring}
-                    disabled={Boolean(tailorMutation?.isPending || isApplyingTailoring)}
+                    disabled={Boolean(isApplyingTailoring)}
                   >
-                    {tailorMutation?.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin shrink-0 text-white" />
-                        <span className="text-white font-medium text-xs">Tailoring Resume...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 shrink-0 text-white" />
-                        <span className="text-white font-medium text-xs">Tailor Resume to this Job</span>
-                      </>
-                    )}
+                    <Sparkles className="h-4 w-4 text-white shrink-0" />
+                    <span className="text-white">Tailor Resume for this Role</span>
                   </Button>
                 </div>
               )}
