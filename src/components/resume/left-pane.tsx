@@ -698,17 +698,17 @@ export function LeftPane({
                 )}
               </div>
             </div>
-            {onOpenATSDialog && (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-7 px-2 text-[11px] font-medium text-primary hover:text-primary hover:bg-primary/10 shrink-0"
-                onClick={onOpenATSDialog}
-              >
-                <span className="text-[11px] font-medium">Change</span>
-              </Button>
-            )}
+            {/* Job header: Change stays mounted in every state so the user can
+                always switch jobs (no-op when no dialog handler is wired). */}
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-[11px] font-medium text-primary hover:text-primary hover:bg-primary/10 shrink-0"
+              onClick={onOpenATSDialog}
+            >
+              <span className="text-[11px] font-medium">Change</span>
+            </Button>
           </div>
         ) : (
           <Card className="glass rounded-2xl border-border/60 p-4 text-center">
@@ -954,23 +954,30 @@ export function LeftPane({
                 </div>
               )}
 
-              {/* State 2: Tailored Version Active (Already Applied) */}
+              {/* State 2: Tailored Version Active — same solid card as State 3 so the
+                  render never swaps to a clipped/empty variant when versions load */}
               {!tailorResult && !tailorMutation.isPending && isCurrentVersionTailored && (
-                <div className="space-y-2.5">
-                  <p className="whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
-                    This derived version is tailored specifically for this role. The PDF is compiled
-                    and active.
+                <div className="w-full min-w-0 space-y-2.5">
+                  <p className="text-xs text-muted-foreground whitespace-normal break-words leading-relaxed">
+                    Tailor your entire resume to match this role. CareerOS maps job requirements and crafts high-impact bullet points.
                   </p>
                   <Button
                     type="button"
-                    size="sm"
-                    variant="outline"
-                    className="w-full h-8 rounded-lg text-xs font-medium gap-1.5"
-                    onClick={handleStartTailoring}
+                    className="w-full h-10 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
                     disabled={isTailoring}
+                    onClick={handleStartTailoring}
                   >
-                    <Wand2 className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    <span className="text-xs font-medium">Re-tailor for this Job</span>
+                    {isTailoring ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin text-white shrink-0" />
+                        <span className="text-white">Analyzing &amp; Tailoring...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 text-white shrink-0" />
+                        <span className="text-white">Re-Tailor Resume for this Role</span>
+                      </>
+                    )}
                   </Button>
                 </div>
               )}
@@ -990,7 +997,7 @@ export function LeftPane({
                     {isTailoring ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin text-white shrink-0" />
-                        <span className="text-white">Analyzing &amp; Tailoring…</span>
+                        <span className="text-white">Analyzing &amp; Tailoring...</span>
                       </>
                     ) : (
                       <>
