@@ -925,8 +925,8 @@ export function LeftPane({
                       onClick={handleApplyProposal}
                       disabled={isApplyingTailoring}
                     >
-                      <Wand2 className="h-4 w-4 shrink-0" />
-                      <span className="whitespace-normal break-words">Apply Tailored Resume</span>
+                      <Wand2 className="h-4 w-4 shrink-0 text-white" />
+                      <span className="text-white font-medium text-xs">Apply Tailored Resume</span>
                     </Button>
                     <Button
                       size="sm"
@@ -965,7 +965,7 @@ export function LeftPane({
               {/* State 3: Ready to Tailor (Initial State) */}
               {!tailorResult && !tailorMutation.isPending && !isCurrentVersionTailored && (
                 <div className="space-y-2.5">
-                  <p className="whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
+                  <p className="w-full whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
                     Tailor your entire resume to match this role. CareerOS maps job requirements
                     against your verified experience across summary, skills, and work history.
                   </p>
@@ -976,8 +976,8 @@ export function LeftPane({
                     onClick={handleStartTailoring}
                     disabled={tailorMutation.isPending || isApplyingTailoring}
                   >
-                    <Sparkles className="h-4 w-4 shrink-0" />
-                    <span className="whitespace-normal break-words">Tailor Resume to this Job</span>
+                    <Sparkles className="h-4 w-4 shrink-0 text-white" />
+                    <span className="text-white font-medium text-xs">Tailor Resume to this Job</span>
                   </Button>
                 </div>
               )}
