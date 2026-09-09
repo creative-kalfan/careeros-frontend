@@ -965,19 +965,27 @@ export function LeftPane({
               {/* State 3: Ready to Tailor (Initial State) */}
               {!tailorResult && !tailorMutation.isPending && !isCurrentVersionTailored && (
                 <div className="w-full min-w-0 space-y-2.5">
-                  <p className="w-full whitespace-normal break-words text-xs leading-relaxed text-muted-foreground">
-                    Tailor your entire resume to match this role. CareerOS maps job requirements
-                    against your verified experience across summary, skills, and work history.
+                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-normal break-words">
+                    Tailor your entire resume to match this role. CareerOS maps job requirements and crafts high-impact bullet points.
                   </p>
                   <Button
                     type="button"
                     size="default"
-                    className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+                    className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 flex items-center justify-center cursor-pointer"
                     onClick={handleStartTailoring}
-                    disabled={tailorMutation.isPending || isApplyingTailoring}
+                    disabled={Boolean(tailorMutation?.isPending || isApplyingTailoring)}
                   >
-                    <Sparkles className="h-4 w-4 shrink-0 text-white" />
-                    <span className="text-white font-medium text-xs">Tailor Resume to this Job</span>
+                    {tailorMutation?.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin shrink-0 text-white" />
+                        <span className="text-white font-medium">Tailoring Resume...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 shrink-0 text-white" />
+                        <span className="text-white font-medium">Tailor Resume to this Job</span>
+                      </>
+                    )}
                   </Button>
                 </div>
               )}
