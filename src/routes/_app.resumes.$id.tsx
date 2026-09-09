@@ -1051,10 +1051,17 @@ function ResumeWorkspace() {
     return [...set];
   }, [atsAnalysis]);
 
+  // Re-entrancy guard: Typst compilation can take seconds, so a second click
+  // during an in-flight export must be ignored instead of spawning a duplicate
+  // request/compilation race.
+  const isExportingRef = useRef(false);
+
   const downloadArtifact = useCallback(
     async (format: "pdf" | "docx") => {
+      if (isExportingRef.current) return;
       const versionId = activeVersionId || masterVersion?.id;
       if (!versionId) return;
+      isExportingRef.current = true;
       try {
         const blob = await requestBlob({
           method: "GET",
@@ -1070,6 +1077,8 @@ function ResumeWorkspace() {
         window.URL.revokeObjectURL(url);
       } catch {
         toast.error(`Unable to download ${format.toUpperCase()}`);
+      } finally {
+        isExportingRef.current = false;
       }
     },
     [activeVersionId, masterVersion?.id, id, selectedVersion?.version_name, record?.title, toast],

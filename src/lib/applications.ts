@@ -284,27 +284,27 @@ function getProgressForStage(stage: ApplicationStage): number {
   return progressMap[stage] ?? 0;
 }
 
-// Format date string
+// Format date string (null-safe: `new Date()` never throws on bad input,
+// it yields "Invalid Date" — so validate explicitly and fall back).
 function formatDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
+  if (!dateStr) return "Recently updated";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "Recently updated";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 // Simple time-ago formatter
 function timeAgo(dateStr: string): string {
-  try {
-    const now = new Date();
-    const date = new Date(dateStr);
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (!dateStr) return "Recently updated";
+  const now = new Date();
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "Recently updated";
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
     if (diffHours < 1) return "Just now";
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -313,9 +313,6 @@ function timeAgo(dateStr: string): string {
     const diffWeeks = Math.floor(diffDays / 7);
     if (diffWeeks < 4) return `${diffWeeks}w ago`;
     return formatDate(dateStr);
-  } catch {
-    return dateStr;
-  }
 }
 
 // Compute stats from applications

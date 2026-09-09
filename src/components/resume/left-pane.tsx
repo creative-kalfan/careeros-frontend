@@ -12,6 +12,7 @@ import {
   Gauge,
   Loader2,
   Plus,
+  RefreshCw,
   Wand2,
   TrendingUp,
   ArrowRight,
@@ -26,6 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-tooltip";
 import { useVersions } from "@/hooks/api/useVersions";
 import { getErrorMessage } from "@/utils/api-error";
+import { formatDateTime } from "@/utils/date";
 import { optimizationApi } from "@/api/optimization";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -76,7 +78,7 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
       </div>
 
       {planItem.reasoning && (
-        <p className="whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
+        <p className="whitespace-normal break-words leading-relaxed text-[11px] text-muted-foreground [overflow-wrap:anywhere]">
           {planItem.reasoning}
         </p>
       )}
@@ -86,7 +88,7 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
           <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Current
           </span>
-          <div className="whitespace-normal break-words text-xs text-muted-foreground/85 line-through decoration-destructive/60 rounded bg-destructive/5 border border-destructive/15 p-2 leading-relaxed">
+          <div className="whitespace-normal break-words text-xs text-muted-foreground/85 line-through decoration-destructive/60 rounded bg-destructive/5 border border-destructive/15 p-2 leading-relaxed [overflow-wrap:anywhere]">
             {planItem.currentText}
           </div>
         </div>
@@ -97,7 +99,7 @@ function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
           <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
             Tailored Text
           </span>
-          <div className="whitespace-normal break-words text-xs font-medium text-foreground rounded bg-emerald-500/10 border border-emerald-500/20 p-2 leading-relaxed">
+          <div className="whitespace-normal break-words text-xs font-medium text-foreground rounded bg-emerald-500/10 border border-emerald-500/20 p-2 leading-relaxed [overflow-wrap:anywhere]">
             {planItem.suggestedText}
           </div>
         </div>
@@ -203,9 +205,10 @@ function ChipList({
                 onAddSkill(item);
               }}
               title={`Add "${item}" to resume skills`}
-              className="ml-0.5 rounded-full hover:bg-rose-500/20 p-0.5 text-rose-700 dark:text-rose-300 transition-colors"
+              aria-label={`Add "${item}" to resume skills`}
+              className="ml-0.5 rounded-full hover:bg-rose-500/20 p-0.5 text-rose-700 dark:text-rose-300 transition-colors shrink-0"
             >
-              <Plus className="h-2.5 w-2.5" />
+              <Plus className="h-2.5 w-2.5 shrink-0" />
             </button>
           )}
         </Badge>
@@ -697,7 +700,7 @@ export function LeftPane({
                 className="h-7 px-2 text-[11px] font-medium text-primary hover:text-primary hover:bg-primary/10 shrink-0"
                 onClick={onOpenATSDialog}
               >
-                Change
+                <span className="text-[11px] font-medium">Change</span>
               </Button>
             )}
           </div>
@@ -717,7 +720,8 @@ export function LeftPane({
                 className="mt-3 h-8 w-full rounded-lg text-xs font-medium"
                 onClick={onOpenATSDialog}
               >
-                Add job description
+                <Plus className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-xs font-medium">Add job description</span>
               </Button>
             )}
           </Card>
@@ -800,7 +804,8 @@ export function LeftPane({
                         onClick={handleStartTailoring}
                         disabled={tailorMutation.isPending}
                       >
-                        Retry tailoring
+                        <RefreshCw className="h-3 w-3 shrink-0" />
+                        <span className="text-[11px] font-medium">Retry tailoring</span>
                       </Button>
                     </div>
                   </div>
@@ -827,7 +832,8 @@ export function LeftPane({
                           onClick={onRetryApplyTailoring}
                           disabled={isApplyingTailoring}
                         >
-                          Retry compile
+                          <RefreshCw className="h-3 w-3 shrink-0" />
+                          <span className="text-[11px] font-medium">Retry compile</span>
                         </Button>
                       )}
                     </div>
@@ -921,7 +927,7 @@ export function LeftPane({
                     <Button
                       type="button"
                       size="default"
-                      className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+                      className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-white gap-2"
                       onClick={handleApplyProposal}
                       disabled={isApplyingTailoring}
                     >
@@ -935,7 +941,8 @@ export function LeftPane({
                       onClick={handleDiscardProposal}
                       disabled={isApplyingTailoring}
                     >
-                      Discard Proposal
+                      <XCircle className="h-3 w-3 shrink-0" />
+                      <span className="text-[11px] font-medium">Discard Proposal</span>
                     </Button>
                   </div>
                 </div>
@@ -957,7 +964,7 @@ export function LeftPane({
                     disabled={tailorMutation.isPending || isApplyingTailoring}
                   >
                     <Wand2 className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    Re-tailor for this Job
+                    <span className="text-xs font-medium">Re-tailor for this Job</span>
                   </Button>
                 </div>
               )}
@@ -965,25 +972,25 @@ export function LeftPane({
               {/* State 3: Ready to Tailor (Initial State) */}
               {!tailorResult && !tailorMutation.isPending && !isCurrentVersionTailored && (
                 <div className="w-full min-w-0 space-y-2.5">
-                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-normal break-words">
+                  <p className="whitespace-normal break-words text-xs text-muted-foreground leading-relaxed [overflow-wrap:anywhere]">
                     Tailor your entire resume to match this role. CareerOS maps job requirements and crafts high-impact bullet points.
                   </p>
                   <Button
                     type="button"
                     size="default"
-                    className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 flex items-center justify-center cursor-pointer"
+                    className="w-full h-9 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-white gap-2 flex items-center justify-center cursor-pointer"
                     onClick={handleStartTailoring}
                     disabled={Boolean(tailorMutation?.isPending || isApplyingTailoring)}
                   >
                     {tailorMutation?.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin shrink-0 text-white" />
-                        <span className="text-white font-medium">Tailoring Resume...</span>
+                        <span className="text-white font-medium text-xs">Tailoring Resume...</span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4 shrink-0 text-white" />
-                        <span className="text-white font-medium">Tailor Resume to this Job</span>
+                        <span className="text-white font-medium text-xs">Tailor Resume to this Job</span>
                       </>
                     )}
                   </Button>
@@ -1034,7 +1041,8 @@ export function LeftPane({
                         className="mt-1.5 h-7 rounded-md text-[11px]"
                         onClick={onOpenATSDialog}
                       >
-                        Try again
+                        <Gauge className="h-3 w-3 shrink-0" />
+                        <span className="text-[11px] font-medium">Try again</span>
                       </Button>
                     )}
                   </div>
@@ -1063,7 +1071,8 @@ export function LeftPane({
                     className="mt-3 h-8 w-full rounded-lg text-xs"
                     onClick={onOpenATSDialog}
                   >
-                    Run ATS Analysis
+                    <Gauge className="h-3.5 w-3.5 shrink-0" />
+                    <span className="text-xs font-medium">Run ATS Analysis</span>
                   </Button>
                 )}
               </Card>
@@ -1082,7 +1091,8 @@ export function LeftPane({
                   className="mt-3 h-8 w-full rounded-lg text-xs"
                   onClick={onOpenATSDialog}
                 >
-                  Set Target Job
+                  <Target className="h-3.5 w-3.5 shrink-0" />
+                  <span className="text-xs font-medium">Set Target Job</span>
                 </Button>
               )}
             </Card>
@@ -1113,7 +1123,8 @@ export function LeftPane({
                     className="mt-1.5 h-7 rounded-md text-[11px]"
                     onClick={() => void refetchVersions()}
                   >
-                    Retry
+                    <RefreshCw className="h-3 w-3 shrink-0" />
+                    <span className="text-[11px] font-medium">Retry</span>
                   </Button>
                 </div>
               </div>
@@ -1138,7 +1149,7 @@ export function LeftPane({
                     <div className="min-w-0">
                       <div className="truncate text-[13px] font-medium">{v.version_name}</div>
                       <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                        {new Date(v.updated_at).toLocaleString()}
+                        {formatDateTime(v.updated_at)}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">

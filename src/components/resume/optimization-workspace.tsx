@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-tooltip";
+import { formatDate } from "@/utils/date";
 import { OptimizationSuggestionCard } from "./optimization-suggestion-card";
 import {
   useGenerateOptimization,
@@ -281,8 +282,7 @@ export function OptimizationWorkspace({
                             {item.jobTitle || "Untitled"}
                           </p>
                           <p className="text-[10px] text-muted-foreground">
-                            {item.company || "No company"} •{" "}
-                            {new Date(item.createdAt).toLocaleDateString()}
+                            {item.company || "No company"} • {formatDate(item.createdAt)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">

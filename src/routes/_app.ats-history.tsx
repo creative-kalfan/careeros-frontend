@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useResumes } from "@/hooks/api/useResumes";
 import { request } from "@/utils/request";
+import { formatDate } from "@/utils/date";
 import { API_ENDPOINTS } from "@/constants/api";
 import { useQuery } from "@tanstack/react-query";
 
@@ -267,7 +268,7 @@ function ATSHistoryPage() {
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
-                          {new Date(report.created_at).toLocaleDateString()}
+                          {formatDate(report.created_at)}
                         </div>
                         <Badge variant="outline" className="text-[10px]">
                           {report.job_description?.slice(0, 30)}...

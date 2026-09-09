@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/use-tooltip";
 import { useResumes } from "@/hooks/api/useResumes";
 import { versionsApi } from "@/api/versions";
 import { FileText, Loader2 } from "lucide-react";
+import { formatDate } from "@/utils/date";
 import type { Job } from "@/types/jobs";
 import type { ResumeListRecord } from "@/types/resume";
 
@@ -178,7 +179,7 @@ export function JobResumeDialog({
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-xs font-medium">{resume.name}</div>
                         <div className="mt-0.5 text-[10.5px] text-muted-foreground">
-                          Updated {new Date(resume.updatedAt).toLocaleDateString()}
+                          Updated {formatDate(resume.updatedAt)}
                         </div>
                       </div>
                       {isCreating && (

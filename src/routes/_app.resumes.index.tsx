@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useResumes } from "@/hooks/api/useResumes";
+import { formatDate } from "@/utils/date";
 
 export const Route = createFileRoute("/_app/resumes/")({
   head: () => ({
@@ -179,9 +180,7 @@ function ResumesPage() {
                             )}
                             <span className="flex items-center gap-1 font-mono">
                               <Clock className="h-3 w-3" />
-                              {resume.updatedAt
-                                ? new Date(resume.updatedAt).toLocaleDateString()
-                                : "Active"}
+                              {formatDate(resume.updatedAt)}
                             </span>
                           </div>
                         </div>
