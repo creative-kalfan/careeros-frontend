@@ -231,9 +231,9 @@ export function PreviewPane({
   return (
     <div className="flex h-full flex-col bg-background select-none">
       {/* Professional Canonical Workspace Toolbar */}
-      <div className="workstation-panel flex items-center gap-2 border-b border-border/80 px-4 py-2 shrink-0 z-10 shadow-xs">
+      <div className="workstation-panel flex items-center gap-2 border-b border-border/80 px-4 py-2 shrink-0 z-10 shadow-xs flex-wrap">
         {/* Zoom Controls */}
-        <div className="flex items-center gap-0.5 rounded-lg border border-border/80 bg-surface-instrument/80 p-0.5 shadow-inner-recessed">
+        <div className="flex items-center gap-0.5 rounded-lg border border-border/80 bg-surface-instrument/80 p-0.5 shadow-inner-recessed shrink-0">
           <Button
             variant="ghost"
             size="icon"
@@ -301,7 +301,7 @@ export function PreviewPane({
         )}
 
         {/* Right Action Controls */}
-        <div className="ml-auto flex items-center gap-1.5">
+        <div className="ml-auto flex items-center gap-1.5 flex-wrap justify-end">
           <Button
             variant="ghost"
             size="icon"

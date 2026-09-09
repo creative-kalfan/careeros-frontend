@@ -582,7 +582,12 @@ export function LeftPane({
     return versions.find((v) => v.id === currentVersionId);
   }, [versions, currentVersionId]);
 
+  // Guard on versionsLoading: while versions are in-flight isCurrentVersionTailored
+  // must stay false so State 3 (tailor button) remains stable and does not
+  // disappear the moment the loaded data resolves the tailored version — the
+  // documented P0 two-state swap.
   const isCurrentVersionTailored = Boolean(
+    !versionsLoading &&
     currentVersion &&
     !currentVersion.is_master &&
     currentVersion.job_description &&
