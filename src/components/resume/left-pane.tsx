@@ -669,9 +669,9 @@ export function LeftPane({
   }, [selectedAtsIssue]);
 
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full w-full">
       <motion.div
-        className="flex w-full min-w-0 max-w-full flex-col gap-6 p-4"
+        className="flex w-full min-w-0 max-w-full flex-col gap-6 overflow-x-hidden p-4"
         variants={staggerContainer}
         initial="hidden"
         animate="show"
@@ -724,9 +724,9 @@ export function LeftPane({
         )}
 
         {hasJobContext && (
-          <div className="space-y-3">
+          <div className="w-full min-w-0 space-y-3">
             {/* Whole Resume Tailoring Section */}
-            <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-3.5 shadow-xs">
+            <div className="w-full min-w-0 space-y-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-3.5 shadow-xs">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
                   <Wand2 className="h-4 w-4 shrink-0 text-primary" />
@@ -964,8 +964,8 @@ export function LeftPane({
 
               {/* State 3: Ready to Tailor (Initial State) */}
               {!tailorResult && !tailorMutation.isPending && !isCurrentVersionTailored && (
-                <div className="space-y-2.5">
-                  <p className="w-full whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
+                <div className="w-full min-w-0 space-y-2.5">
+                  <p className="w-full whitespace-normal break-words text-xs leading-relaxed text-muted-foreground">
                     Tailor your entire resume to match this role. CareerOS maps job requirements
                     against your verified experience across summary, skills, and work history.
                   </p>
