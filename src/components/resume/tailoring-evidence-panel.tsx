@@ -203,56 +203,76 @@ export function TailoringEvidencePanel({
 
       {!result ? (
         <div className="space-y-3">
-          <p className="whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
-            {batch.subheading}
-          </p>
-          <div className="space-y-1.5">
-            {batch.opportunities.map((opp) => {
-              const checked = selected.has(opp.id);
-              return (
-                <label
-                  key={opp.id}
-                  className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${
-                    checked
-                      ? "border-primary/50 bg-primary/[0.07]"
-                      : "border-border/60 bg-background/60 hover:bg-background"
-                  }`}
-                >
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={() => toggle(opp.id)}
-                    aria-label={opp.displayLabel}
-                    className="mt-0.5 shrink-0"
-                  />
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-semibold text-foreground">
-                      {opp.friendlyTitle || opp.displayLabel}
-                    </span>
-                    {opp.friendlyPrompt && (
-                      <span className="mt-0.5 block whitespace-normal break-words text-[11px] leading-relaxed text-muted-foreground">
-                        {opp.friendlyPrompt}
-                      </span>
-                    )}
-                  </span>
-                </label>
-              );
-            })}
+          <div className="space-y-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              Select any you've touched:
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {batch.opportunities.map((opp) => {
+                const checked = selected.has(opp.id);
+                const label = opp.displayLabel || opp.friendlyTitle;
+                return (
+                  <button
+                    key={opp.id}
+                    type="button"
+                    onClick={() => toggle(opp.id)}
+                    aria-pressed={checked}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
+                      checked
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "border border-border/70 bg-background/80 text-foreground/80 hover:bg-background hover:text-foreground"
+                    }`}
+                  >
+                    <span>{label}</span>
+                    {checked && <Check className="h-3 w-3 shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <p className="whitespace-normal break-words text-[10.5px] leading-relaxed text-muted-foreground">
-            {batch.selectHint}
-          </p>
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              {batch.inputLabel || "Tell us a little about where you used them."}
+
+          <div className="space-y-1.5 pt-1">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              Your familiarity:
+            </span>
+            <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
+              {[
+                { label: "Used directly", hint: "Yes, I've worked with some of them" },
+                { label: "Related exposure", hint: "I have related exposure" },
+                { label: "Help me figure out", hint: "Not sure / help me figure it out" },
+              ].map((opt) => (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => {
+                    if (selected.size === 0 && batch.opportunities.length > 0) {
+                      // Auto-select all if user clicks a quick stance without picking chips yet
+                      setSelected(new Set(batch.opportunities.map((o) => o.id)));
+                    }
+                    if (!freeText.includes(opt.hint)) {
+                      setFreeText((prev) => (prev ? `${prev}. ${opt.hint}` : opt.hint));
+                    }
+                  }}
+                  className="rounded-lg border border-border/60 bg-background/50 px-2 py-1.5 text-left text-[11px] font-medium text-foreground/90 transition-colors hover:border-primary/40 hover:bg-background"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1.5 pt-1">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              {batch.inputLabel || "Tell us where you used them (projects, courses, or roles):"}
             </span>
             <Textarea
               value={freeText}
               onChange={(e) => setFreeText(e.target.value)}
-              placeholder={batch.inputPlaceholder}
-              rows={3}
+              placeholder="e.g. Worked with them during an internship or built a project using similar workflows..."
+              rows={2}
               disabled={busy}
               aria-label={batch.inputLabel}
-              className="min-h-16 resize-y text-xs"
+              className="min-h-14 resize-y text-xs"
             />
           </div>
           <div className="flex items-center gap-2">
