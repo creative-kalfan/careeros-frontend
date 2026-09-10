@@ -266,6 +266,9 @@ export function TemplatePreview({ template, templateSlug, profile, meta }: Templ
                   )}
                   {exp.sub_engagements && exp.sub_engagements.length > 0 && (
                     <div className="mt-2 space-y-2 pl-3 border-l-2 border-gray-200">
+                      <div className="text-xs font-semibold text-gray-800 mb-1">
+                        Key Sub-Engagements
+                      </div>
                       {exp.sub_engagements.map((sub: any, sIdx: number) => {
                         const subName = sub.name || sub.title || "";
                         const subBullets = Array.isArray(sub.bullets)
