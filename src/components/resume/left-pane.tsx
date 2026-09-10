@@ -674,8 +674,8 @@ export function LeftPane({
   }, [selectedAtsIssue]);
 
   return (
-    <ScrollArea className="h-full w-full min-w-0">
-      <div className="min-w-0 w-full min-h-full p-4 space-y-6">
+    <ScrollArea className="h-full w-full min-w-0 scroll-area-constrained">
+      <div className="min-w-0 w-full min-h-full p-4 space-y-6 [overflow-wrap:anywhere]">
         {hasJobContext ? (
           <div className="flex items-center justify-between gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] p-2.5">
             <div className="flex items-center gap-2 min-w-0">

@@ -332,6 +332,24 @@
   }
 }
 
+/* Resume Studio left pane — constrain the Radix ScrollArea content wrapper.
+   Radix renders ScrollArea content inside `[data-radix-scroll-area-viewport]`
+   with inline `display: table; min-width: 100%`. A CSS table auto-sizes itself
+   to the widest descendant's intrinsic width (it is not constrained by its
+   containing block), so on the populated ATS/tailoring state the pane's
+   ~389px viewport expanded to ~3970px and pushed the Tailor CTA off-screen.
+   Replace the table sizing with a block-level box that tracks the viewport
+   width exactly, while preserving vertical scrolling (height still grows with
+   content). Scoped to the left-pane ScrollArea via `.scroll-area-constrained`
+   so no other ScrollArea in the app changes behavior. */
+.scroll-area-constrained [data-radix-scroll-area-viewport] > div {
+  display: block !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  min-height: 100%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
