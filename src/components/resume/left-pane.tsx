@@ -39,6 +39,7 @@ import { interpretAtsScore, summarizeRequirementCoverage } from "@/lib/ats-evide
 import { partitionRecommendations } from "@/lib/ats-evidence-view";
 import type { EvidenceLocationMap } from "@/lib/evidence-location";
 import { AtsEvidenceList } from "@/components/resume/ats-evidence-list";
+import { TailoringEvidencePanel } from "@/components/resume/tailoring-evidence-panel";
 
 function TailoringPlanCard({ planItem }: { planItem: TailoringPlanItem }) {
   const actionColor =
@@ -1000,6 +1001,18 @@ export function LeftPane({
                 </div>
               )}
             </div>
+            {/* Friendly batch evidence discovery: one collective check-in
+                for high-value gaps, then re-tailor + before/after impact.
+                Optional and skippable; reuses the apply-tailoring path. */}
+            <TailoringEvidencePanel
+              resumeId={currentId}
+              versionId={currentVersionId}
+              jobTitle={targetJobTitle}
+              company={targetCompany}
+              jobDescription={targetJobDescription}
+              onApplyTailoring={onApplyTailoring}
+              isApplyingTailoring={isApplyingTailoring}
+            />
           </div>
         )}
 

@@ -15,6 +15,13 @@ import type {
   TailorResumeRequest,
   TailorResumeResponse,
 } from "../types/optimization";
+import type {
+  ConfirmedExperienceFact,
+  TailoringEvidenceImpact,
+  TailoringOpportunitiesResponse,
+  TailoringOpportunityCard,
+  TailoringRespondResponse,
+} from "../types/tailoring-evidence";
 
 // Backend returns snake_case; frontend expects camelCase. Map once here.
 function mapSuggestion(raw: Record<string, unknown>): OptimizationSuggestion {
@@ -345,6 +352,155 @@ export const optimizationApi = {
       timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
     return mapTailorResponse(raw);
+  },
+};
+
+function mapOpportunityCard(raw: Record<string, unknown>): TailoringOpportunityCard {
+  return {
+    id: String(raw.id ?? ""),
+    requirementId: String(raw.requirement_id ?? raw.requirementId ?? ""),
+    displayLabel: String(raw.display_label ?? raw.displayLabel ?? ""),
+    friendlyTitle: String(
+      raw.friendly_title ?? raw.friendlyTitle ?? raw.display_label ?? raw.displayLabel ?? "",
+    ),
+    friendlyPrompt: String(raw.friendly_prompt ?? raw.friendlyPrompt ?? ""),
+    friendlyHelper: String(raw.friendly_helper ?? raw.friendlyHelper ?? ""),
+    contextOptions: Array.isArray(raw.context_options)
+      ? (raw.context_options as string[])
+      : Array.isArray(raw.contextOptions)
+        ? (raw.contextOptions as string[])
+        : [],
+    confidence: Number(raw.confidence ?? 0),
+    status: String(raw.status ?? "pending"),
+  };
+}
+
+function mapEvidenceImpact(raw: Record<string, unknown>): TailoringEvidenceImpact {
+  return {
+    baselineScore: Number(raw.baseline_score ?? raw.baselineScore ?? 0),
+    tailoredScore: Number(raw.tailored_score ?? raw.tailoredScore ?? 0),
+    delta: Number(raw.delta ?? 0),
+    materiallyImproved: Boolean(raw.materially_improved ?? raw.materiallyImproved ?? false),
+    headline: String(raw.headline ?? ""),
+    improvements: Array.isArray(raw.improvements) ? (raw.improvements as string[]) : [],
+    explanation: String(raw.explanation ?? ""),
+  };
+}
+
+function mapRespondResponse(raw: Record<string, unknown>): TailoringRespondResponse {
+  const rawFacts = Array.isArray(raw.facts) ? raw.facts : [];
+  const rawPlan = Array.isArray(raw.plan) ? raw.plan : [];
+  return {
+    success: Boolean(raw.success),
+    facts: (rawFacts as Record<string, unknown>[]).map(
+      (f): ConfirmedExperienceFact => ({
+        id: String(f.id ?? ""),
+        opportunityId: String(f.opportunity_id ?? f.opportunityId ?? ""),
+        requirementId: String(f.requirement_id ?? f.requirementId ?? ""),
+        displayLabel: String(f.display_label ?? f.displayLabel ?? ""),
+        candidateContext: String(f.candidate_context ?? f.candidateContext ?? "other"),
+        candidateDescription: String(
+          f.candidate_description ?? f.candidateDescription ?? "",
+        ),
+        projectName:
+          (f.project_name as string) ?? (f.projectName as string) ?? null,
+        provenance: String(f.provenance ?? "candidate_confirmed"),
+        confidence: Number(f.confidence ?? 0),
+      }),
+    ),
+    declinedIds: Array.isArray(raw.declined_ids)
+      ? (raw.declined_ids as string[])
+      : Array.isArray(raw.declinedIds)
+        ? (raw.declinedIds as string[])
+        : [],
+    needsClarification:
+      (raw.needs_clarification as string) ?? (raw.needsClarification as string) ?? null,
+    successNote: String(raw.success_note ?? raw.successNote ?? ""),
+    tailoredProfile: (raw.tailored_profile ?? raw.tailoredProfile ?? {}) as Record<
+      string,
+      unknown
+    >,
+    plan: (rawPlan as any[]).map((p) => ({
+      section: String(p.section ?? ""),
+      action: String(p.action ?? "ALIGN"),
+      targetId: p.target_id ?? p.targetId ?? null,
+      currentText: p.current_text ?? p.currentText ?? null,
+      suggestedText: p.suggested_text ?? p.suggestedText ?? null,
+      reasoning: String(p.reasoning ?? ""),
+      keywordsAddressed: Array.isArray(p.keywords_addressed)
+        ? p.keywords_addressed
+        : Array.isArray(p.keywordsAddressed)
+          ? p.keywordsAddressed
+          : [],
+    })),
+    impact: mapEvidenceImpact(
+      (raw.impact ?? {}) as Record<string, unknown>,
+    ),
+    guardIssues: Array.isArray(raw.guard_issues)
+      ? (raw.guard_issues as string[])
+      : Array.isArray(raw.guardIssues)
+        ? (raw.guardIssues as string[])
+        : [],
+    message: String(raw.message ?? ""),
+  };
+}
+
+export const tailoringEvidenceApi = {
+  opportunities: async (data: {
+    resumeId?: string;
+    versionId?: string;
+    jobDescription: string;
+    jobTitle?: string;
+    company?: string;
+    content?: Record<string, unknown>;
+    maxOpportunities?: number;
+    knownFactKeys?: string[];
+    declinedRequirementIds?: string[];
+  }): Promise<TailoringOpportunitiesResponse> => {
+    const raw = await request<Record<string, unknown>>({
+      method: "POST",
+      path: "/api/optimization/tailoring-evidence/opportunities",
+      body: data,
+    });
+    return {
+      success: Boolean(raw.success),
+      heading: String(raw.heading ?? ""),
+      subheading: String(raw.subheading ?? ""),
+      selectHint: String(raw.select_hint ?? raw.selectHint ?? ""),
+      inputLabel: String(raw.input_label ?? raw.inputLabel ?? ""),
+      inputPlaceholder: String(
+        raw.input_placeholder ?? raw.inputPlaceholder ?? "",
+      ),
+      skipLabel: String(raw.skip_label ?? raw.skipLabel ?? ""),
+      submitLabel: String(raw.submit_label ?? raw.submitLabel ?? ""),
+      opportunities: ((raw.opportunities as unknown[]) ?? []).map((o) =>
+        mapOpportunityCard(o as Record<string, unknown>),
+      ),
+      message: String(raw.message ?? ""),
+    };
+  },
+
+  respond: async (data: {
+    resumeId?: string;
+    versionId?: string;
+    jobDescription: string;
+    jobTitle?: string;
+    company?: string;
+    content?: Record<string, unknown>;
+    opportunities: TailoringOpportunityCard[];
+    selectedIds: string[];
+    freeText: string;
+    contextHints?: Record<string, string>;
+  }): Promise<TailoringRespondResponse> => {
+    const raw = await request<Record<string, unknown>>({
+      method: "POST",
+      path: "/api/optimization/tailoring-evidence/respond",
+      body: data,
+      // Respond re-runs universal tailoring plus two ATS analyses —
+      // well beyond the 30s default.
+      timeoutMs: LONG_REQUEST_TIMEOUT_MS,
+    });
+    return mapRespondResponse(raw);
   },
 };
 

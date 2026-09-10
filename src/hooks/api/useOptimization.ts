@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { optimizationApi } from "../../api/optimization";
+import { optimizationApi, tailoringEvidenceApi } from "../../api/optimization";
+import type { TailoringOpportunityCard } from "../../types/tailoring-evidence";
 import type {
   GenerateOptimizationResponse,
   SuggestionActionResponse,
@@ -166,5 +167,38 @@ export function useReanalyze() {
       jobTitle?: string;
       company?: string;
     }) => optimizationApi.reanalyze(data),
+  });
+}
+
+export function useTailoringOpportunities() {
+  return useMutation({
+    mutationFn: (data: {
+      resumeId?: string;
+      versionId?: string;
+      jobDescription: string;
+      jobTitle?: string;
+      company?: string;
+      content?: Record<string, unknown>;
+      maxOpportunities?: number;
+      knownFactKeys?: string[];
+      declinedRequirementIds?: string[];
+    }) => tailoringEvidenceApi.opportunities(data),
+  });
+}
+
+export function useRespondTailoringEvidence() {
+  return useMutation({
+    mutationFn: (data: {
+      resumeId?: string;
+      versionId?: string;
+      jobDescription: string;
+      jobTitle?: string;
+      company?: string;
+      content?: Record<string, unknown>;
+      opportunities: TailoringOpportunityCard[];
+      selectedIds: string[];
+      freeText: string;
+      contextHints?: Record<string, string>;
+    }) => tailoringEvidenceApi.respond(data),
   });
 }
