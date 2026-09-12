@@ -18,17 +18,47 @@ export function AIInsights({
   onRunMatch?: () => void;
   onOptimizeResume?: () => void;
 }) {
-  const overallScore = matchResult?.match.matchScore ?? job.match?.overall ?? job.aiMatch ?? 0;
+  // Fresh re-analyze result takes precedence; backend returns both camelCase
+  // aliases and canonical snake_case keys, so read both before falling back
+  // to the personalized list score.
+  const overallScore =
+    matchResult?.match.matchScore ??
+    matchResult?.match.overall ??
+    job.match?.overall ??
+    job.aiMatch ??
+    0;
   const matchTier = getMatchTier(overallScore);
 
   const skillScore =
-    matchResult?.match.skillMatchScore ?? job.match?.skillMatch ?? job.atsSkillMatch ?? 0;
-  const expScore = job.match?.experienceMatch ?? 90;
-  const locScore = job.match?.locationMatch ?? 100;
-  const salaryScore = job.match?.salaryMatch ?? 85;
+    matchResult?.match.skillMatchScore ??
+    matchResult?.match.skill_match ??
+    job.match?.skillMatch ??
+    job.atsSkillMatch;
+  // No fabricated fallbacks: missing breakdowns render a truthful
+  // unavailable state instead of plausible-looking numbers.
+  const expScore =
+    matchResult?.match.experienceMatch ??
+    matchResult?.match.experience_match ??
+    job.match?.experienceMatch;
+  const locScore =
+    matchResult?.match.locationMatch ??
+    matchResult?.match.location_match ??
+    job.match?.locationMatch;
+  const salaryScore =
+    matchResult?.match.salaryMatch ??
+    matchResult?.match.salary_match ??
+    job.match?.salaryMatch;
 
   const matchedSkills = job.matchedSkills || [];
-  const missingSkills = job.missingSkills || job.atsMissingSkills || [];
+  const missingSkills =
+    matchResult?.match.missingSkills ??
+    matchResult?.match.missing_skills ??
+    (job.missingSkills || job.atsMissingSkills || []);
+  const hasBreakdown =
+    skillScore !== undefined ||
+    expScore !== undefined ||
+    locScore !== undefined ||
+    salaryScore !== undefined;
 
   return (
     <div className="space-y-5 p-1">
@@ -70,10 +100,15 @@ export function AIInsights({
 
         {/* Breakdown bars */}
         <div className="mt-4 space-y-2.5 pt-3 border-t border-border/60">
-          <FactorRow label="Skill Match" value={skillScore} />
-          <FactorRow label="Experience Alignment" value={expScore} />
-          <FactorRow label="Location Compatibility" value={locScore} />
-          <FactorRow label="Compensation Range" value={salaryScore} />
+          {skillScore !== undefined && <FactorRow label="Skill Match" value={skillScore} />}
+          {expScore !== undefined && <FactorRow label="Experience Alignment" value={expScore} />}
+          {locScore !== undefined && <FactorRow label="Location Compatibility" value={locScore} />}
+          {salaryScore !== undefined && <FactorRow label="Compensation Range" value={salaryScore} />}
+          {!hasBreakdown && (
+            <p className="text-xs text-muted-foreground">
+              Not enough data — run analysis to see the breakdown.
+            </p>
+          )}
         </div>
       </div>
 
@@ -154,10 +189,16 @@ export function AIInsights({
             Seniority Match
           </div>
           <div className="mt-2 text-sm font-semibold text-foreground">
-            {job.seniority || job.experience || "Mid-Level"}
+            {job.seniority && job.seniority !== "Not specified"
+              ? job.seniority
+              : (job.experience && job.experience !== "Not specified"
+                ? job.experience
+                : "Not enough data — run analysis")}
           </div>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Aligned with your career trajectory
+            {job.seniority && job.seniority !== "Not specified"
+              ? "Aligned with your career trajectory"
+              : "Seniority not provided by the source"}
           </p>
         </div>
 
@@ -167,9 +208,11 @@ export function AIInsights({
             ATS Keyword Coverage
           </div>
           <div className="mt-2 text-sm font-semibold text-foreground font-mono">
-            {job.atsScore ? `${job.atsScore}%` : "Verified"}
+            {job.atsScore ? `${job.atsScore}%` : "Not available"}
           </div>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">Core industry keywords present</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            {job.atsScore ? "Core industry keywords present" : "ATS analysis not run for this job"}
+          </p>
         </div>
       </div>
     </div>

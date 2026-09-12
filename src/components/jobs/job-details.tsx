@@ -58,7 +58,14 @@ export function JobDetails({
   const showRealLogo = Boolean(job.companyLogoUrl) && !logoFailed;
   const status = statusMeta(job.status);
   const provenance = job.sourceProvenance;
-  const matchScore = matchResult?.match.matchScore ?? job.match?.overall ?? job.aiMatch ?? 0;
+  // Backend returns both matchScore (frontend alias) and overall (canonical);
+  // read both so a fresh re-analyze result renders instead of falling back.
+  const matchScore =
+    matchResult?.match.matchScore ??
+    matchResult?.match.overall ??
+    job.match?.overall ??
+    job.aiMatch ??
+    0;
   const matchTier = getMatchTier(matchScore);
 
   const handleShare = () => {

@@ -24,7 +24,11 @@ export type JobsApi = {
   saveJob: (jobId: string) => Promise<{ savedJob: SavedJobRecord }>;
   unsaveJob: (jobId: string) => Promise<void>;
   getSavedJobs: () => Promise<Job[]>;
-  matchJobs: (params: { resumeText: string; job: NormalizedJob }) => Promise<JobMatchResponse>;
+  matchJobs: (params: {
+    job: NormalizedJob;
+    resumeText?: string;
+    jobId?: string;
+  }) => Promise<JobMatchResponse>;
 };
 
 // Backend response envelope: { success, data, meta? }
@@ -93,11 +97,12 @@ export const jobsApi: JobsApi = {
   },
 
   getJob: async (id: string) => {
-    const res = await request<BackendResponse<{ job: NormalizedJob }>>({
+    const res = await request<BackendResponse<NormalizedJob | { job: NormalizedJob }>>({
       method: "GET",
       path: API_ENDPOINTS.JOBS.GET(id),
     });
-    return adaptJob(res.data.job);
+    const raw = (res.data as { job?: NormalizedJob })?.job ?? (res.data as NormalizedJob);
+    return adaptJob(raw);
   },
 
   saveJob: async (jobId: string) => {
@@ -117,11 +122,15 @@ export const jobsApi: JobsApi = {
   },
 
   getSavedJobs: async () => {
-    const res = await request<BackendResponse<{ savedJobs: SavedJobRecord[] }>>({
+    const res = await request<BackendResponse<SavedJobRecord[] | { savedJobs: SavedJobRecord[] }>>({
       method: "GET",
       path: API_ENDPOINTS.JOBS.SAVED,
     });
-    return res.data.savedJobs
+    // Backend returns the raw array; older clients expect { savedJobs }.
+    const records = Array.isArray(res.data)
+      ? res.data
+      : ((res.data as { savedJobs?: SavedJobRecord[] })?.savedJobs ?? []);
+    return records
       .map((record) => {
         const raw = Array.isArray(record.jobs) ? record.jobs[0] : record.jobs;
         if (!raw) return null;
@@ -130,11 +139,13 @@ export const jobsApi: JobsApi = {
       .filter((job): job is Job => job !== null);
   },
 
-  matchJobs: async ({ resumeText, job }) => {
+  matchJobs: async ({ resumeText, job, jobId }) => {
     const res = await request<BackendResponse<JobMatchResponse>>({
       method: "POST",
       path: API_ENDPOINTS.JOBS.MATCH,
-      body: { resumeText, job },
+      // resumeText is optional: the backend scores against the stored user
+      // profile, so the client must not fabricate empty resume text.
+      body: { job, ...(jobId ? { jobId } : {}), ...(resumeText ? { resumeText } : {}) },
     });
     return res.data;
   },

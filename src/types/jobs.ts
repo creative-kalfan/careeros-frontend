@@ -79,12 +79,23 @@ export type Job = {
 export type NormalizedJob = {
   id?: string;
   externalJobId?: string | null;
+  external_job_id?: string | null;
   title: string;
   companyName: string;
+  company_name?: string | null;
+  company?: string | null;
   location?: string | null;
   employmentType?: string | null;
+  employment_type?: string | null;
   experienceLevel?: string | null;
+  experience_level?: string | null;
   salary?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  salary_currency?: string | null;
+  salaryCurrency?: string | null;
   currency?: string | null;
   description?: string | null;
   requirements?: string[];
@@ -109,7 +120,6 @@ export type JobSearchFilters = {
   role?: string;
   location?: string;
   company?: string;
-  roleCategory?: string;
   skills?: string[];
   experience?: string;
   remote?: boolean;
@@ -117,7 +127,6 @@ export type JobSearchFilters = {
   sort?: "newest" | "oldest" | "best-match" | "salary";
   page?: number;
   pageSize?: number;
-  includeInactive?: boolean;
 };
 
 export type JobSearchResult = {
@@ -137,6 +146,22 @@ export type JobMatchResult = {
   missingSkills: string[];
   missingKeywords: string[];
   recommendations: string[];
+  // Backend canonical 8-factor aliases (snake_case + overall). The /jobs/match
+  // endpoint returns both shapes so fresh re-analyze results render instead of
+  // silently falling back to the stale list score.
+  overall?: number;
+  skill_match?: number;
+  resume_match?: number;
+  experience_match?: number;
+  experienceMatch?: number;
+  location_match?: number;
+  locationMatch?: number;
+  salary_match?: number;
+  salaryMatch?: number;
+  company_preference?: number;
+  companyPreference?: number;
+  freshness?: number;
+  missing_skills?: string[];
 };
 
 export type SavedJobRecord = {

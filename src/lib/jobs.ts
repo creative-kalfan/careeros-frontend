@@ -67,11 +67,22 @@ function hashString(value: string): number {
   return Math.abs(hash);
 }
 
-function parseSalary(salary?: string | null): {
+function parseSalary(salary?: string | null, raw?: Raw): {
   min: number;
   max: number;
   currency: string;
 } {
+  // Prefer real numeric DB fields (migration 020) over the legacy string.
+  const numMin = raw ? Number(raw.salary_min ?? raw.salaryMin) : NaN;
+  const numMax = raw ? Number(raw.salary_max ?? raw.salaryMax) : NaN;
+  const rawCur =
+    (raw ? pickStr(raw, "salary_currency", "salaryCurrency") : undefined) ?? undefined;
+  if (Number.isFinite(numMin) || Number.isFinite(numMax)) {
+    const toThousands = (n: number) => (n >= 1000 ? Math.round(n / 1000) : Math.round(n));
+    const min = Number.isFinite(numMin) ? toThousands(numMin) : 0;
+    const max = Number.isFinite(numMax) ? toThousands(numMax) : min;
+    if (min !== 0 || max !== 0) return { min, max, currency: rawCur ?? "USD" };
+  }
   if (!salary) return { min: 0, max: 0, currency: "USD" };
   // Examples: "$180k - $285k", "180000 - 285000 USD", "180-285k"
   const currencyMatch = salary.match(/[A-Z]{3}/);
@@ -319,7 +330,7 @@ export function adaptJob(raw: RawJobWithScores, overrides: Partial<Job> = {}): J
   const company =
     pickStr(r, "company_name", "companyName") || pickStr(r, "company", "company") || "Unknown";
   const brand = BRAND_GRADIENTS[hashString(company) % BRAND_GRADIENTS.length];
-  const salary = parseSalary(pickStr(r, "salary", "salary"));
+  const salary = parseSalary(pickStr(r, "salary", "salary"), r);
   const postedRaw = pickDate(r, "posted_at", "postedAt", "posted_date", "postedDate");
   const postedDaysAgo = daysAgoFromDate(postedRaw);
   // Match/ATS scores come from the backend (personalized endpoint returns

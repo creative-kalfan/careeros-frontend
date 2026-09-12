@@ -12,7 +12,9 @@ import {
 import { filterOptions } from "@/lib/jobs";
 
 export type PrimaryFilterState = {
-  workMode?: "Remote" | "Hybrid" | "On-site" | "All";
+  // No Hybrid option: the backend exposes only a boolean remote flag, so a
+  // Hybrid button would filter nothing. Add when hybrid-aware filtering lands.
+  workMode?: "Remote" | "On-site" | "All";
   experience?: string;
   employmentType?: string;
   location?: string;
@@ -36,7 +38,7 @@ export function PrimaryFiltersBar({
   experience?: string;
   employmentType?: string;
   location?: string;
-  onWorkModeSelect: (mode: "Remote" | "Hybrid" | "On-site" | "All") => void;
+  onWorkModeSelect: (mode: "Remote" | "On-site" | "All") => void;
   onExperienceSelect: (exp: string | undefined) => void;
   onEmploymentTypeSelect: (type: string | undefined) => void;
   onLocationChange: (loc: string | undefined) => void;
@@ -51,7 +53,7 @@ export function PrimaryFiltersBar({
     <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-border/60 bg-background/50 backdrop-blur-xs">
       {/* Work Mode Segmented Control */}
       <div className="inline-flex items-center rounded-lg border border-border/70 bg-surface-elevated/40 p-0.5 text-xs">
-        {(["All", "Remote", "Hybrid", "On-site"] as const).map((mode) => {
+        {(["All", "Remote", "On-site"] as const).map((mode) => {
           const active = currentWorkMode === mode;
           return (
             <button

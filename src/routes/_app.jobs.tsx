@@ -11,6 +11,7 @@ import { JobDetails, JobDetailsEmpty } from "@/components/jobs/job-details";
 import { JobSearch } from "@/components/jobs/job-search";
 import { Button } from "@/components/ui/button";
 import { usePersonalizedJobs, jobsQueryKeys } from "@/hooks/api/useJobs";
+import { useSavedJobs } from "@/hooks/api/useSavedJobs";
 import { jobsApi } from "@/api/jobs";
 import { useSaveJob } from "@/hooks/api/useSaveJob";
 import { useMatchJobs } from "@/hooks/api/useMatchJobs";
@@ -142,7 +143,7 @@ function JobsPage() {
     }, 280);
   }
 
-  function handleWorkModeSelect(mode: "Remote" | "Hybrid" | "On-site" | "All") {
+  function handleWorkModeSelect(mode: "Remote" | "On-site" | "All") {
     if (mode === "Remote") {
       updateSearch({ remote: true, page: 1 });
     } else if (mode === "On-site") {
@@ -221,7 +222,18 @@ function JobsPage() {
     includeAts: true,
   });
 
-  const jobs = useMemo(() => data?.jobs ?? [], [data?.jobs]);
+  // Saved jobs are the bookmark source of truth: merge them over the
+  // personalized feed so saved state survives pagination, refresh, and
+  // navigation. The feed itself never carries bookmark flags.
+  const { data: savedJobs = [] } = useSavedJobs();
+  const savedIds = useMemo(() => new Set(savedJobs.map((j) => j.id)), [savedJobs]);
+  const jobs = useMemo(
+    () =>
+      (data?.jobs ?? []).map((j) =>
+        savedIds.has(j.id) && !j.bookmarked ? { ...j, bookmarked: true, status: "saved" as const } : j,
+      ),
+    [data?.jobs, savedIds],
+  );
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
@@ -303,9 +315,50 @@ function JobsPage() {
   }, [jobs, selectedId]);
 
   const { saveJob, unsaveJob } = useSaveJob();
-  const { matchJobAsync, isMatching, matchResult } = useMatchJobs();
+  const { matchJobAsync, isMatching, matchResult, matchError } = useMatchJobs();
   const { data: applications = [] } = useApplications();
   const applyMutation = useApplyToJob();
+
+  // Only show the fresh re-analyze result when it belongs to the currently
+  // selected job. The match mutation is global (not per-job), so without this
+  // guard a previous job's score would linger on the newly selected job.
+  const effectiveMatchResult = useMemo(() => {
+    if (!matchResult || !selected) return undefined;
+    const resultJob = matchResult.job as unknown as Record<string, unknown>;
+    const resultId =
+      (resultJob.id as string | undefined) ??
+      (resultJob.externalJobId as string | undefined) ??
+      (resultJob.external_job_id as string | undefined);
+    if (resultId && resultId === selected.id) return matchResult;
+    return undefined;
+  }, [matchResult, selected]);
+
+  const handleRunMatch = async () => {
+    if (!selected || isMatching) return;
+    try {
+      await matchJobAsync({
+        jobId: selected.id,
+        job: {
+          id: selected.id,
+          title: selected.role,
+          companyName: selected.company,
+          location: selected.location,
+          description: selected.overview,
+          requirements: selected.requirements,
+          responsibilities: selected.responsibilities,
+          skills: selected.techStack,
+        },
+      });
+    } catch (err: unknown) {
+      toast.error("Re-analyze failed", { description: getErrorMessage(err) });
+    }
+  };
+
+  useEffect(() => {
+    if (matchError) {
+      toast.error("Re-analyze failed", { description: getErrorMessage(matchError) });
+    }
+  }, [matchError]);
 
   const isTracked = useMemo(() => {
     if (!selected) return false;
@@ -534,14 +587,9 @@ function JobsPage() {
                         onTrackApplication={() => handleTrackApplication(selected)}
                         isTracked={isTracked}
                         isTracking={applyMutation.isPending}
-                        matchResult={matchResult}
+                        matchResult={effectiveMatchResult}
                         isMatching={isMatching}
-                        onRunMatch={() =>
-                          matchJobAsync({
-                            resumeText: "",
-                            job: { title: selected.role, companyName: selected.company },
-                          })
-                        }
+                        onRunMatch={handleRunMatch}
                       />
                     </motion.div>
                   ) : (
@@ -575,14 +623,9 @@ function JobsPage() {
                       onTrackApplication={() => handleTrackApplication(selected)}
                       isTracked={isTracked}
                       isTracking={applyMutation.isPending}
-                      matchResult={matchResult}
+                      matchResult={effectiveMatchResult}
                       isMatching={isMatching}
-                      onRunMatch={() =>
-                        matchJobAsync({
-                          resumeText: "",
-                          job: { title: selected.role, companyName: selected.company },
-                        })
-                      }
+                      onRunMatch={handleRunMatch}
                     />
                   </div>
                 </div>
