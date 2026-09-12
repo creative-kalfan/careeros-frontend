@@ -115,6 +115,7 @@ export type AuthContextValue = {
   isInitialized: boolean;
   profile: OnboardingProfile | null;
   isProfileLoading: boolean;
+  profileFetchFailed: boolean;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
@@ -126,7 +127,7 @@ export type AuthContextValue = {
   verifyEmail: (token: string) => Promise<void>;
   refreshToken: () => Promise<void>;
   clearError: () => void;
-  fetchProfile: () => Promise<void>;
+  fetchProfile: (force?: boolean) => Promise<void>;
   updateOnboardingStep: (step: number) => Promise<void>;
   updateProfile: (data: {
     current_role?: string;

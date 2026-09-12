@@ -19,7 +19,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  mockConversations,
   moduleFromPath,
   moduleMeta,
   toolsForModule,
@@ -62,8 +61,12 @@ export function CopilotPanel() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const currentModule = moduleFromPath(pathname);
 
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
-  const [activeId, setActiveId] = useState<string>(mockConversations[0].id);
+  // History starts empty: seeding demo threads would present fake
+  // conversations as the user's own. New threads are created on demand.
+  const [conversations, setConversations] = useState<Conversation[]>([
+    { id: "conv-new", title: "New conversation", updatedAt: "now", module: currentModule, messages: [] },
+  ]);
+  const [activeId, setActiveId] = useState<string>("conv-new");
   const [showHistory, setShowHistory] = useState(false);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);

@@ -15,6 +15,7 @@ export function useAuth() {
     isLoading: context.status === "loading",
     profile: context.profile,
     isProfileLoading: context.isProfileLoading,
+    profileFetchFailed: context.profileFetchFailed,
 
     // Actions
     login: context.login,

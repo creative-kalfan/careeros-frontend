@@ -89,6 +89,9 @@ function CopilotPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [suggested, setSuggested] = useState<string[]>([]);
+  // Tracks whether the last request failed so the status badge stays honest
+  // instead of claiming "Online" when the backend is unreachable.
+  const [unavailable, setUnavailable] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -130,6 +133,7 @@ function CopilotPage() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      setUnavailable(false);
       const chips = Array.isArray(res.data.suggested_actions)
         ? res.data.suggested_actions.filter(
             (a): a is string => typeof a === "string" && a.trim().length > 0,
@@ -138,9 +142,9 @@ function CopilotPage() {
       setSuggested(chips.slice(0, 4));
     } catch (error) {
       const code = isApiError(error) ? error.code : undefined;
-      const unavailable =
+      const isUnavailable =
         code === "LLM_UNAVAILABLE" || code === "LLM_TIMEOUT" || code === "TIMEOUT";
-      const content = unavailable
+      const content = isUnavailable
         ? "The AI assistant is temporarily unavailable. Please try again in a moment."
         : getErrorMessage(error);
       const errorMessage: Message = {
@@ -150,7 +154,8 @@ function CopilotPage() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
-      if (unavailable) {
+      setUnavailable(isUnavailable);
+      if (isUnavailable) {
         toast.error("Copilot is temporarily unavailable", {
           description: "The AI service timed out. You can retry your question.",
         });
@@ -182,7 +187,7 @@ function CopilotPage() {
           </div>
           <Badge variant="outline" className="ml-auto rounded-md border-border/80 text-[10px]">
             <Sparkles className="mr-1 h-3 w-3 text-primary" />
-            Online
+            {unavailable ? "Unavailable" : "Online"}
           </Badge>
         </div>
       </div>
@@ -252,7 +257,8 @@ function CopilotPage() {
                 <button
                   key={suggestion.label}
                   type="button"
-                  className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-surface p-2.5 text-left transition-colors hover:border-border hover:bg-surface-elevated"
+                  disabled={isLoading}
+                  className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-surface p-2.5 text-left transition-colors hover:border-border hover:bg-surface-elevated disabled:cursor-not-allowed disabled:opacity-50"
                   onClick={() => handleSend(suggestion.prompt)}
                 >
                   <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
@@ -279,8 +285,9 @@ function CopilotPage() {
               <button
                 key={chip}
                 type="button"
+                disabled={isLoading}
                 onClick={() => handleSend(chip)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-primary/20"
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Sparkles className="h-3 w-3 text-primary" />
                 {chip}

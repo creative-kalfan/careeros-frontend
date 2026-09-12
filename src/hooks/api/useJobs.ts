@@ -15,7 +15,7 @@ export const jobsQueryKeys = {
 export function useJobs(filters: JobSearchFilters = {}) {
   return useQuery<JobSearchResponse>({
     queryKey: jobsQueryKeys.list(filters),
-    queryFn: () => jobsApi.getJobs(filters),
+    queryFn: ({ signal }) => jobsApi.getJobs(filters, signal),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 2,
   });
@@ -26,7 +26,7 @@ export function usePersonalizedJobs(filters: JobSearchFilters & { includeAts?: b
 
   return useQuery<JobSearchResponse>({
     queryKey: jobsQueryKeys.personalized(filters),
-    queryFn: () => jobsApi.getPersonalizedJobs(filters),
+    queryFn: ({ signal }) => jobsApi.getPersonalizedJobs(filters, signal),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 2,
     enabled: isInitialized && isAuthenticated,
@@ -36,7 +36,7 @@ export function usePersonalizedJobs(filters: JobSearchFilters & { includeAts?: b
 export function useJob(id: string | null) {
   return useQuery<Job>({
     queryKey: jobsQueryKeys.detail(id ?? ""),
-    queryFn: () => jobsApi.getJob(id as string),
+    queryFn: ({ signal }) => jobsApi.getJob(id as string, signal),
     enabled: Boolean(id),
     staleTime: 1000 * 60 * 5,
   });

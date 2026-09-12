@@ -42,85 +42,22 @@ function Dashboard() {
   const telemetryLoading = telemetryQuery.isLoading && !telemetryQuery.data;
   const telemetryFailed = telemetryQuery.isError && !telemetry;
 
-  const fallbackData = {
-    greeting: "Welcome back",
-    firstName: "Candidate",
-    streakDays: 12,
-    healthScore: {
-      overall: 88,
-      delta: 4,
-      resume: 85,
-      applications: 75,
-      skills: 90,
-      weeklyProgress: 72,
-      weeklyGoalLabel: "5 of 7 daily actions",
-    },
-    recommendations: [],
-    applicationsByStatus: [
-      { label: "Applied", value: 14, color: "oklch(0.64 0.21 258)" },
-      { label: "Screening", value: 6, color: "oklch(0.66 0.18 290)" },
-      { label: "Interview", value: 3, color: "oklch(0.74 0.16 152)" },
-      { label: "Offer", value: 1, color: "oklch(0.78 0.15 75)" },
-    ],
-    jobMatchDistribution: [
-      { label: "High Match (85%+)", value: 8, color: "oklch(0.74 0.16 152)" },
-      { label: "Medium Match (70-85%)", value: 14, color: "oklch(0.64 0.21 258)" },
-      { label: "Exploratory (60-70%)", value: 5, color: "oklch(0.66 0.18 290)" },
-    ],
-    upcoming: [
-      {
-        id: "u-1",
-        kind: "interview" as const,
-        title: "Technical Architecture Screen",
-        detail: "System Design & Distributed Patterns",
-        when: "Tomorrow 2:00 PM",
-        urgency: "today" as const,
-      },
-      {
-        id: "u-2",
-        kind: "deadline" as const,
-        title: "Stripe Staff Engineer Application",
-        detail: "Resume tailored · Pending final review",
-        when: "In 2 days",
-        urgency: "soon" as const,
-      },
-    ],
-    recentActivity: [
-      {
-        id: "t-1",
-        kind: "ats" as const,
-        title: "ATS score increased to 85",
-        detail: "Quantified metric improvements across 4 experience bullets.",
-        time: "12m ago",
-      },
-      {
-        id: "t-2",
-        kind: "job" as const,
-        title: "Discovered 8 high-fit positions",
-        detail: "Matched 90%+ with Linear, Vercel, and Figma engineering roles.",
-        time: "1h ago",
-      },
-      {
-        id: "t-3",
-        kind: "resume" as const,
-        title: "Generated tailored variant for Senior Staff Engineer",
-        detail: "Integrated system architecture and distributed consensus competencies.",
-        time: "3h ago",
-      },
-    ],
-  };
-
-  const activeData = data || fallbackData;
+  // `data` is derived only from live backend queries (jobs, applications,
+  // recommendations, notifications). It is null while loading and real —
+  // possibly all-zero — afterwards. There is intentionally no demo fallback:
+  // an empty workspace must render empty states, never fabricated metrics.
+  const activeData = data;
   // Real backend timeline wins when telemetry loaded; otherwise keep the
   // aggregated activity (or the empty state below when there is nothing).
   const timelineItems = telemetry
     ? mapTelemetryToTimeline(telemetry.activity_timeline)
-    : activeData.recentActivity;
-  const liveAtsScore = telemetry?.average_ats_score ?? activeData.healthScore.resume;
-  const matchCount = activeData.jobMatchDistribution.reduce((s, d) => s + d.value, 0);
+    : (activeData?.recentActivity ?? []);
+  const liveAtsScore = telemetry?.average_ats_score ?? 0;
+  const matchCount = (activeData?.jobMatchDistribution ?? []).reduce((s, d) => s + d.value, 0);
   const highFitCount =
-    activeData.jobMatchDistribution.find((d) => d.label.includes("High") || d.label.includes("90"))
-      ?.value || 8;
+    activeData?.jobMatchDistribution.find(
+      (d) => d.label.includes("High") || d.label.includes("90"),
+    )?.value ?? 0;
 
   if (isError) {
     return (
@@ -137,7 +74,7 @@ function Dashboard() {
     );
   }
 
-  if (telemetryLoading) {
+  if (isLoading || telemetryLoading) {
     return (
       <div className="w-full max-w-[1536px] mx-auto flex flex-col gap-5 px-4 sm:px-6 lg:px-8 py-5">
         <div className="flex items-center justify-between">
@@ -162,15 +99,39 @@ function Dashboard() {
     );
   }
 
-  // Structured High-Leverage Career Directives
+  // Defensive: the hook returns null only while loading (handled above), but
+  // an empty workspace must say so truthfully instead of showing demo data.
+  if (!activeData) {
+    return (
+      <div className="w-full max-w-[1536px] mx-auto flex flex-col items-center justify-center gap-4 px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <Sparkles className="h-10 w-10 text-primary/60" />
+        <h2 className="text-base font-semibold">No workspace data yet</h2>
+        <p className="max-w-sm text-xs text-muted-foreground">
+          Upload a resume and complete onboarding to populate your command deck with
+          real telemetry.
+        </p>
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" className="rounded-lg">
+            <Link to="/resumes">Open Resume Studio</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="rounded-lg">
+            <Link to="/onboarding">Complete onboarding</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Structured High-Leverage Career Directives.
+  // Details describe real workspace counts or plain next actions — never
+  // fabricated roles, companies, or score deltas.
   const careerDirectives = [
     {
       id: "d-tailor",
       title: "Tailor Resume for Top Match",
       detail: telemetry
         ? `${telemetry.tailored_versions} tailored variant${telemetry.tailored_versions === 1 ? "" : "s"} across ${telemetry.total_resumes} resume${telemetry.total_resumes === 1 ? "" : "s"} in your workspace.`
-        : "Lead Platform Engineer (94% fit) · 3 suggested bullet refinements ready.",
-      scoreImpact: "+12% Match Fit",
+        : "Open Resume Studio to tailor your resume to a target role.",
       badge: "Urgent Directive",
       tone: "primary" as const,
       actionLabel: "Open Studio",
@@ -180,8 +141,7 @@ function Dashboard() {
     {
       id: "d-ats",
       title: "Run ATS Diagnostics",
-      detail: "Scan current active CV against latest Staff Engineer target JDs.",
-      scoreImpact: "Target 90+",
+      detail: "Scan your active resume against target job descriptions.",
       badge: "High Impact",
       tone: "accent" as const,
       actionLabel: "Run Scan",
@@ -191,7 +151,10 @@ function Dashboard() {
     {
       id: "d-roles",
       title: "Review Recommended Roles",
-      detail: `${highFitCount} fresh high-fit opportunities surfaced in your match pool today.`,
+      detail:
+        matchCount > 0
+          ? `${highFitCount} high-fit opportunities in your match pool of ${matchCount}.`
+          : "Complete your profile to surface high-fit opportunities.",
       scoreImpact: `${matchCount} Total Pool`,
       badge: "Market Match",
       tone: "success" as const,
@@ -202,8 +165,7 @@ function Dashboard() {
     {
       id: "d-skills",
       title: "Align In-Demand Skill Gaps",
-      detail: "Adding Distributed Systems benchmarking unlocks 14 additional tier-1 roles.",
-      scoreImpact: "+18% Visibility",
+      detail: "Review skill gaps from your latest ATS scans and recommendations.",
       badge: "Skill Velocity",
       tone: "warning" as const,
       actionLabel: "Review Gaps",
@@ -243,14 +205,14 @@ function Dashboard() {
         name={activeData.firstName}
         streak={activeData.streakDays}
         health={{
-          overall: activeData.healthScore.overall || 88,
-          delta: (activeData.healthScore as any).delta ?? 4,
+          overall: activeData.healthScore.overall,
+          delta: 0,
         }}
-        resumeScore={liveAtsScore || 85}
-        matchPoolCount={matchCount || 22}
+        resumeScore={liveAtsScore}
+        matchPoolCount={matchCount}
         highFitCount={highFitCount}
-        weeklyProgress={activeData.healthScore.weeklyProgress || 70}
-        weeklyGoalLabel={activeData.healthScore.weeklyGoalLabel || "5 of 7 actions completed"}
+        weeklyProgress={activeData.healthScore.weeklyProgress}
+        weeklyGoalLabel={activeData.healthScore.weeklyGoalLabel}
       />
 
       {/* 1b. LIVE WORKSPACE TELEMETRY (GET /api/dashboard) */}
@@ -295,7 +257,7 @@ function Dashboard() {
       <motion.div variants={staggerItem} className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         {/* Left Column (7 cols on xl / 12 on lg): 3D Career Vector & Skill Topology Canvas */}
         <div className="xl:col-span-7 col-span-12 flex flex-col">
-          <Career3DTopology careerScore={activeData.healthScore.overall || 88} className="h-full" />
+          <Career3DTopology careerScore={activeData.healthScore.overall} className="h-full" />
         </div>
 
         {/* Right Column (5 cols on xl / 12 on lg): High-Leverage Career Action Directives */}

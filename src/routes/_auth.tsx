@@ -1,5 +1,6 @@
 import { Outlet, createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { AlertCircle } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { AuthLoadingSpinner } from "../auth/components/AuthLoadingSpinner";
 import { Compass, CheckCircle2 } from "lucide-react";
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/_auth")({
 
 function AuthLayout() {
   const navigate = useNavigate();
-  const { isAuthenticated, isInitialized, isLoading, fetchProfile, profile, isProfileLoading } =
+  const { isAuthenticated, isInitialized, isLoading, fetchProfile, profile, isProfileLoading, profileFetchFailed } =
     useAuth();
 
   // Handle redirect for already authenticated users.
@@ -49,7 +50,26 @@ function AuthLayout() {
   }
 
   // If authenticated, show loading (redirect will happen in useEffect)
+  // A failed profile fetch shows a retryable error instead of spinning forever.
   if (isAuthenticated) {
+    if (!isProfileLoading && !profile && profileFetchFailed) {
+      return (
+        <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-[#11110F] px-4 text-center text-[#F3F0E8]">
+          <AlertCircle className="h-10 w-10 text-destructive" />
+          <h2 className="text-base font-semibold">Couldn&apos;t load your profile</h2>
+          <p className="max-w-xs text-xs text-[#A8A49A]">
+            Check your connection and try again.
+          </p>
+          <button
+            type="button"
+            onClick={() => fetchProfile(true)}
+            className="rounded-lg border border-[#302E29] bg-[#1A1916] px-4 py-2 text-xs font-medium transition hover:border-[#315CFF]/40"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
     return <AuthLoadingSpinner />;
   }
 

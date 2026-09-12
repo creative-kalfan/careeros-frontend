@@ -21,6 +21,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [profile, setProfile] = useState<OnboardingProfile | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  // Mirrors profileFetchFailedRef for rendering: when the profile request
+  // fails, layouts must show a retryable error — never an endless spinner.
+  const [profileFetchFailed, setProfileFetchFailed] = useState(false);
   // Guards against an infinite profile-fetch loop: if the profile request
   // fails (e.g. transient 401 during token refresh), a `profile === null`
   // gate must not retrigger the fetch indefinitely.
@@ -96,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(null);
         setProfile(null);
         profileFetchFailedRef.current = false;
+        setProfileFetchFailed(false);
         setStatus("unauthenticated");
         setError(null);
       } else if (event === "USER_UPDATED") {
@@ -312,19 +316,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
   }, []);
 
-  const fetchProfile = useCallback(async () => {
+  const fetchProfile = useCallback(async (force?: boolean) => {
     // A previous failed fetch must not be retried in a render-loop. The
     // request layer performs a single token-refresh retry; after that, a
     // genuine auth failure should surface to the user, not spin forever.
-    if (profileFetchFailedRef.current) return;
+    // Pass force=true (retry button) to attempt again after a failure.
+    if (profileFetchFailedRef.current && !force) return;
     setIsProfileLoading(true);
     try {
       const profileData = await authService.getProfile();
       profileFetchFailedRef.current = false;
+      setProfileFetchFailed(false);
       setProfile(profileData);
     } catch (err) {
       console.error("Failed to fetch profile:", err);
       profileFetchFailedRef.current = true;
+      setProfileFetchFailed(true);
       setProfile(null);
     } finally {
       setIsProfileLoading(false);
@@ -388,6 +395,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isInitialized,
       profile,
       isProfileLoading,
+      profileFetchFailed,
       login,
       logout,
       register,
@@ -411,6 +419,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isInitialized,
       profile,
       isProfileLoading,
+      profileFetchFailed,
       login,
       logout,
       register,

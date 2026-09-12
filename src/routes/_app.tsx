@@ -1,9 +1,11 @@
 import { Outlet, createFileRoute, useNavigate, useLocation } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { AlertCircle } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app/sidebar";
 import { AppTopbar } from "@/components/app/topbar";
 import { CommandPalette } from "@/components/app/command-palette";
+import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { CopilotProvider } from "@/components/copilot/copilot-context";
 import { CopilotPanel } from "@/components/copilot/copilot-panel";
@@ -26,6 +28,7 @@ function AppLayout() {
     fetchProfile,
     profile,
     isProfileLoading,
+    profileFetchFailed,
     logout,
   } = useAuth();
 
@@ -82,8 +85,27 @@ function AppLayout() {
 
   // STRICT ONBOARDING GATE (root layout level):
   // While authenticated, if we don't yet have a confirmed profile we must NOT
-  // render any protected content — show the spinner and let the refetch above
-  // resolve it. This prevents bypassing the gate when the profile fetch fails.
+  // render any protected content. A failed fetch shows a retryable error — it
+  // must never spin forever (fetchProfile latches failures by design).
+  if (isAuthenticated && !profile && !isProfileLoading && profileFetchFailed) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 px-4 text-center">
+        <AlertCircle className="h-10 w-10 text-destructive" />
+        <h2 className="text-base font-semibold">Couldn&apos;t load your profile</h2>
+        <p className="max-w-xs text-xs text-muted-foreground">
+          Check your connection and try again. If this persists, sign out and back in.
+        </p>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => fetchProfile(true)}>
+            Retry
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => logout()}>
+            Sign out
+          </Button>
+        </div>
+      </div>
+    );
+  }
   if (isAuthenticated && !profile) {
     return <AuthLoadingSpinner />;
   }

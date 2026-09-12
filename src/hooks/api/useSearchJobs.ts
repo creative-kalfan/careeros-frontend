@@ -6,7 +6,7 @@ import { jobsQueryKeys } from "./useJobs";
 export function useSearchJobs(filters: JobSearchFilters = {}) {
   return useQuery<JobSearchResponse>({
     queryKey: ["jobs", "search", filters],
-    queryFn: () => jobsApi.searchJobs(filters),
+    queryFn: ({ signal }) => jobsApi.searchJobs(filters, signal),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 2,
   });

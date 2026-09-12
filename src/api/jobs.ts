@@ -15,12 +15,13 @@ import type {
 // ---------------------------------------------------------------------------
 
 export type JobsApi = {
-  getJobs: (params?: JobSearchFilters) => Promise<JobSearchResponse>;
-  searchJobs: (params?: JobSearchFilters) => Promise<JobSearchResponse>;
+  getJobs: (params?: JobSearchFilters, signal?: AbortSignal) => Promise<JobSearchResponse>;
+  searchJobs: (params?: JobSearchFilters, signal?: AbortSignal) => Promise<JobSearchResponse>;
   getPersonalizedJobs: (
     params?: JobSearchFilters & { includeAts?: boolean },
+    signal?: AbortSignal,
   ) => Promise<JobSearchResponse>;
-  getJob: (id: string) => Promise<Job>;
+  getJob: (id: string, signal?: AbortSignal) => Promise<Job>;
   saveJob: (jobId: string) => Promise<{ savedJob: SavedJobRecord }>;
   unsaveJob: (jobId: string) => Promise<void>;
   getSavedJobs: () => Promise<Job[]>;
@@ -79,27 +80,30 @@ function mapSearchResult(
 }
 
 export const jobsApi: JobsApi = {
-  getJobs: async (params?: JobSearchFilters) => {
+  getJobs: async (params?: JobSearchFilters, signal?: AbortSignal) => {
     const res = await request<BackendResponse<NormalizedJob[]>>({
       method: "GET",
       path: `${API_ENDPOINTS.JOBS.LIST}${toQueryString(params ?? {})}`,
+      signal,
     });
     return mapSearchResult(res.data, res.meta);
   },
 
-  searchJobs: async (params?: JobSearchFilters) => {
+  searchJobs: async (params?: JobSearchFilters, signal?: AbortSignal) => {
     const res = await request<BackendResponse<NormalizedJob[]>>({
       method: "POST",
       path: API_ENDPOINTS.JOBS.SEARCH,
       body: params ?? {},
+      signal,
     });
     return mapSearchResult(res.data, res.meta);
   },
 
-  getJob: async (id: string) => {
+  getJob: async (id: string, signal?: AbortSignal) => {
     const res = await request<BackendResponse<NormalizedJob | { job: NormalizedJob }>>({
       method: "GET",
       path: API_ENDPOINTS.JOBS.GET(id),
+      signal,
     });
     const raw = (res.data as { job?: NormalizedJob })?.job ?? (res.data as NormalizedJob);
     return adaptJob(raw);
@@ -150,7 +154,10 @@ export const jobsApi: JobsApi = {
     return res.data;
   },
 
-  getPersonalizedJobs: async (params?: JobSearchFilters & { includeAts?: boolean }) => {
+  getPersonalizedJobs: async (
+    params?: JobSearchFilters & { includeAts?: boolean },
+    signal?: AbortSignal,
+  ) => {
     const qs = toQueryString(params ?? {});
     const sp = new URLSearchParams(qs.replace(/^\?/, ""));
     if (params?.includeAts) sp.set("includeAts", "true");
@@ -161,6 +168,7 @@ export const jobsApi: JobsApi = {
     const res = await request<BackendResponse<NormalizedJob[]>>({
       method: "GET",
       path: `${API_ENDPOINTS.JOBS.PERSONALIZED}${finalQs ? `?${finalQs}` : ""}`,
+      signal,
     });
     return mapSearchResult(res.data, res.meta);
   },
