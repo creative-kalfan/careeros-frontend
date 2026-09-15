@@ -61,21 +61,21 @@ export function AIInsights({
     salaryScore !== undefined;
 
   return (
-    <div className="space-y-5 p-1">
+    <div className="space-y-4 p-1">
       {/* Primary Match Overview Card */}
-      <div className="rounded-xl border border-border bg-surface-elevated/40 p-4">
+      <div className="rounded-lg border-2 border-border bg-surface p-4 shadow-brutal-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
               Fit Analysis
             </h4>
           </div>
           {onRunMatch && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-7 px-2 text-xs text-primary hover:text-primary/80"
+              className="h-7 px-2.5 text-xs font-bold border-2 border-border shadow-brutal-xs text-primary hover:text-primary/90"
               onClick={onRunMatch}
               disabled={isMatching}
             >
@@ -85,13 +85,13 @@ export function AIInsights({
         </div>
 
         <div className="mt-3 flex items-baseline gap-3">
-          <div className="text-3xl font-bold tracking-tight text-foreground font-mono">
+          <div className="text-3xl font-extrabold tracking-tight text-foreground font-mono">
             {overallScore}%
           </div>
           <div>
             <Badge
               variant="outline"
-              className={`rounded-full px-2 py-0.5 text-xs font-medium ${matchTier.badgeClass}`}
+              className={`rounded-sm px-2 py-0.5 text-xs font-bold font-mono border-2 ${matchTier.badgeClass}`}
             >
               {matchTier.label}
             </Badge>
@@ -99,7 +99,7 @@ export function AIInsights({
         </div>
 
         {/* Breakdown bars */}
-        <div className="mt-4 space-y-2.5 pt-3 border-t border-border/60">
+        <div className="mt-4 space-y-2.5 pt-3 border-t-2 border-border/40">
           {skillScore !== undefined && <FactorRow label="Skill Match" value={skillScore} />}
           {expScore !== undefined && <FactorRow label="Experience Alignment" value={expScore} />}
           {locScore !== undefined && <FactorRow label="Location Compatibility" value={locScore} />}
@@ -114,20 +114,20 @@ export function AIInsights({
 
       {/* Skills Breakdown */}
       {(matchedSkills.length > 0 || missingSkills.length > 0) && (
-        <div className="rounded-xl border border-border bg-surface-elevated/40 p-4 space-y-3.5">
+        <div className="rounded-lg border-2 border-border bg-surface p-4 space-y-3.5 shadow-brutal-xs">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 font-mono">
               <Target className="h-3.5 w-3.5 text-primary" />
               Required Skills Breakdown
             </h4>
-            <span className="text-[11px] font-mono text-muted-foreground">
+            <span className="text-[11px] font-mono font-semibold text-muted-foreground">
               {matchedSkills.length} of {matchedSkills.length + missingSkills.length} matched
             </span>
           </div>
 
           {matchedSkills.length > 0 && (
             <div className="space-y-1.5">
-              <div className="text-[11px] font-medium text-success flex items-center gap-1">
+              <div className="text-[11px] font-bold text-success flex items-center gap-1">
                 <Check className="h-3 w-3 text-success" />
                 Matched with your profile
               </div>
@@ -135,7 +135,7 @@ export function AIInsights({
                 {matchedSkills.map((skill) => (
                   <span
                     key={skill}
-                    className="inline-flex items-center gap-1 rounded-md border border-success/30 bg-success/10 px-2 py-0.5 text-xs text-foreground"
+                    className="inline-flex items-center gap-1 rounded-sm border-2 border-success/40 bg-success/10 px-2 py-0.5 text-xs font-mono font-semibold text-foreground"
                   >
                     <Check className="h-3 w-3 text-success" />
                     {skill}
@@ -147,7 +147,7 @@ export function AIInsights({
 
           {missingSkills.length > 0 && (
             <div className="space-y-1.5 pt-1">
-              <div className="text-[11px] font-medium text-warning flex items-center gap-1">
+              <div className="text-[11px] font-bold text-warning flex items-center gap-1">
                 <X className="h-3 w-3 text-warning" />
                 Missing from your current resume
               </div>
@@ -155,7 +155,7 @@ export function AIInsights({
                 {missingSkills.map((skill) => (
                   <span
                     key={skill}
-                    className="inline-flex items-center gap-1 rounded-md border border-warning/30 bg-warning/10 px-2 py-0.5 text-xs text-foreground"
+                    className="inline-flex items-center gap-1 rounded-sm border-2 border-warning/40 bg-warning/10 px-2 py-0.5 text-xs font-mono font-semibold text-foreground"
                   >
                     <X className="h-3 w-3 text-warning" />
                     {skill}
@@ -171,7 +171,7 @@ export function AIInsights({
                 variant="outline"
                 size="sm"
                 onClick={onOptimizeResume}
-                className="h-8 w-full gap-1.5 rounded-lg text-xs border-primary/40 text-primary hover:bg-primary/10"
+                className="h-8.5 w-full gap-1.5 rounded-md text-xs font-bold border-2 border-primary text-primary hover:bg-primary/10 shadow-brutal-xs"
               >
                 <Wand2 className="h-3.5 w-3.5" />
                 Tailor Resume for Missing Skills
@@ -183,12 +183,12 @@ export function AIInsights({
 
       {/* ATS Keyword Check & Seniority */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="rounded-xl border border-border bg-surface-elevated/40 p-3.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-lg border-2 border-border bg-surface p-3.5 shadow-brutal-xs">
+          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
             <Trophy className="h-3.5 w-3.5 text-muted-foreground" />
             Seniority Match
           </div>
-          <div className="mt-2 text-sm font-semibold text-foreground">
+          <div className="mt-2 text-sm font-bold text-foreground">
             {job.seniority && job.seniority !== "Not specified"
               ? job.seniority
               : (job.experience && job.experience !== "Not specified"
@@ -202,12 +202,12 @@ export function AIInsights({
           </p>
         </div>
 
-        <div className="rounded-xl border border-border bg-surface-elevated/40 p-3.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-lg border-2 border-border bg-surface p-3.5 shadow-brutal-xs">
+          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
             <ShieldCheck className="h-3.5 w-3.5 text-success" />
             ATS Keyword Coverage
           </div>
-          <div className="mt-2 text-sm font-semibold text-foreground font-mono">
+          <div className="mt-2 text-sm font-bold text-foreground font-mono">
             {job.atsScore ? `${job.atsScore}%` : "Not available"}
           </div>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
@@ -223,10 +223,10 @@ function FactorRow({ label, value }: { label: string; value: number }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-mono text-[11px] font-medium text-foreground">{value}%</span>
+        <span className="text-muted-foreground font-medium">{label}</span>
+        <span className="font-mono text-[11px] font-bold text-foreground">{value}%</span>
       </div>
-      <Progress value={value} className="h-1.5 bg-muted/60" indicatorClassName="bg-primary" />
+      <Progress value={value} className="h-2 bg-muted/60 border border-border" indicatorClassName="bg-primary" />
     </div>
   );
 }

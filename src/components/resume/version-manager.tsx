@@ -128,16 +128,16 @@ export function VersionManager({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Resume Versions</h3>
+        <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">Resume Versions</h3>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild>
-            <Button size="sm" variant="outline">
-              <span className="mr-1">+</span> Create Version
+            <Button size="sm" variant="outline" className="border-2 border-border font-mono text-xs shadow-brutal-xs hover:shadow-brutal-sm">
+              <span className="mr-1 font-bold">+</span> New Version
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="border-2 border-border shadow-brutal-lg">
             <DialogHeader>
-              <DialogTitle>Create Job-Specific Resume</DialogTitle>
+              <DialogTitle className="text-base font-mono uppercase tracking-tight">Create Job-Specific Resume</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -175,26 +175,30 @@ export function VersionManager({
 
       {master && (
         <Card
-          className={`p-4 cursor-pointer hover:border-primary/50 transition-colors ${selectedVersionId === master.id ? "border-primary" : ""}`}
+          className={`p-4 cursor-pointer transition-all border-2 rounded-lg ${
+            selectedVersionId === master.id
+              ? "border-primary bg-primary/5 shadow-brutal-sm"
+              : "border-border/70 hover:border-primary/60 hover:shadow-brutal-xs"
+          }`}
           onClick={() => onSelectVersion?.(master)}
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-amber-500">★</span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-amber-500 font-bold">★</span>
               <div>
-                <p className="text-sm font-semibold">{master.version_name}</p>
-                <p className="text-xs text-muted-foreground">Master Resume</p>
+                <p className="text-sm font-semibold tracking-tight">{master.version_name}</p>
+                <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Master Resume</p>
               </div>
             </div>
-            <Badge variant="secondary" className="text-[10px]">
-              Master
+            <Badge variant="secondary" className="text-[10px] font-mono border border-border/80">
+              MASTER
             </Badge>
           </div>
         </Card>
       )}
 
       {targeted.length === 0 && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground border-2 border-dashed border-border/60 rounded-md p-4 text-center">
           No targeted versions yet. Create one to get started.
         </p>
       )}
@@ -202,27 +206,31 @@ export function VersionManager({
       {targeted.map((version) => (
         <Card
           key={version.id}
-          className={`p-4 cursor-pointer hover:border-primary/50 transition-colors ${selectedVersionId === version.id ? "border-primary" : ""}`}
+          className={`p-4 cursor-pointer transition-all border-2 rounded-lg ${
+            selectedVersionId === version.id
+              ? "border-primary bg-primary/5 shadow-brutal-sm"
+              : "border-border/70 hover:border-primary/60 hover:shadow-brutal-xs"
+          }`}
           onClick={() => onSelectVersion?.(version)}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <div className="min-w-0">
-                <p className="text-sm font-semibold truncate">{version.version_name}</p>
+                <p className="text-sm font-semibold truncate tracking-tight">{version.version_name}</p>
                 <div className="flex items-center gap-2 mt-1">
                   {version.target_job_title && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground truncate">
                       {version.target_job_title}
                     </span>
                   )}
                   {version.target_company && (
-                    <span className="text-xs text-muted-foreground">
-                      at {version.target_company}
+                    <span className="text-xs text-muted-foreground truncate">
+                      @{version.target_company}
                     </span>
                   )}
                   {version.last_ats_score !== null && version.last_ats_score !== undefined && (
-                    <Badge variant="outline" className="text-[10px]">
-                      ATS {Math.round(version.last_ats_score)}
+                    <Badge variant="outline" className="text-[10px] font-mono border-2 border-primary/30 text-primary">
+                      ATS {Math.round(version.last_ats_score)}%
                     </Badge>
                   )}
                 </div>
@@ -233,13 +241,13 @@ export function VersionManager({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-7 w-7 border border-border/60 hover:border-border"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="border-2 border-border shadow-brutal-md">
                 <DropdownMenuItem
                   onClick={() => {
                     setShowRename(version);
@@ -260,7 +268,7 @@ export function VersionManager({
                   <span className="h-3.5 w-3.5 mr-2">↔</span> View Changes
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="text-destructive"
+                  className="text-destructive font-medium"
                   onClick={() => handleDelete(version)}
                 >
                   <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete

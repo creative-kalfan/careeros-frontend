@@ -137,20 +137,20 @@ function NotificationsPage() {
           <div className="flex items-center gap-2">
             {view === "inbox" && unread.length > 0 && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="rounded-xl"
+                className="rounded border-2 border-border shadow-brutal-xs font-mono text-xs uppercase"
                 onClick={handleMarkAllAsRead}
                 disabled={markAllAsReadMutation.isPending}
               >
-                <CheckCheck className="mr-1.5 h-4 w-4" />
+                <CheckCheck className="mr-1.5 h-3.5 w-3.5" />
                 Mark all read
               </Button>
             )}
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="rounded-xl"
+              className="rounded border-2 border-border shadow-brutal-xs hover:shadow-brutal-sm"
               aria-label="Refresh"
               onClick={() => refetch()}
             >
@@ -161,23 +161,23 @@ function NotificationsPage() {
       />
 
       {/* Toolbar */}
-      <div className="glass flex flex-wrap items-center gap-2 rounded-xl border border-border/80 p-2 shadow-xs">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border-2 border-border bg-card p-2 shadow-brutal-xs">
         <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-          <TabsList className="rounded-lg">
-            <TabsTrigger value="inbox" className="gap-1.5 rounded-md text-xs">
+          <TabsList className="rounded border-2 border-border bg-muted/40 p-1">
+            <TabsTrigger value="inbox" className="gap-1.5 rounded font-mono text-xs font-bold uppercase">
               <Bell className="h-3.5 w-3.5" />
               Inbox
               {unreadCount > 0 && (
-                <Badge variant="secondary" className="ml-1.5 h-4 min-w-4 px-1 text-[10px]">
+                <Badge variant="secondary" className="ml-1.5 h-4 min-w-4 px-1 font-mono text-[10px] border border-border">
                   {unreadCount}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="unread" className="gap-1.5 rounded-md text-xs">
+            <TabsTrigger value="unread" className="gap-1.5 rounded font-mono text-xs font-bold uppercase">
               <XCircle className="h-3.5 w-3.5" />
               Unread
             </TabsTrigger>
-            <TabsTrigger value="preferences" className="gap-1.5 rounded-md text-xs">
+            <TabsTrigger value="preferences" className="gap-1.5 rounded font-mono text-xs font-bold uppercase">
               <Settings className="h-3.5 w-3.5" />
               Preferences
             </TabsTrigger>
@@ -186,12 +186,12 @@ function NotificationsPage() {
 
         {view !== "preferences" && (
           <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search notifications…"
-              className="h-8.5 rounded-lg border-border/80 bg-surface-elevated pl-8 text-xs"
+              placeholder="Search notification alerts…"
+              className="h-9 rounded border-2 border-border bg-background pl-8 text-xs font-sans"
             />
           </div>
         )}
@@ -226,19 +226,19 @@ function NotificationList({
 }) {
   if (notifications.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/80 bg-surface p-12 text-center">
+      <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border/80 bg-card p-12 text-center">
         <Bell className="h-10 w-10 text-muted-foreground/40" />
-        <h2 className="text-sm font-semibold text-foreground">No notifications</h2>
-        <p className="text-xs text-muted-foreground max-w-xs">
-          You're all caught up! System, matching, and application updates will appear here.
+        <h2 className="text-sm font-mono font-bold uppercase tracking-tight text-foreground">No alerts active</h2>
+        <p className="text-xs font-mono text-muted-foreground max-w-xs">
+          System telemetry, job matching alerts, and pipeline notifications will stream here.
         </p>
       </div>
     );
   }
 
   return (
-    <ScrollArea className="glass rounded-xl border border-border/80 shadow-xs">
-      <div className="flex flex-col divide-y divide-border/60">
+    <ScrollArea className="rounded-lg border-2 border-border bg-card shadow-brutal-xs">
+      <div className="flex flex-col divide-y-2 divide-border/60">
         {notifications.map((n) => (
           <NotificationRow
             key={n.id}
@@ -266,7 +266,7 @@ function NotificationRow({
   return (
     <div
       className={cn(
-        "flex items-start gap-4 p-4 transition-colors",
+        "flex items-start gap-4 p-4 transition-colors hover:bg-muted/30",
         !notification.isRead && "bg-primary/5",
       )}
     >
@@ -274,15 +274,15 @@ function NotificationRow({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-medium truncate">{notification.title}</h3>
-              <Badge variant="secondary" className={cn("text-[10px] h-5", priorityStyle.color)}>
+              <h3 className="font-semibold text-sm truncate tracking-tight">{notification.title}</h3>
+              <Badge variant="secondary" className={cn("text-[10px] h-5 rounded border border-border font-mono uppercase", priorityStyle.color)}>
                 {priorityStyle.label}
               </Badge>
             </div>
-            <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+            <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
               {notification.message}
             </p>
-            <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="mt-2 flex items-center gap-3 font-mono text-[11px] text-muted-foreground">
               <span>{typeLabels[notification.type]}</span>
               <span>·</span>
               <span>{notification.timeAgo}</span>
@@ -291,14 +291,14 @@ function NotificationRow({
 
           {!notification.isRead && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="rounded-lg h-7 px-2 text-xs"
+              className="rounded border-2 border-border/80 h-7 px-2 font-mono text-[10px] uppercase shadow-brutal-xs hover:border-primary"
               onClick={() => onMarkAsRead(notification.id)}
               disabled={isMarkingRead}
             >
-              <Check className="h-3 w-3 mr-1" />
-              Read
+              <Check className="h-3 w-3 mr-1 text-primary" />
+              Acknowledge
             </Button>
           )}
         </div>
@@ -363,41 +363,41 @@ function PreferencesPanel({
   };
 
   return (
-    <div className="glass rounded-xl border border-border/80 p-5 sm:p-6 shadow-xs max-w-2xl">
-      <h3 className="mb-4 text-sm font-semibold tracking-tight text-foreground">
-        Notification Preferences
+    <div className="rounded-lg border-2 border-border bg-card p-5 sm:p-6 shadow-brutal-sm max-w-2xl">
+      <h3 className="mb-4 text-xs font-mono font-bold uppercase tracking-wider text-foreground">
+        Telemetry & Notification Preferences
       </h3>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 font-sans">
+        <div className="flex items-center justify-between border-b border-border/40 pb-3">
           <div>
-            <div className="text-xs font-medium text-foreground">Email notifications</div>
-            <div className="text-xs text-muted-foreground">Receive alerts via email</div>
+            <div className="text-xs font-semibold text-foreground">Email Notifications</div>
+            <div className="text-[11px] text-muted-foreground">Receive telemetry digest via email</div>
           </div>
           <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-border/40 pb-3">
           <div>
-            <div className="text-xs font-medium text-foreground">In-app notifications</div>
-            <div className="text-xs text-muted-foreground">Show alerts in the app</div>
+            <div className="text-xs font-semibold text-foreground">In-App Notifications</div>
+            <div className="text-[11px] text-muted-foreground">Show real-time alerts in interface</div>
           </div>
           <Switch checked={inAppEnabled} onCheckedChange={setInAppEnabled} />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-border/40 pb-3">
           <div>
-            <div className="text-xs font-medium text-foreground">Push notifications</div>
-            <div className="text-xs text-muted-foreground">Browser push alerts</div>
+            <div className="text-xs font-semibold text-foreground">Push Notifications</div>
+            <div className="text-[11px] text-muted-foreground">Browser push alerts for critical events</div>
           </div>
           <Switch checked={pushEnabled} onCheckedChange={setPushEnabled} />
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3">
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-medium text-foreground">High match threshold</div>
-            <div className="text-xs text-muted-foreground">
-              Minimum match score to trigger alert
+            <div className="text-xs font-semibold text-foreground">High Match Threshold</div>
+            <div className="text-[11px] text-muted-foreground">
+              Minimum match score required to trigger recommendation alert
             </div>
           </div>
           <div className="flex items-center gap-3 w-44">
@@ -409,24 +409,24 @@ function PreferencesPanel({
               onValueChange={(val) => setHighMatchThreshold(val[0])}
               className="flex-1"
             />
-            <span className="text-xs font-mono w-10 text-right font-medium">
+            <span className="text-xs font-mono w-12 text-right font-bold text-primary">
               {highMatchThreshold}%
             </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-border/40 pb-3">
           <div>
-            <div className="text-xs font-medium text-foreground">Daily digest</div>
-            <div className="text-xs text-muted-foreground">Summary of daily activity</div>
+            <div className="text-xs font-semibold text-foreground">Daily Digest</div>
+            <div className="text-[11px] text-muted-foreground">Summary of daily intelligence activity</div>
           </div>
           <Switch checked={dailyDigest} onCheckedChange={setDailyDigest} />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pb-2">
           <div>
-            <div className="text-xs font-medium text-foreground">Weekly digest</div>
-            <div className="text-xs text-muted-foreground">Summary of weekly activity</div>
+            <div className="text-xs font-semibold text-foreground">Weekly Digest</div>
+            <div className="text-[11px] text-muted-foreground">Summary of weekly pipeline telemetry</div>
           </div>
           <Switch checked={weeklyDigest} onCheckedChange={setWeeklyDigest} />
         </div>
@@ -435,11 +435,11 @@ function PreferencesPanel({
       <div className="mt-6 flex justify-end">
         <Button
           size="sm"
-          className="rounded-lg text-xs font-semibold shadow-xs"
+          className="rounded border-2 border-primary shadow-brutal-primary font-mono text-xs uppercase tracking-wider"
           onClick={handleSave}
           disabled={updateMutation.isPending}
         >
-          Save preferences
+          Save Preferences
         </Button>
       </div>
     </div>

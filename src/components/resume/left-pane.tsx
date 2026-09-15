@@ -1075,7 +1075,7 @@ export function LeftPane({
                 onAddSkill={onAddSkill}
               />
             ) : (
-              <Card className="glass rounded-2xl border-border/60 p-4 text-center">
+              <Card className="rounded-lg border-2 border-dashed border-border bg-surface p-4 text-center shadow-brutal-xs">
                 <div className="text-xs text-muted-foreground">
                   No ATS analysis yet. Open the analyzer to compare this resume against the job
                   description.
@@ -1084,11 +1084,11 @@ export function LeftPane({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="mt-3 h-8 w-full rounded-lg text-xs"
+                    className="mt-3 h-8.5 w-full rounded-md text-xs font-bold border-2 border-border shadow-brutal-xs"
                     onClick={onOpenATSDialog}
                   >
                     <Gauge className="h-3.5 w-3.5 shrink-0" />
-                    <span className="text-xs font-medium">Run ATS Analysis</span>
+                    <span className="text-xs font-bold">Run ATS Analysis</span>
                   </Button>
                 )}
               </Card>
@@ -1096,7 +1096,7 @@ export function LeftPane({
           </PaneSection>
         ) : (
           <PaneSection icon={Gauge} title="ATS Analysis">
-            <Card className="glass rounded-2xl border-border/60 p-4 text-center">
+            <Card className="rounded-lg border-2 border-dashed border-border bg-surface p-4 text-center shadow-brutal-xs">
               <div className="text-xs text-muted-foreground">
                 Add a target job to analyze your resume against.
               </div>
@@ -1104,11 +1104,11 @@ export function LeftPane({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="mt-3 h-8 w-full rounded-lg text-xs"
+                  className="mt-3 h-8.5 w-full rounded-md text-xs font-bold border-2 border-border shadow-brutal-xs"
                   onClick={onOpenATSDialog}
                 >
                   <Target className="h-3.5 w-3.5 shrink-0" />
-                  <span className="text-xs font-medium">Set Target Job</span>
+                  <span className="text-xs font-bold">Set Target Job</span>
                 </Button>
               )}
             </Card>
@@ -1117,17 +1117,17 @@ export function LeftPane({
 
         <PaneSection icon={FileText} title="Resume Versions">
           {versionsLoading ? (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {Array.from({ length: 2 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                <Skeleton key={i} className="h-16 w-full rounded-lg border-2 border-border" />
               ))}
             </div>
           ) : versionsIsError && versions.length === 0 ? (
-            <Card className="glass rounded-2xl border-rose-500/30 bg-rose-500/5 p-3">
+            <Card className="rounded-lg border-2 border-rose-500 bg-rose-500/10 p-3.5 shadow-brutal-xs">
               <div className="flex items-start gap-2">
-                <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-500" />
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
                 <div className="space-y-1">
-                  <div className="text-[11px] font-medium text-rose-700 dark:text-rose-300">
+                  <div className="text-[11px] font-bold text-rose-700 dark:text-rose-300">
                     Couldn’t load versions
                   </div>
                   <div className="text-[11px] leading-relaxed text-muted-foreground">
@@ -1136,47 +1136,47 @@ export function LeftPane({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="mt-1.5 h-7 rounded-md text-[11px]"
+                    className="mt-1.5 h-7 rounded-md text-[11px] font-bold border-2 border-border shadow-brutal-xs"
                     onClick={() => void refetchVersions()}
                   >
                     <RefreshCw className="h-3 w-3 shrink-0" />
-                    <span className="text-[11px] font-medium">Retry</span>
+                    <span className="text-[11px] font-bold">Retry</span>
                   </Button>
                 </div>
               </div>
             </Card>
           ) : versions.length === 0 ? (
-            <Card className="glass rounded-2xl border-border/60 p-4 text-center">
-              <div className="text-xs text-muted-foreground">No versions yet.</div>
+            <Card className="rounded-lg border-2 border-border bg-surface p-4 text-center shadow-brutal-xs">
+              <div className="text-xs text-muted-foreground font-medium">No versions yet.</div>
             </Card>
           ) : (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {versions.map((v) => (
                 <div
                   key={v.id}
                   onClick={() => onSelectVersion?.(v.id)}
-                  className={`rounded-xl border p-3 transition-all cursor-pointer ${
+                  className={`rounded-lg border-2 p-3 transition-all cursor-pointer select-none ${
                     v.id === currentVersionId
-                      ? "border-primary/60 bg-primary/[0.08] shadow-xs"
-                      : "border-border/60 bg-surface-elevated/40 hover:bg-surface-elevated/70"
+                      ? "border-primary bg-surface-elevated shadow-brutal-primary-xs"
+                      : "border-border bg-surface hover:border-border hover:bg-surface-elevated shadow-2xs"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="truncate text-[13px] font-medium">{v.version_name}</div>
-                      <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                      <div className="truncate text-[13px] font-bold text-foreground">{v.version_name}</div>
+                      <div className="mt-0.5 truncate text-[10.5px] font-mono text-muted-foreground">
                         {formatDateTime(v.updated_at)}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {v.is_master && (
-                        <Badge variant="secondary" className="rounded-full text-[9px]">
+                        <Badge variant="secondary" className="rounded-sm text-[9px] font-mono font-bold uppercase border border-border">
                           Master
                         </Badge>
                       )}
                       {v.last_ats_score != null && (
-                        <span className="shrink-0 rounded-md bg-background/60 px-1.5 py-0.5 font-mono text-[10px]">
-                          {Math.round(v.last_ats_score)}
+                        <span className="shrink-0 rounded-sm border border-primary/40 bg-primary/10 text-primary px-1.5 py-0.5 font-mono font-bold text-[10px]">
+                          ATS {Math.round(v.last_ats_score)}
                         </span>
                       )}
                     </div>

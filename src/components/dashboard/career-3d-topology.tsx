@@ -501,16 +501,16 @@ export function Career3DTopology({
   return (
     <div
       className={cn(
-        "workstation-panel spatial-card relative flex flex-col overflow-hidden rounded-xl border border-border/80 bg-surface shadow-elevation-2",
+        "relative flex flex-col overflow-hidden rounded-lg border-2 border-border bg-surface shadow-brutal-md",
         className,
       )}
     >
       {/* Cockpit HUD Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-surface-elevated/60 px-4 py-3 backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-border bg-surface-elevated px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <span className="relative flex h-2 w-2">
+          <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
           </span>
           <div className="flex items-center gap-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
@@ -518,7 +518,7 @@ export function Career3DTopology({
             </h3>
             <Badge
               variant="outline"
-              className="border-primary/30 bg-primary/10 font-mono text-[10px] font-medium text-primary"
+              className="border-primary/40 bg-primary/10 font-mono text-[10px] font-bold text-primary"
             >
               WEBGL 2.0 • {fps} FPS
             </Badge>
@@ -528,16 +528,16 @@ export function Career3DTopology({
         {/* HUD Controls */}
         <div className="flex items-center gap-2">
           {/* Category Filter Pills */}
-          <div className="hidden sm:flex items-center gap-1 rounded-lg border border-border/60 bg-surface-instrument/70 p-0.5">
+          <div className="hidden sm:flex items-center gap-1 rounded-md border-2 border-border bg-surface p-0.5 shadow-brutal-xs">
             {(["all", "core", "ats", "market", "emerging"] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
                 className={cn(
-                  "rounded-md px-2 py-0.5 text-[10px] font-mono uppercase transition-colors",
+                  "rounded-sm px-2 py-0.5 text-[10px] font-mono uppercase transition-colors cursor-pointer",
                   activeFilter === filter
-                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-surface-elevated",
+                    ? "bg-primary text-primary-foreground font-bold border border-primary shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-elevated border border-transparent",
                 )}
               >
                 {filter}

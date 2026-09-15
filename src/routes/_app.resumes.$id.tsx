@@ -1087,14 +1087,14 @@ function ResumeWorkspace() {
 
   return (
     <div className="font-sans antialiased flex h-screen flex-col bg-background">
-      <header className="glass-topbar border-b border-border/80 px-4 py-2.5 flex-shrink-0 z-30 select-none">
+      <header className="border-b-2 border-border bg-surface px-4 py-2.5 flex-shrink-0 z-30 select-none">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <Button
               asChild
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-elevated/60"
+              className="h-8 w-8 rounded-md text-muted-foreground hover:text-foreground border-2 border-border shadow-brutal-xs"
               aria-label="Back to resumes"
             >
               <Link to="/resumes">
@@ -1102,14 +1102,14 @@ function ResumeWorkspace() {
               </Link>
             </Button>
             <div className="flex min-w-0 items-center gap-2">
-              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_6px_var(--color-success)]" />
-              <h1 className="truncate text-sm font-semibold tracking-tight text-foreground">
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_6px_var(--color-success)]" />
+              <h1 className="truncate text-sm font-extrabold tracking-tight text-foreground uppercase font-mono">
                 {jobTitle || formatResumeDisplayName(record?.original_filename, record?.title)}
               </h1>
               {company && (
                 <Badge
                   variant="secondary"
-                  className="hidden shrink-0 rounded-md bg-surface-elevated/80 border border-border/60 text-[10.5px] font-medium sm:inline-flex"
+                  className="hidden shrink-0 rounded-sm bg-surface-elevated border-2 border-border text-[10.5px] font-mono font-bold sm:inline-flex"
                 >
                   {company}
                 </Badge>
@@ -1120,14 +1120,14 @@ function ResumeWorkspace() {
             {showSaved ? (
               <Badge
                 variant="outline"
-                className="rounded-full text-[10px] font-mono text-emerald-400 border-emerald-500/30 bg-emerald-500/10 animate-fade-in"
+                className="rounded-sm text-[10px] font-mono font-bold text-emerald-400 border-2 border-emerald-500/40 bg-emerald-500/10 animate-fade-in"
               >
                 Saved ✓
               </Badge>
             ) : isDirty ? (
               <Badge
                 variant="outline"
-                className="rounded-full text-[10px] font-mono text-amber-400 border-amber-500/30 bg-amber-500/10"
+                className="rounded-sm text-[10px] font-mono font-bold text-amber-400 border-2 border-amber-500/40 bg-amber-500/10"
               >
                 Unsaved edits
               </Badge>
@@ -1135,7 +1135,7 @@ function ResumeWorkspace() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 gap-1.5 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated"
+              className="h-8 gap-1.5 rounded-md text-xs font-bold border-2 border-border bg-surface shadow-brutal-xs hover:border-primary"
               onClick={() => setShowATSDialog(true)}
               aria-label="Analyze resume against job description"
             >
@@ -1145,7 +1145,7 @@ function ResumeWorkspace() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 gap-1.5 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated"
+              className="h-8 gap-1.5 rounded-md text-xs font-bold border-2 border-border bg-surface shadow-brutal-xs hover:border-primary"
               onClick={() => setShowVersionManager(true)}
               aria-label="Manage versions"
             >
@@ -1155,7 +1155,7 @@ function ResumeWorkspace() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated hidden sm:inline-flex"
+              className="h-8 rounded-md text-xs font-bold border-2 border-border bg-surface shadow-brutal-xs hover:border-primary hidden sm:inline-flex"
               onClick={() => setShowFinalReview(true)}
             >
               Export
@@ -1164,7 +1164,7 @@ function ResumeWorkspace() {
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
-              className="h-8 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="h-8 rounded-md text-xs font-bold shadow-brutal-primary bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-primary"
             >
               <Save className="mr-1.5 h-3.5 w-3.5" />
               {isSaving ? "Saving..." : "Save"}
@@ -1174,7 +1174,7 @@ function ResumeWorkspace() {
       </header>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <div className="w-[390px] xl:w-[430px] flex-shrink-0 border-r border-border/80 bg-surface/90 backdrop-blur-md overflow-hidden flex flex-col z-20 shadow-elevation-1">
+        <div className="w-[390px] xl:w-[430px] flex-shrink-0 border-r-2 border-border bg-surface overflow-hidden flex flex-col z-20">
           <ErrorBoundary
             fallbackTitle="Match intelligence hit a hiccup"
             fallbackDescription="The resume preview on the right is unaffected. Retry to reload scores and tailoring."

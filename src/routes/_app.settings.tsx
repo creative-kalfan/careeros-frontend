@@ -76,20 +76,20 @@ function SettingsPage() {
       />
 
       <Tabs defaultValue="account" className="w-full space-y-6">
-        <TabsList className="glass h-11 w-full justify-start gap-1 rounded-xl border border-border/80 bg-surface/50 p-1 shadow-xs sm:w-auto">
-          <TabsTrigger value="account" className="gap-2 rounded-lg text-xs font-medium">
+        <TabsList className="h-11 w-full justify-start gap-1 rounded-lg border-2 border-border bg-card p-1 shadow-brutal-xs sm:w-auto">
+          <TabsTrigger value="account" className="gap-2 rounded font-mono text-xs font-bold uppercase">
             <User className="h-3.5 w-3.5" />
             Account
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="gap-2 rounded-lg text-xs font-medium">
+          <TabsTrigger value="appearance" className="gap-2 rounded font-mono text-xs font-bold uppercase">
             <Palette className="h-3.5 w-3.5" />
             Appearance
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2 rounded-lg text-xs font-medium">
+          <TabsTrigger value="notifications" className="gap-2 rounded font-mono text-xs font-bold uppercase">
             <Bell className="h-3.5 w-3.5" />
             Notifications
           </TabsTrigger>
-          <TabsTrigger value="integrations" className="gap-2 rounded-lg text-xs font-medium">
+          <TabsTrigger value="integrations" className="gap-2 rounded font-mono text-xs font-bold uppercase">
             <Link2 className="h-3.5 w-3.5" />
             Integrations
           </TabsTrigger>
@@ -97,31 +97,31 @@ function SettingsPage() {
 
         {/* ACCOUNT TAB */}
         <TabsContent value="account" className="space-y-6">
-          <Card className="glass rounded-xl border border-border/80 shadow-xs">
-            <CardHeader className="p-5 pb-3">
-              <CardTitle className="text-sm font-semibold">Profile Information</CardTitle>
+          <Card className="rounded-lg border-2 border-border bg-card shadow-brutal-xs">
+            <CardHeader className="p-5 pb-3 border-b-2 border-border/40">
+              <CardTitle className="text-xs font-mono font-bold uppercase tracking-wider">Profile Information</CardTitle>
               <CardDescription className="text-xs">
                 Update your personal details and public career persona.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-5 pt-0">
+            <CardContent className="p-5 pt-4">
               <form onSubmit={handleSaveProfile} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label htmlFor="name" className="text-xs font-medium text-foreground">
+                    <label htmlFor="name" className="text-xs font-mono font-medium text-foreground">
                       Full Name
                     </label>
                     <Input
                       id="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="h-9 rounded-lg border-border/80 bg-surface-elevated text-xs"
+                      className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                       required
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="email" className="text-xs font-medium text-foreground">
+                    <label htmlFor="email" className="text-xs font-mono font-medium text-foreground">
                       Email Address
                     </label>
                     <Input
@@ -129,40 +129,40 @@ function SettingsPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="h-9 rounded-lg border-border/80 bg-surface-elevated text-xs"
+                      className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                       required
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="jobTitle" className="text-xs font-medium text-foreground">
+                    <label htmlFor="jobTitle" className="text-xs font-mono font-medium text-foreground">
                       Target Job Title
                     </label>
                     <Input
                       id="jobTitle"
                       value={jobTitle}
                       onChange={(e) => setJobTitle(e.target.value)}
-                      className="h-9 rounded-lg border-border/80 bg-surface-elevated text-xs"
+                      className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="location" className="text-xs font-medium text-foreground">
+                    <label htmlFor="location" className="text-xs font-mono font-medium text-foreground">
                       Location / Timezone
                     </label>
                     <Input
                       id="location"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className="h-9 rounded-lg border-border/80 bg-surface-elevated text-xs"
+                      className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center justify-between pt-3">
                   {savedSuccess ? (
-                    <span className="flex items-center gap-1.5 text-xs font-medium text-success">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Changes saved successfully
+                    <span className="flex items-center gap-1.5 font-mono text-xs font-bold text-emerald-400">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> CHANGES SAVED SUCCESSFULLY
                     </span>
                   ) : (
                     <span />
@@ -170,7 +170,7 @@ function SettingsPage() {
                   <Button
                     type="submit"
                     size="sm"
-                    className="h-8 gap-1.5 rounded-lg text-xs shadow-xs"
+                    className="h-9 gap-1.5 rounded border-2 border-primary shadow-brutal-primary font-mono text-xs uppercase tracking-wider"
                   >
                     <Save className="h-3.5 w-3.5" /> Save Changes
                   </Button>
@@ -179,43 +179,43 @@ function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="glass rounded-xl border border-border/80 shadow-xs">
-            <CardHeader className="p-5 pb-3">
+          <Card className="rounded-lg border-2 border-border bg-card shadow-brutal-xs">
+            <CardHeader className="p-5 pb-3 border-b-2 border-border/40">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-sm font-semibold">Security & Authentication</CardTitle>
+                <Shield className="h-4 w-4 text-primary" />
+                <CardTitle className="text-xs font-mono font-bold uppercase tracking-wider">Security & Authentication</CardTitle>
               </div>
               <CardDescription className="text-xs">
                 Manage your credentials and authentication security.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-5 pt-0 space-y-4">
+            <CardContent className="p-5 pt-4 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label htmlFor="currentPass" className="text-xs font-medium text-foreground">
+                  <label htmlFor="currentPass" className="text-xs font-mono font-medium text-foreground">
                     Current Password
                   </label>
                   <Input
                     id="currentPass"
                     type="password"
                     placeholder="••••••••••••"
-                    className="h-9 rounded-lg border-border/80 bg-surface-elevated text-xs"
+                    className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="newPass" className="text-xs font-medium text-foreground">
+                  <label htmlFor="newPass" className="text-xs font-mono font-medium text-foreground">
                     New Password
                   </label>
                   <Input
                     id="newPass"
                     type="password"
                     placeholder="••••••••••••"
-                    className="h-9 rounded-lg border-border/80 bg-surface-elevated text-xs"
+                    className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                   />
                 </div>
               </div>
               <div className="flex justify-end pt-1">
-                <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs shadow-xs">
+                <Button variant="outline" size="sm" className="h-9 rounded border-2 border-border shadow-brutal-xs hover:shadow-brutal-sm font-mono text-xs uppercase tracking-wider">
                   Update Password
                 </Button>
               </div>
@@ -225,21 +225,21 @@ function SettingsPage() {
 
         {/* APPEARANCE TAB */}
         <TabsContent value="appearance" className="space-y-6">
-          <Card className="glass rounded-xl border border-border/80 shadow-xs">
-            <CardHeader className="p-5 pb-3">
-              <CardTitle className="text-sm font-semibold">Workspace Theme</CardTitle>
+          <Card className="rounded-lg border-2 border-border bg-card shadow-brutal-xs">
+            <CardHeader className="p-5 pb-3 border-b-2 border-border/40">
+              <CardTitle className="text-xs font-mono font-bold uppercase tracking-wider">Workspace Theme</CardTitle>
               <CardDescription className="text-xs">
                 Select your preferred visual mode for CareerOS workspace.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-5 pt-0 space-y-4">
+            <CardContent className="p-5 pt-4 space-y-4">
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
                   {
                     id: "dark" as const,
                     label: "Dark Mode",
                     icon: Moon,
-                    desc: "Default sleek aesthetic",
+                    desc: "Default precision aesthetic",
                   },
                   {
                     id: "light" as const,
@@ -261,23 +261,23 @@ function SettingsPage() {
                       key={item.id}
                       type="button"
                       onClick={() => setTheme(item.id)}
-                      className={`group flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all ${
+                      className={`group flex flex-col items-start gap-2 rounded-lg border-2 p-4 text-left transition-all ${
                         active
-                          ? "border-primary bg-primary/10 ring-1 ring-primary/40 shadow-xs"
-                          : "border-border/80 bg-surface-elevated/40 hover:border-border hover:bg-surface-elevated/70"
+                          ? "border-primary bg-primary/10 shadow-brutal-primary"
+                          : "border-border bg-card hover:border-primary/60 hover:shadow-brutal-xs"
                       }`}
                     >
                       <div
-                        className={`grid h-8 w-8 place-items-center rounded-lg ${
+                        className={`grid h-8 w-8 place-items-center rounded border-2 ${
                           active
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-surface-elevated text-muted-foreground ring-1 ring-border/80"
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-muted/40 text-muted-foreground"
                         }`}
                       >
                         <Icon className="h-4 w-4" />
                       </div>
                       <div>
-                        <div className="text-xs font-semibold text-foreground">{item.label}</div>
+                        <div className="text-xs font-mono font-bold uppercase tracking-tight text-foreground">{item.label}</div>
                         <div className="mt-0.5 text-[11px] text-muted-foreground">{item.desc}</div>
                       </div>
                     </button>
@@ -312,18 +312,18 @@ function SettingsPage() {
 
         {/* NOTIFICATIONS TAB */}
         <TabsContent value="notifications" className="space-y-6">
-          <Card className="glass rounded-xl border border-border/80 shadow-xs">
-            <CardHeader className="p-5 pb-3">
-              <CardTitle className="text-sm font-semibold">Notification Preferences</CardTitle>
+          <Card className="rounded-lg border-2 border-border bg-card shadow-brutal-xs">
+            <CardHeader className="p-5 pb-3 border-b-2 border-border/40">
+              <CardTitle className="text-xs font-mono font-bold uppercase tracking-wider">Notification Preferences</CardTitle>
               <CardDescription className="text-xs">
                 Configure how and when CareerOS keeps you updated during your search.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-5 pt-0 space-y-4">
+            <CardContent className="p-5 pt-4 space-y-4">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <div className="space-y-0.5">
-                    <div className="text-xs font-medium text-foreground">Daily Job Digest</div>
+                    <div className="text-xs font-semibold text-foreground">Daily Job Digest</div>
                     <div className="text-[11px] text-muted-foreground">
                       Morning briefing of newly matched roles and saved job updates.
                     </div>
@@ -331,9 +331,9 @@ function SettingsPage() {
                   <Switch checked={emailDigest} onCheckedChange={setEmailDigest} />
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <div className="space-y-0.5">
-                    <div className="text-xs font-medium text-foreground">
+                    <div className="text-xs font-semibold text-foreground">
                       Interview & Deadline Alerts
                     </div>
                     <div className="text-[11px] text-muted-foreground">
@@ -343,9 +343,9 @@ function SettingsPage() {
                   <Switch checked={interviewAlerts} onCheckedChange={setInterviewAlerts} />
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <div className="space-y-0.5">
-                    <div className="text-xs font-medium text-foreground">
+                    <div className="text-xs font-semibold text-foreground">
                       AI Resume Copilot Suggestions
                     </div>
                     <div className="text-[11px] text-muted-foreground">
@@ -355,9 +355,9 @@ function SettingsPage() {
                   <Switch checked={aiSuggestions} onCheckedChange={setAiSuggestions} />
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pb-1">
                   <div className="space-y-0.5">
-                    <div className="text-xs font-medium text-foreground">
+                    <div className="text-xs font-semibold text-foreground">
                       Weekly Performance Summary
                     </div>
                     <div className="text-[11px] text-muted-foreground">
@@ -373,24 +373,24 @@ function SettingsPage() {
 
         {/* INTEGRATIONS TAB */}
         <TabsContent value="integrations" className="space-y-6">
-          <Card className="glass rounded-xl border border-border/80 shadow-xs">
-            <CardHeader className="p-5 pb-3">
-              <CardTitle className="text-sm font-semibold">Connected Services</CardTitle>
+          <Card className="rounded-lg border-2 border-border bg-card shadow-brutal-xs">
+            <CardHeader className="p-5 pb-3 border-b-2 border-border/40">
+              <CardTitle className="text-xs font-mono font-bold uppercase tracking-wider">Connected Services</CardTitle>
               <CardDescription className="text-xs">
                 Synchronize your professional accounts and calendar with CareerOS.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-5 pt-0 space-y-4">
+            <CardContent className="p-5 pt-4 space-y-4">
               <div className="space-y-3">
-                <div className="flex items-center justify-between rounded-xl border border-border/80 bg-surface/40 p-3.5 shadow-xs">
+                <div className="flex items-center justify-between rounded-lg border-2 border-border bg-muted/20 p-3.5 shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-surface-elevated font-semibold text-primary ring-1 ring-border/80 shadow-2xs">
+                    <div className="grid h-9 w-9 place-items-center rounded border-2 border-border bg-muted/50 font-mono font-bold text-primary shadow-2xs">
                       in
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold text-foreground">LinkedIn Sync</span>
-                        <Badge variant="secondary" className="rounded-md px-1.5 py-0 text-[10px]">
+                        <Badge variant="secondary" className="rounded border border-border px-1.5 py-0 font-mono text-[10px] uppercase">
                           Active
                         </Badge>
                       </div>
@@ -402,9 +402,9 @@ function SettingsPage() {
                   <Switch checked={linkedInConnected} onCheckedChange={setLinkedInConnected} />
                 </div>
 
-                <div className="flex items-center justify-between rounded-xl border border-border/80 bg-surface/40 p-3.5 shadow-xs">
+                <div className="flex items-center justify-between rounded-lg border-2 border-border bg-muted/20 p-3.5 shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-surface-elevated font-semibold text-foreground ring-1 ring-border/80 shadow-2xs">
+                    <div className="grid h-9 w-9 place-items-center rounded border-2 border-border bg-muted/50 font-mono font-bold text-foreground shadow-2xs">
                       GH
                     </div>
                     <div>
@@ -412,7 +412,7 @@ function SettingsPage() {
                         <span className="text-xs font-semibold text-foreground">
                           GitHub Portfolio
                         </span>
-                        <Badge variant="secondary" className="rounded-md px-1.5 py-0 text-[10px]">
+                        <Badge variant="secondary" className="rounded border border-border px-1.5 py-0 font-mono text-[10px] uppercase">
                           Active
                         </Badge>
                       </div>
@@ -424,9 +424,9 @@ function SettingsPage() {
                   <Switch checked={githubConnected} onCheckedChange={setGithubConnected} />
                 </div>
 
-                <div className="flex items-center justify-between rounded-xl border border-border/80 bg-surface/40 p-3.5 shadow-xs">
+                <div className="flex items-center justify-between rounded-lg border-2 border-border bg-muted/20 p-3.5 shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-surface-elevated text-warning ring-1 ring-border/80 shadow-2xs">
+                    <div className="grid h-9 w-9 place-items-center rounded border-2 border-border bg-muted/50 text-warning shadow-2xs">
                       <Sparkles className="h-4 w-4" />
                     </div>
                     <div>
@@ -434,7 +434,7 @@ function SettingsPage() {
                         <span className="text-xs font-semibold text-foreground">
                           Google Calendar
                         </span>
-                        <Badge variant="outline" className="rounded-md px-1.5 py-0 text-[10px]">
+                        <Badge variant="outline" className="rounded border border-border px-1.5 py-0 font-mono text-[10px] uppercase">
                           Optional
                         </Badge>
                       </div>

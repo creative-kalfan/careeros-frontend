@@ -387,28 +387,28 @@ function MissionControl() {
         actions={
           <>
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="hidden rounded-xl lg:inline-flex"
+              className="hidden rounded border-2 border-border shadow-brutal-xs hover:shadow-brutal-sm lg:inline-flex"
               aria-label="Toggle filters"
               onClick={() => setLeftOpen((v) => !v)}
             >
               <PanelLeft className="h-4 w-4" />
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="hidden rounded-xl xl:inline-flex"
+              className="hidden rounded border-2 border-border shadow-brutal-xs hover:shadow-brutal-sm xl:inline-flex"
               aria-label="Toggle AI assistant"
               onClick={() => setRightOpen((v) => !v)}
             >
               <PanelRight className="h-4 w-4" />
             </Button>
             <Button
-              className="rounded-xl shadow-[var(--shadow-glow)]"
+              className="rounded border-2 border-primary shadow-brutal-primary font-mono text-xs uppercase tracking-wider"
               onClick={() => setAddAppOpen(true)}
             >
-              <Sparkles className="mr-1.5 h-4 w-4" /> Add application
+              <Sparkles className="mr-1.5 h-4 w-4" /> Add Application
             </Button>
           </>
         }
@@ -425,38 +425,38 @@ function MissionControl() {
       )}
 
       {/* Toolbar */}
-      <div className="glass flex flex-wrap items-center gap-2 rounded-xl border border-border/80 p-2 sm:p-2.5 shadow-xs">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border-2 border-border bg-card p-2 sm:p-2.5 shadow-brutal-xs">
         <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             data-mc-search
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search company, role, location…    ⌘M"
-            className="h-9 rounded-xl border-border/80 bg-surface-elevated/60 pl-8 text-sm"
+            className="h-10 rounded border-2 border-border bg-background pl-9 text-xs sm:text-sm font-sans"
           />
         </div>
         <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-          <TabsList className="rounded-xl">
-            <TabsTrigger value="kanban" className="gap-1.5 rounded-lg text-xs">
+          <TabsList className="rounded border-2 border-border bg-muted/40 p-1">
+            <TabsTrigger value="kanban" className="gap-1.5 rounded font-mono text-xs font-bold uppercase">
               <KanbanSquare className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Kanban</span>
             </TabsTrigger>
-            <TabsTrigger value="timeline" className="gap-1.5 rounded-lg text-xs">
+            <TabsTrigger value="timeline" className="gap-1.5 rounded font-mono text-xs font-bold uppercase">
               <GanttChartSquare className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Timeline</span>
             </TabsTrigger>
-            <TabsTrigger value="list" className="gap-1.5 rounded-lg text-xs">
+            <TabsTrigger value="list" className="gap-1.5 rounded font-mono text-xs font-bold uppercase">
               <LayoutList className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">List</span>
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="gap-1.5 rounded-lg text-xs">
+            <TabsTrigger value="calendar" className="gap-1.5 rounded font-mono text-xs font-bold uppercase">
               <CalendarDays className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Calendar</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
-        <Button variant="outline" size="sm" className="h-9 rounded-xl">
+        <Button variant="outline" size="sm" className="h-10 rounded border-2 border-border font-mono text-xs uppercase tracking-wider shadow-brutal-xs hover:shadow-brutal-sm">
           <Filter className="mr-1.5 h-3.5 w-3.5" /> Filters
         </Button>
       </div>
@@ -475,11 +475,11 @@ function MissionControl() {
       >
         {/* LEFT SIDEBAR */}
         {leftOpen && (
-          <aside className="glass hidden rounded-xl border border-border/80 p-3 lg:block shadow-xs">
-            <div className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Views
+          <aside className="hidden rounded-lg border-2 border-border bg-card p-3 lg:block shadow-brutal-xs">
+            <div className="mb-2 px-2 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+              Directives
             </div>
-            <nav className="flex flex-col gap-0.5">
+            <nav className="flex flex-col gap-1">
               {sidebarFilters.map((f) => {
                 const Icon = (filterIcon as Record<string, typeof LayoutList>)[f.id] ?? LayoutList;
                 const count = f.favorites
@@ -492,34 +492,34 @@ function MissionControl() {
                     key={f.id}
                     onClick={() => setFilterId(f.id)}
                     className={cn(
-                      "group flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition",
+                      "group flex items-center gap-2 rounded border-2 px-2.5 py-1.5 text-left text-xs font-medium transition-all",
                       filterId === f.id
-                        ? "bg-surface-elevated text-foreground ring-1 ring-border/80 shadow-2xs"
-                        : "text-muted-foreground hover:bg-surface-elevated/40 hover:text-foreground",
+                        ? "border-primary bg-primary/10 text-primary font-bold shadow-brutal-xs"
+                        : "border-transparent text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground",
                     )}
                   >
-                    <Icon className="h-4 w-4 shrink-0" />
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
                     <span className="min-w-0 truncate">{f.label}</span>
-                    <span className="ml-auto font-mono text-[10px]">{count}</span>
+                    <span className="ml-auto font-mono text-[10px] font-bold">{count}</span>
                   </button>
                 );
               })}
             </nav>
-            <div className="mt-4 mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Time
+            <div className="mt-4 mb-2 px-2 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+              Temporal Views
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               <button
                 onClick={() => setView("calendar")}
-                className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-muted-foreground hover:bg-surface-elevated/40 hover:text-foreground"
+                className="flex items-center gap-2 rounded border-2 border-transparent px-2.5 py-1.5 text-left text-xs text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground transition-all"
               >
-                <CalendarDays className="h-4 w-4" /> Calendar
+                <CalendarDays className="h-3.5 w-3.5" /> Calendar View
               </button>
               <button
                 onClick={() => setView("timeline")}
-                className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-muted-foreground hover:bg-surface-elevated/40 hover:text-foreground"
+                className="flex items-center gap-2 rounded border-2 border-transparent px-2.5 py-1.5 text-left text-xs text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground transition-all"
               >
-                <GanttChartSquare className="h-4 w-4" /> Timeline
+                <GanttChartSquare className="h-3.5 w-3.5" /> Timeline View
               </button>
             </div>
           </aside>
@@ -528,7 +528,7 @@ function MissionControl() {
         {/* CENTER */}
         <section className="min-w-0">
           {view === "kanban" && (
-            <ScrollArea className="glass rounded-xl border border-border/80 p-3 shadow-xs">
+            <ScrollArea className="rounded-lg border-2 border-border bg-card/40 p-3 shadow-brutal-xs">
               <motion.div
                 className="flex min-w-max gap-3"
                 variants={staggerContainer}
@@ -565,8 +565,8 @@ function MissionControl() {
           )}
 
           {view === "timeline" && (
-            <div className="glass rounded-xl border border-border/80 p-5 shadow-xs">
-              <h3 className="mb-4 text-sm font-semibold">Weekly hiring timeline</h3>
+            <div className="rounded-lg border-2 border-border bg-card p-5 shadow-brutal-xs">
+              <h3 className="mb-4 text-xs font-mono font-bold uppercase tracking-wider">Weekly Pipeline Progression</h3>
               <div className="space-y-6">
                 {filtered.map((a) => (
                   <div key={a.id} className="grid grid-cols-[minmax(0,180px)_1fr] gap-4">
@@ -576,8 +576,8 @@ function MissionControl() {
                     >
                       <CompanyLogo label={a.logo} size={32} />
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-medium">{a.company}</div>
-                        <div className="truncate text-[11px] text-muted-foreground">{a.role}</div>
+                        <div className="truncate text-sm font-semibold">{a.company}</div>
+                        <div className="truncate text-[11px] font-mono text-muted-foreground">{a.role}</div>
                       </div>
                     </button>
                     <div>
@@ -590,13 +590,13 @@ function MissionControl() {
                           />
                         )}
                       </div>
-                      <div className="relative h-2 overflow-hidden rounded-full bg-muted/40">
+                      <div className="relative h-2 overflow-hidden rounded-none border border-border/60 bg-muted/60">
                         <div
-                          className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-primary via-accent to-success"
+                          className="absolute inset-y-0 left-0 bg-primary"
                           style={{ width: `${a.progress}%` }}
                         />
                       </div>
-                      <div className="mt-2 flex gap-4 text-[11px] text-muted-foreground">
+                      <div className="mt-2 flex gap-4 font-mono text-[11px] text-muted-foreground">
                         <span>Updated {a.updatedAt}</span>
                       </div>
                     </div>
@@ -607,7 +607,7 @@ function MissionControl() {
           )}
 
           {view === "calendar" && (
-            <div className="glass rounded-xl border border-border/80 p-5 shadow-xs">
+            <div className="rounded-lg border-2 border-border bg-card p-5 shadow-brutal-xs">
               <MonthCalendar
                 year={new Date().getFullYear()}
                 month={new Date().getMonth()}

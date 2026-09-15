@@ -31,68 +31,68 @@ export function AppTopbar({ onOpenCommand }: { onOpenCommand: () => void }) {
   const { toggle, open } = useCopilot();
 
   return (
-    <header className="glass-topbar sticky top-0 z-40 flex h-13 items-center gap-3 px-3 sm:px-5 select-none">
-      <SidebarTrigger className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-elevated/60 transition-colors" />
-      <Separator orientation="vertical" className="h-5 bg-border/60" />
+    <header className="border-b-2 border-border bg-background sticky top-0 z-40 flex h-13 items-center gap-3 px-3 sm:px-5 select-none">
+      <SidebarTrigger className="h-8 w-8 rounded-md border-2 border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-surface-elevated hover:shadow-brutal-xs transition-all cursor-pointer" />
+      <Separator orientation="vertical" className="h-5 bg-border" />
 
       {/* Active Workstation Context Breadcrumb */}
       <div className="hidden lg:flex items-center gap-2 text-xs">
         <Compass className="h-3.5 w-3.5 text-primary" />
-        <span className="font-semibold text-foreground tracking-tight">{routeCtx.area}</span>
-        <span className="text-muted-foreground/40">/</span>
-        <span className="text-muted-foreground/80 font-mono text-xs">{routeCtx.doc}</span>
+        <span className="font-bold text-foreground tracking-tight">{routeCtx.area}</span>
+        <span className="text-muted-foreground/60 font-mono">/</span>
+        <span className="text-muted-foreground font-mono text-xs font-medium">{routeCtx.doc}</span>
       </div>
 
-      <Separator orientation="vertical" className="hidden lg:block h-5 bg-border/60" />
+      <Separator orientation="vertical" className="hidden lg:block h-5 bg-border" />
 
       <button
         onClick={onOpenCommand}
-        className="group flex h-8.5 min-w-0 flex-1 items-center gap-2.5 rounded-lg border border-border/80 bg-surface-instrument/80 px-3 text-left text-xs text-muted-foreground transition-all hover:border-primary/40 hover:bg-surface-elevated/80 hover:text-foreground sm:max-w-md shadow-inner-recessed"
+        className="group flex h-8.5 min-w-0 flex-1 items-center gap-2.5 rounded-md border-2 border-border bg-surface px-3 text-left text-xs text-muted-foreground transition-all hover:border-foreground/80 hover:shadow-brutal-xs sm:max-w-md shadow-inner-recessed cursor-pointer"
       >
-        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70 group-hover:text-primary transition-colors" />
+        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
         <span className="truncate text-xs font-normal">
           Search command bar, resumes, jobs, interviews…
         </span>
         <span className="ml-auto hidden items-center gap-1 sm:flex">
-          <Kbd className="bg-muted text-xs px-1.5 py-0.5 font-mono">⌘K</Kbd>
+          <Kbd className="bg-muted border-2 border-border text-xs px-1.5 py-0.5 font-mono font-bold">⌘K</Kbd>
         </span>
       </button>
 
-      <div className="ml-auto flex items-center gap-1.5">
+      <div className="ml-auto flex items-center gap-2">
         {/* Quick Copilot Trigger */}
         <Button
           variant="outline"
           size="sm"
           onClick={toggle}
-          className={`h-8 gap-1.5 rounded-lg text-xs px-2.5 transition-all ${
+          className={`h-8 gap-1.5 rounded-md text-xs px-2.5 transition-all ${
             open
-              ? "bg-primary/20 border-primary/40 text-primary shadow-[0_0_12px_var(--color-primary)]/20"
-              : "border-border/80 bg-surface/80 hover:bg-surface-elevated text-foreground"
+              ? "bg-primary text-primary-foreground border-2 border-primary shadow-brutal-xs"
+              : "border-2 border-border bg-surface hover:bg-surface-elevated text-foreground shadow-brutal-xs"
           }`}
         >
-          <Sparkles className="h-3.5 w-3.5 text-accent" />
-          <span className="hidden sm:inline font-medium">Copilot</span>
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <span className="hidden sm:inline font-bold">Copilot</span>
         </Button>
 
         <ThemeToggle />
 
         <Button
           asChild
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="relative h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-elevated/60"
+          className="relative h-8 w-8 rounded-md border-2 border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-surface-elevated shadow-brutal-xs"
           aria-label="Notifications"
         >
           <Link to="/notifications">
             <Bell className="h-4 w-4" />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
+            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
           </Link>
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           onClick={onOpenCommand}
-          className="h-8 w-8 rounded-lg text-muted-foreground sm:hidden"
+          className="h-8 w-8 rounded-md border-2 border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-surface-elevated shadow-brutal-xs sm:hidden"
           aria-label="Command"
         >
           <CommandIcon className="h-4 w-4" />

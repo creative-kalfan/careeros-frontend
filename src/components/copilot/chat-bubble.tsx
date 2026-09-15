@@ -76,34 +76,34 @@ export function ChatBubble({
       className={cn("group flex animate-fade-in gap-2.5", isUser ? "justify-end" : "justify-start")}
     >
       {!isUser && (
-        <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary to-accent text-primary-foreground shadow-elevation-1">
-          <span className="font-mono text-[11px] font-bold">AI</span>
+        <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded border-2 border-primary bg-primary text-primary-foreground shadow-brutal-xs">
+          <span className="font-mono text-[10px] font-bold tracking-tight">AI</span>
         </div>
       )}
       <div className="min-w-0 max-w-[85%]">
         <div
           className={cn(
-            "rounded-2xl px-3.5 py-2.5 text-sm shadow-elevation-1",
+            "rounded-lg px-4 py-2.5 text-xs sm:text-sm border-2 transition-all leading-relaxed",
             isUser
-              ? "rounded-tr-md bg-linear-to-br from-primary to-accent text-primary-foreground"
-              : "rounded-tl-md border border-border/70 bg-surface-elevated/60 text-foreground",
+              ? "border-primary bg-primary text-primary-foreground shadow-brutal-xs"
+              : "border-border bg-card text-foreground shadow-brutal-xs",
           )}
         >
           <div className="space-y-1.5">{renderMarkdown(message.content)}</div>
         </div>
         {message.card && <ResponseCardView card={message.card} />}
         {!isUser && (
-          <div className="mt-1.5 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="mt-1.5 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <button
               onClick={copy}
-              className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
+              className="rounded border border-border/80 bg-surface-elevated/40 p-1 text-[11px] text-muted-foreground hover:border-primary hover:text-foreground transition-all"
               title="Copy"
             >
-              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
             </button>
             <button
               onClick={onRegenerate}
-              className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
+              className="rounded border border-border/80 bg-surface-elevated/40 p-1 text-[11px] text-muted-foreground hover:border-primary hover:text-foreground transition-all"
               title="Regenerate"
             >
               <RotateCcw className="h-3 w-3" />
@@ -111,8 +111,8 @@ export function ChatBubble({
             <button
               onClick={onPin}
               className={cn(
-                "rounded-md px-1.5 py-1 text-[11px] hover:bg-surface-elevated hover:text-foreground",
-                message.pinned ? "text-primary" : "text-muted-foreground",
+                "rounded border border-border/80 bg-surface-elevated/40 p-1 text-[11px] transition-all hover:border-primary hover:text-foreground",
+                message.pinned ? "text-primary border-primary bg-primary/10" : "text-muted-foreground",
               )}
               title="Pin"
             >
@@ -120,7 +120,7 @@ export function ChatBubble({
             </button>
             <button
               onClick={onDelete}
-              className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-surface-elevated hover:text-destructive"
+              className="rounded border border-border/80 bg-surface-elevated/40 p-1 text-[11px] text-muted-foreground hover:border-destructive hover:text-destructive transition-all"
               title="Delete"
             >
               <Trash2 className="h-3 w-3" />

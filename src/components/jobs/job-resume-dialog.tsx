@@ -86,39 +86,39 @@ export function JobResumeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg border-2 border-border bg-surface shadow-brutal-lg rounded-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
+          <DialogTitle className="flex items-center gap-2 font-extrabold uppercase tracking-tight text-sm">
+            <FileText className="h-4 w-4 text-primary" />
             Edit Resume for This Job
           </DialogTitle>
-          <DialogDescription>
-            Tailor your resume for <span className="font-medium text-foreground">{job.role}</span>{" "}
-            at <span className="font-medium text-foreground">{job.company}</span>.
+          <DialogDescription className="text-xs text-muted-foreground">
+            Tailor your resume for <span className="font-bold text-foreground">{job.role}</span>{" "}
+            at <span className="font-bold text-foreground">{job.company}</span>.
           </DialogDescription>
         </DialogHeader>
 
         {step === "jd" && (
-          <div className="space-y-4">
+          <div className="space-y-4 pt-1">
             {hasStoredJd ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                     Job Description
                   </span>
-                  <Badge variant="secondary" className="rounded-full text-[10px]">
+                  <Badge variant="secondary" className="rounded-sm text-[10px] font-mono font-bold bg-primary text-primary-foreground border border-primary">
                     Stored
                   </Badge>
                 </div>
-                <ScrollArea className="max-h-48 rounded-xl border border-border/60 bg-surface-elevated/40 p-3">
-                  <p className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-foreground/85">
+                <ScrollArea className="max-h-48 rounded-lg border-2 border-border bg-background p-3.5 shadow-brutal-xs">
+                  <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-foreground/90">
                     {job.overview}
                   </p>
                 </ScrollArea>
               </div>
             ) : (
               <div className="space-y-2">
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                   Job description unavailable
                 </span>
                 <p className="text-xs text-muted-foreground">
@@ -128,20 +128,20 @@ export function JobResumeDialog({
                   value={jd}
                   onChange={(e) => setJd(e.target.value)}
                   placeholder="Paste the job description here..."
-                  className="min-h-[160px] resize-y rounded-xl border-border/60 text-xs"
+                  className="min-h-[160px] resize-y rounded-md border-2 border-border text-xs font-medium"
                 />
               </div>
             )}
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t-2 border-border/40">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 rounded-lg text-xs"
+                className="h-8.5 rounded-md text-xs font-semibold border-2 border-border shadow-brutal-xs"
                 onClick={() => onOpenChange(false)}
               >
                 Cancel
               </Button>
-              <Button size="sm" className="h-8 rounded-lg text-xs" onClick={handleContinueFromJd}>
+              <Button size="sm" className="h-8.5 rounded-md text-xs font-bold border-2 border-primary bg-primary hover:bg-primary/90 text-primary-foreground shadow-brutal-primary" onClick={handleContinueFromJd}>
                 Continue
               </Button>
             </DialogFooter>
@@ -149,8 +149,8 @@ export function JobResumeDialog({
         )}
 
         {step === "resume" && (
-          <div className="space-y-4">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="space-y-4 pt-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
               Select Resume
             </span>
             <ScrollArea className="max-h-64">
@@ -158,7 +158,7 @@ export function JobResumeDialog({
                 {resumesLoading ? (
                   <div className="space-y-2">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="h-14 animate-pulse rounded-xl bg-muted/40" />
+                      <div key={i} className="h-14 animate-pulse rounded-lg border-2 border-border bg-surface-elevated" />
                     ))}
                   </div>
                 ) : resumes.length === 0 ? (
@@ -171,14 +171,14 @@ export function JobResumeDialog({
                       key={resume.id}
                       onClick={() => handleCreateVersion(resume.id)}
                       disabled={isCreating}
-                      className="flex w-full items-center gap-3 rounded-xl border border-border/60 bg-surface-elevated/40 p-3 text-left transition hover:border-primary/40 hover:bg-surface-elevated/70 disabled:opacity-60"
+                      className="flex w-full items-center gap-3 rounded-lg border-2 border-border bg-background p-3 text-left transition hover:border-primary hover:bg-surface-elevated hover:shadow-brutal-xs disabled:opacity-60 cursor-pointer"
                     >
-                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md border-2 border-border bg-surface text-primary">
                         <FileText className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-xs font-medium">{resume.name}</div>
-                        <div className="mt-0.5 text-[10.5px] text-muted-foreground">
+                        <div className="truncate text-xs font-bold text-foreground">{resume.name}</div>
+                        <div className="mt-0.5 text-[10.5px] font-mono text-muted-foreground">
                           Updated {formatDate(resume.updatedAt)}
                         </div>
                       </div>
@@ -190,11 +190,11 @@ export function JobResumeDialog({
                 )}
               </div>
             </ScrollArea>
-            <DialogFooter>
+            <DialogFooter className="pt-2 border-t-2 border-border/40">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 rounded-lg text-xs"
+                className="h-8.5 rounded-md text-xs font-semibold border-2 border-border shadow-brutal-xs"
                 onClick={() => setStep("jd")}
                 disabled={isCreating}
               >

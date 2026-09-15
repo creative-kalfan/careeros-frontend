@@ -50,9 +50,9 @@ export function PrimaryFiltersBar({
   const currentWorkMode = workMode || "All";
 
   return (
-    <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-border/60 bg-background/50 backdrop-blur-xs">
+    <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b-2 border-border bg-surface">
       {/* Work Mode Segmented Control */}
-      <div className="inline-flex items-center rounded-lg border border-border/70 bg-surface-elevated/40 p-0.5 text-xs">
+      <div className="inline-flex items-center rounded-md border-2 border-border bg-background p-0.5 text-xs">
         {(["All", "Remote", "On-site"] as const).map((mode) => {
           const active = currentWorkMode === mode;
           return (
@@ -60,9 +60,9 @@ export function PrimaryFiltersBar({
               key={mode}
               type="button"
               onClick={() => onWorkModeSelect(mode)}
-              className={`rounded-md px-2.5 py-1 font-medium transition-all text-xs select-none ${
+              className={`rounded-sm px-2.5 py-1 font-semibold transition-all text-xs select-none ${
                 active
-                  ? "bg-surface-elevated text-foreground shadow-xs ring-1 ring-border/80"
+                  ? "bg-surface-elevated text-foreground border border-border shadow-brutal-xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -78,13 +78,13 @@ export function PrimaryFiltersBar({
           value={experience || "all"}
           onValueChange={(val) => onExperienceSelect(val === "all" ? undefined : val)}
         >
-          <SelectTrigger className="h-7.5 rounded-lg border-border/70 bg-surface-elevated/40 px-2 text-xs">
+          <SelectTrigger className="h-8 rounded-md border-2 border-border bg-background px-2 text-xs font-medium">
             <div className="flex items-center gap-1.5 truncate">
-              <Layers className="h-3 w-3 text-muted-foreground shrink-0" />
+              <Layers className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <SelectValue placeholder="Experience" />
             </div>
           </SelectTrigger>
-          <SelectContent className="rounded-xl border-border/80">
+          <SelectContent className="rounded-lg border-2 border-border shadow-brutal-md">
             <SelectItem value="all" className="text-xs">
               All Levels
             </SelectItem>
@@ -103,13 +103,13 @@ export function PrimaryFiltersBar({
           value={employmentType || "all"}
           onValueChange={(val) => onEmploymentTypeSelect(val === "all" ? undefined : val)}
         >
-          <SelectTrigger className="h-7.5 rounded-lg border-border/70 bg-surface-elevated/40 px-2 text-xs">
+          <SelectTrigger className="h-8 rounded-md border-2 border-border bg-background px-2 text-xs font-medium">
             <div className="flex items-center gap-1.5 truncate">
-              <Briefcase className="h-3 w-3 text-muted-foreground shrink-0" />
+              <Briefcase className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <SelectValue placeholder="Job Type" />
             </div>
           </SelectTrigger>
-          <SelectContent className="rounded-xl border-border/80">
+          <SelectContent className="rounded-lg border-2 border-border shadow-brutal-md">
             <SelectItem value="all" className="text-xs">
               All Job Types
             </SelectItem>
@@ -124,12 +124,12 @@ export function PrimaryFiltersBar({
 
       {/* Active Location Chip if provided */}
       {location && (
-        <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-elevated/40 px-2 py-1 text-xs text-foreground">
-          <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
+        <div className="inline-flex items-center gap-1.5 rounded-md border-2 border-border bg-surface-elevated px-2 py-1 text-xs text-foreground font-medium shadow-brutal-xs">
+          <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
           <span className="max-w-[120px] truncate">{location}</span>
           <button
             onClick={() => onLocationChange(undefined)}
-            className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+            className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
             aria-label="Remove location filter"
           >
             <X className="h-3 w-3" />
@@ -143,18 +143,18 @@ export function PrimaryFiltersBar({
           variant="outline"
           size="sm"
           onClick={onOpenAdditional}
-          className={`h-7.5 gap-1.5 rounded-lg text-xs px-2.5 transition-all ${
+          className={`h-8 gap-1.5 rounded-md border-2 text-xs px-2.5 font-semibold transition-all ${
             activeAdditionalCount > 0
-              ? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/15"
-              : "border-border/70 bg-surface-elevated/30 text-muted-foreground hover:text-foreground hover:bg-surface-elevated/60"
+              ? "border-primary bg-primary/10 text-primary shadow-brutal-xs"
+              : "border-border bg-surface text-foreground hover:border-primary/80 shadow-brutal-xs"
           }`}
         >
-          <SlidersHorizontal className="h-3 w-3" />
+          <SlidersHorizontal className="h-3.5 w-3.5" />
           <span>Filters</span>
           {activeAdditionalCount > 0 && (
             <Badge
               variant="secondary"
-              className="h-4.5 min-w-4.5 rounded-full px-1.5 text-[10px] font-mono bg-primary/20 text-primary border-0 font-medium"
+              className="h-4.5 min-w-4.5 rounded-sm px-1.5 text-[10px] font-mono bg-primary text-primary-foreground border border-primary font-bold"
             >
               {activeAdditionalCount}
             </Badge>
@@ -167,7 +167,7 @@ export function PrimaryFiltersBar({
             variant="ghost"
             size="sm"
             onClick={onResetAll}
-            className="h-7.5 px-2 text-xs text-muted-foreground hover:text-foreground rounded-lg"
+            className="h-8 px-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-md"
             title="Reset all filters"
           >
             <RotateCcw className="mr-1 h-3 w-3" />

@@ -36,7 +36,7 @@ export const stageMeta = Object.fromEntries(APPLICATION_STAGES.map((s) => [s.id,
 export function CompanyLogo({ label, size = 40 }: { label: string; size?: number }) {
   return (
     <div
-      className="grid shrink-0 place-items-center rounded-xl bg-surface-elevated font-mono text-sm font-semibold text-foreground/90 ring-1 ring-border/80 shadow-2xs"
+      className="grid shrink-0 place-items-center rounded border-2 border-border bg-card font-mono text-sm font-bold text-foreground shadow-brutal-xs"
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
       {label}
@@ -52,7 +52,7 @@ export function StagePill({ stage }: { stage: ApplicationStage }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ring-1 shadow-2xs",
+        "inline-flex items-center gap-1 rounded border-2 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider shadow-2xs",
         meta.tone,
       )}
     >
@@ -63,9 +63,9 @@ export function StagePill({ stage }: { stage: ApplicationStage }) {
 }
 
 const urgencyStyle = {
-  today: "text-destructive bg-destructive/10 ring-destructive/20",
-  soon: "text-warning bg-warning/10 ring-warning/25",
-  later: "text-muted-foreground bg-muted/40 ring-border/80",
+  today: "text-rose-400 bg-rose-500/10 border-rose-500/40",
+  soon: "text-amber-400 bg-amber-500/10 border-amber-500/40",
+  later: "text-muted-foreground bg-muted/40 border-border/80",
 } as const;
 
 export function UrgencyChip({
@@ -78,7 +78,7 @@ export function UrgencyChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ring-1",
+        "inline-flex items-center gap-1 rounded border-2 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider",
         urgencyStyle[urgency],
       )}
     >
@@ -105,40 +105,40 @@ export function ApplicationCard({
       type="button"
       onClick={() => onSelect?.(app.id)}
       className={cn(
-        "group glass spatial-card spatial-card-hover relative flex w-full flex-col gap-2.5 rounded-xl border border-border/80 p-3.5 text-left transition-colors hover:border-border hover:bg-surface-elevated/80 shadow-xs cursor-pointer select-none",
-        active && "border-primary/60 bg-surface-elevated ring-1 ring-primary/40 shadow-elevation-1",
-        compact && "p-3",
+        "group relative flex w-full flex-col gap-2.5 rounded-lg border-2 border-border bg-card p-3 text-left transition-all hover:border-primary/80 hover:shadow-brutal-sm shadow-brutal-xs cursor-pointer select-none",
+        active && "border-primary bg-primary/5 shadow-brutal-sm ring-1 ring-primary/40",
+        compact && "p-2.5",
       )}
     >
       <div className="flex items-start gap-2.5">
-        <CompanyLogo label={app.logo} size={compact ? 32 : 36} />
+        <CompanyLogo label={app.logo} size={compact ? 30 : 34} />
         <div className="min-w-0 grow">
           <div className="flex items-center gap-1.5">
-            <h3 className="truncate text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+            <h3 className="truncate text-xs font-semibold text-foreground group-hover:text-primary transition-colors tracking-tight">
               {app.company}
             </h3>
-            {app.favorite && <Star className="h-3 w-3 fill-warning text-warning shrink-0" />}
+            {app.favorite && <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />}
           </div>
           <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{app.role}</p>
         </div>
         {app.match > 0 && (
-          <span className="shrink-0 font-mono text-[11px] font-bold text-success">
+          <span className="shrink-0 rounded border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-0.2 font-mono text-[10px] font-bold text-emerald-400">
             {app.match}%
           </span>
         )}
       </div>
 
       {!compact && (
-        <div className="text-[11px] text-muted-foreground">
+        <div className="text-[11px] font-mono text-muted-foreground">
           {app.location && <span className="truncate">{app.location}</span>}
           {app.location && app.salary && <span className="mx-1.5 opacity-60">·</span>}
           {app.salary && <span>{app.salary}</span>}
         </div>
       )}
 
-      <div className="relative h-1 overflow-hidden rounded-full bg-muted/60">
+      <div className="relative h-1.5 overflow-hidden rounded-none border border-border/60 bg-muted/60">
         <div
-          className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-primary to-accent transition-[width] duration-300 motion-reduce:transition-none"
+          className="absolute inset-y-0 left-0 bg-primary transition-[width] duration-300 motion-reduce:transition-none"
           style={{ width: `${app.progress}%` }}
         />
       </div>
@@ -146,7 +146,7 @@ export function ApplicationCard({
       <div className="flex items-center justify-between text-[10px] text-muted-foreground">
         <StagePill stage={app.stage} />
         {app.nextAction && (
-          <span className="truncate font-medium text-foreground/80">{app.nextAction.when}</span>
+          <span className="truncate font-mono text-[10px] font-medium text-foreground/80">{app.nextAction.when}</span>
         )}
       </div>
     </button>
@@ -169,11 +169,11 @@ export function KanbanColumn({
   const meta = stageMeta[stage];
   if (!meta) return null;
   return (
-    <div className="flex w-72 shrink-0 flex-col gap-2.5 rounded-xl border border-border/70 bg-surface/40 p-2.5 shadow-2xs">
-      <div className="flex items-center justify-between px-1.5 py-1">
+    <div className="flex w-72 shrink-0 flex-col gap-2.5 rounded-lg border-2 border-border/80 bg-card/60 p-2.5 shadow-brutal-xs">
+      <div className="flex items-center justify-between px-1 py-1 border-b-2 border-border/40 pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold tracking-tight text-foreground">{meta.label}</span>
-          <span className="rounded-full bg-surface-elevated px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground border border-border/60">
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">{meta.label}</span>
+          <span className="rounded border border-border bg-muted/60 px-2 py-0.2 font-mono text-[10px] font-bold text-muted-foreground">
             {apps.length}
           </span>
         </div>
@@ -189,8 +189,8 @@ export function KanbanColumn({
           />
         ))}
         {apps.length === 0 && (
-          <div className="grid place-items-center rounded-lg border border-dashed border-border/60 py-8 text-center text-xs text-muted-foreground/70">
-            No applications
+          <div className="grid place-items-center rounded-lg border-2 border-dashed border-border/60 py-8 text-center font-mono text-xs text-muted-foreground/70">
+            NO APPLICATIONS
           </div>
         )}
       </div>
@@ -250,14 +250,14 @@ export function InterviewRounds({
         return (
           <li
             key={r.id}
-            className="group flex items-start gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs"
+            className="group flex items-start gap-3 rounded-lg border-2 border-border bg-card p-3 shadow-brutal-xs"
           >
             <S.icon className={cn("mt-0.5 h-4 w-4 shrink-0", S.cls)} />
             <div className="min-w-0 grow">
               <div className="flex items-center justify-between gap-2">
-                <h4 className="truncate text-sm font-medium">{r.name}</h4>
+                <h4 className="truncate text-sm font-semibold">{r.name}</h4>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[11px] text-muted-foreground">{r.when}</span>
+                  <span className="font-mono text-[11px] text-muted-foreground">{r.when}</span>
                   {onDelete && (
                     <button
                       type="button"
@@ -278,7 +278,7 @@ export function InterviewRounds({
                 <button
                   type="button"
                   onClick={() => onPrepare(r.id)}
-                  className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary ring-1 ring-primary/25 transition hover:bg-primary/15"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded border-2 border-primary/60 bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-primary transition-all hover:border-primary hover:shadow-brutal-xs"
                   title="Generate interview preparation for this round"
                 >
                   <Sparkles className="h-3 w-3" /> Prepare for Interview
@@ -307,14 +307,14 @@ export function AssessmentList({
       {items.map((a) => (
         <li
           key={a.id}
-          className="group flex items-center gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs"
+          className="group flex items-center gap-3 rounded-lg border-2 border-border bg-card p-3 shadow-brutal-xs"
         >
-          <ClipboardList className="h-4 w-4 shrink-0 text-accent" />
+          <ClipboardList className="h-4 w-4 shrink-0 text-primary" />
           <div className="min-w-0 grow">
-            <h4 className="truncate text-sm font-medium">{a.label}</h4>
-            <p className="text-xs text-muted-foreground">Due {a.due}</p>
+            <h4 className="truncate text-sm font-semibold">{a.label}</h4>
+            <p className="font-mono text-xs text-muted-foreground">Due {a.due}</p>
           </div>
-          <Badge variant="secondary" className="rounded-full capitalize shrink-0">
+          <Badge variant="secondary" className="rounded border border-border font-mono text-[10px] uppercase shrink-0">
             {a.status}
           </Badge>
           {onDelete && (
@@ -357,8 +357,8 @@ export function FollowUpRow({
   return (
     <div
       className={cn(
-        "group flex items-start gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 shadow-xs transition",
-        isDone && "opacity-60 bg-surface/20",
+        "group flex items-start gap-3 rounded-lg border-2 border-border bg-card p-3 shadow-brutal-xs transition-all",
+        isDone && "opacity-60 bg-muted/20 border-border/60",
       )}
     >
       <button
@@ -368,20 +368,20 @@ export function FollowUpRow({
         title={isDone ? "Mark pending" : "Mark completed"}
       >
         {isDone ? (
-          <CheckCircle2 className="h-4 w-4 text-success" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
         ) : (
           <Circle className="h-4 w-4 text-muted-foreground" />
         )}
       </button>
-      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-elevated ring-1 ring-border/80 shadow-2xs">
+      <div className="grid h-8 w-8 shrink-0 place-items-center rounded border-2 border-border bg-muted/40 text-foreground shadow-2xs">
         <Icon className="h-4 w-4 text-foreground/80" />
       </div>
       <div className="min-w-0 grow">
         <div className="flex items-center gap-2">
-          <h4 className={cn("truncate text-sm font-medium", isDone && "line-through")}>
+          <h4 className={cn("truncate text-sm font-semibold", isDone && "line-through")}>
             {f.company} {f.role ? `· ${f.role}` : ""}
           </h4>
-          <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{f.due}</span>
+          <span className="ml-auto shrink-0 font-mono text-[11px] text-muted-foreground">{f.due}</span>
           {onDelete && (
             <button
               type="button"
@@ -459,12 +459,12 @@ export function StatRing({
 
 export function CompanyCard({ app }: { app: ApplicationUI }) {
   return (
-    <Card className="glass rounded-xl border-border/80 p-4 shadow-xs">
+    <Card className="rounded-lg border-2 border-border bg-card p-4 shadow-brutal-xs">
       <div className="flex items-start gap-3">
         <CompanyLogo label={app.logo} />
         <div className="min-w-0 grow">
           <div className="flex items-center gap-1.5">
-            <h3 className="truncate text-sm font-semibold">{app.company}</h3>
+            <h3 className="truncate text-sm font-semibold tracking-tight">{app.company}</h3>
             <Building2 className="h-3 w-3 text-muted-foreground" />
           </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -472,15 +472,15 @@ export function CompanyCard({ app }: { app: ApplicationUI }) {
           </p>
         </div>
         {app.glassdoor && (
-          <span className="shrink-0 rounded-full bg-surface-elevated px-2 py-0.5 font-mono text-[11px] ring-1 ring-border/80 shadow-2xs">
+          <span className="shrink-0 rounded border border-border/80 bg-muted/40 px-2 py-0.5 font-mono text-[11px] font-bold text-foreground shadow-2xs">
             ★ {app.glassdoor.toFixed(1)}
           </span>
         )}
       </div>
       {app.culture && <p className="mt-3 text-xs text-foreground/80">{app.culture}</p>}
-      <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-        <span>Salary</span>
-        <span className="font-medium text-foreground/90">{app.salary || "Not specified"}</span>
+      <div className="mt-3 flex items-center justify-between font-mono text-[11px] text-muted-foreground border-t border-border/40 pt-2">
+        <span className="uppercase text-[10px]">Salary</span>
+        <span className="font-bold text-foreground">{app.salary || "Not specified"}</span>
       </div>
     </Card>
   );
@@ -503,15 +503,15 @@ export function AiTipCard({
 }) {
   const Icon = aiKindIcon[tip.kind] ?? Bot;
   return (
-    <div className="group flex items-start gap-3 rounded-xl border border-border/80 bg-surface/40 p-3 transition hover:border-border hover:bg-surface-elevated/70 shadow-xs">
-      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+    <div className="group flex items-start gap-3 rounded-lg border-2 border-border bg-card p-3 transition-all hover:border-primary/80 hover:shadow-brutal-xs shadow-brutal-xs">
+      <div className="grid h-8 w-8 shrink-0 place-items-center rounded border-2 border-primary/60 bg-primary/10 text-primary">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0">
-        <h4 className="text-sm font-medium">{tip.title}</h4>
+        <h4 className="text-xs font-mono font-bold uppercase tracking-tight text-foreground">{tip.title}</h4>
         <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{tip.detail}</p>
       </div>
-      <ArrowUpRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+      <ArrowUpRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
     </div>
   );
 }
@@ -532,20 +532,20 @@ export function SectionCard({
   icon?: ComponentType<{ className?: string }>;
 }) {
   return (
-    <Card className="glass spatial-card relative rounded-xl border-border/80 p-4 sm:p-5 shadow-xs">
-      <div className="mb-3.5 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+    <Card className="rounded-lg border-2 border-border bg-card p-4 sm:p-5 shadow-brutal-xs">
+      <div className="mb-3.5 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b-2 border-border/40 pb-3">
         <div className="flex min-w-0 items-start gap-2.5">
           {Icon && (
-            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-surface-elevated text-primary ring-1 ring-border/80 shadow-2xs">
+            <div className="grid h-7 w-7 shrink-0 place-items-center rounded border-2 border-border bg-muted/40 text-primary shadow-2xs">
               <Icon className="h-3.5 w-3.5" />
             </div>
           )}
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold tracking-tight text-foreground">
+            <h2 className="truncate text-xs font-mono font-bold uppercase tracking-wider text-foreground">
               {title}
             </h2>
             {subtitle && (
-              <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{subtitle}</p>
             )}
           </div>
         </div>
@@ -586,15 +586,15 @@ function StatBlock({
   value: string | number;
 }) {
   return (
-    <div className="glass spatial-card relative flex items-center gap-3 rounded-xl border border-border/80 p-3 shadow-xs">
-      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface-elevated text-primary ring-1 ring-border/80 shadow-2xs">
+    <div className="flex items-center gap-3 rounded-lg border-2 border-border bg-card p-3 shadow-brutal-xs">
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded border-2 border-border bg-muted/40 text-primary shadow-2xs">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0">
-        <div className="font-mono text-lg font-bold leading-none tracking-tight text-foreground">
+        <div className="font-mono text-xl font-bold leading-none tracking-tight text-foreground">
           {value}
         </div>
-        <div className="mt-1 truncate text-[10px] uppercase tracking-[0.14em] text-muted-foreground font-semibold">
+        <div className="mt-1 truncate text-[10px] uppercase tracking-[0.14em] text-muted-foreground font-mono font-bold">
           {label}
         </div>
       </div>

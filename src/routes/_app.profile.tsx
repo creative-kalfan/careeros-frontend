@@ -97,21 +97,21 @@ function ProfilePage() {
         description="Manage your personal information and preferences."
       />
 
-      <Card className="glass rounded-xl border border-border/80 p-5 sm:p-6 shadow-xs">
+      <Card className="rounded-lg border-2 border-border bg-card p-5 sm:p-6 shadow-brutal-sm">
         {loading ? (
           <div className="space-y-4">
-            <Skeleton className="h-10 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded border-2 border-border/40" />
+            <Skeleton className="h-10 w-full rounded border-2 border-border/40" />
+            <Skeleton className="h-10 w-full rounded border-2 border-border/40" />
           </div>
         ) : (
           <form onSubmit={handleSave} className="space-y-4">
             {saveMessage && (
               <div
-                className={`rounded-lg border px-3.5 py-2.5 text-xs ${
+                className={`rounded border-2 px-3.5 py-2 text-xs font-mono font-bold uppercase ${
                   saveMessage.includes("success")
-                    ? "border-success/30 bg-success/10 text-success"
-                    : "border-destructive/30 bg-destructive/10 text-destructive"
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                    : "border-rose-500/40 bg-rose-500/10 text-rose-400"
                 }`}
               >
                 {saveMessage}
@@ -119,17 +119,17 @@ function ProfilePage() {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Email</label>
+              <label className="text-xs font-mono font-medium text-muted-foreground uppercase">Email (Primary Credential)</label>
               <Input
                 type="email"
                 value={user?.email || ""}
                 disabled
-                className="h-9 rounded-lg border-border/60 bg-muted text-xs text-muted-foreground"
+                className="h-10 rounded border-2 border-border/60 bg-muted/60 text-xs font-mono text-muted-foreground"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="fullName" className="text-xs font-medium text-foreground">
+              <label htmlFor="fullName" className="text-xs font-mono font-medium text-foreground uppercase">
                 Full name
               </label>
               <Input
@@ -138,17 +138,17 @@ function ProfilePage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your full name"
-                className="h-9 rounded-lg border-border/80 bg-surface-elevated text-xs"
+                className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Role</label>
+              <label className="text-xs font-mono font-medium text-muted-foreground uppercase">System Role</label>
               <Input
                 type="text"
                 value={profile?.role || "user"}
                 disabled
-                className="h-9 rounded-lg border-border/60 bg-muted text-xs text-muted-foreground"
+                className="h-10 rounded border-2 border-border/60 bg-muted/60 text-xs font-mono uppercase text-muted-foreground"
               />
             </div>
 
@@ -157,9 +157,9 @@ function ProfilePage() {
                 type="submit"
                 disabled={saving}
                 size="sm"
-                className="rounded-lg text-xs font-medium shadow-xs"
+                className="rounded border-2 border-primary shadow-brutal-primary font-mono text-xs uppercase tracking-wider"
               >
-                {saving ? "Saving..." : "Save changes"}
+                {saving ? "Saving Telemetry..." : "Save Profile"}
               </Button>
             </div>
           </form>

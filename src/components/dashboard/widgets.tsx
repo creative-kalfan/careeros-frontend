@@ -83,17 +83,17 @@ export function Widget({
 }) {
   return (
     <motion.div variants={staggerItem} className={cn(span, className)}>
-      <Card className="workstation-panel spatial-card relative h-full rounded-xl border border-border/80 p-4 sm:p-5 shadow-elevation-1 bg-surface">
-        <div className="mb-3.5 flex items-start justify-between gap-3 border-b border-border/40 pb-3">
+      <Card className="relative h-full rounded-lg border-2 border-border p-4 sm:p-5 shadow-brutal-sm bg-surface">
+        <div className="mb-3.5 flex items-start justify-between gap-3 border-b-2 border-border pb-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-primary/80 shadow-[0_0_8px_var(--color-primary)]" />
-              <h2 className="truncate text-xs font-bold uppercase tracking-wider text-foreground">
+              <span className="h-2 w-2 rounded-full bg-primary" />
+              <h2 className="truncate text-xs font-bold uppercase tracking-wider font-mono text-foreground">
                 {title}
               </h2>
             </div>
             {subtitle && (
-              <p className="mt-0.5 truncate text-[11px] text-muted-foreground/80 font-mono">
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground font-mono">
                 {subtitle}
               </p>
             )}
@@ -199,25 +199,25 @@ export function ExecutiveTelemetryRibbon({
 }) {
   return (
     <motion.div variants={staggerItem}>
-      <div className="workstation-panel spatial-card relative overflow-hidden rounded-xl border border-border/80 bg-surface p-4 sm:p-5 shadow-elevation-2">
+      <div className="relative overflow-hidden rounded-lg border-2 border-border bg-surface p-4 sm:p-5 shadow-brutal-md">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)] xl:items-center">
           {/* Executive identity & direct commands */}
           <div className="min-w-0 flex flex-col justify-between">
             <div>
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-primary shadow-xs">
-                  <span className="relative flex h-1.5 w-1.5">
+                <div className="inline-flex items-center gap-1.5 rounded-sm border-2 border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-primary shadow-brutal-xs">
+                  <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                   </span>
                   Executive Telemetry
                 </div>
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-0.5 text-[10px] font-mono font-semibold text-warning">
+                <div className="inline-flex items-center gap-1.5 rounded-sm border-2 border-warning/40 bg-warning/10 px-2.5 py-0.5 text-[10px] font-mono font-bold text-warning shadow-brutal-xs">
                   <Flame className="h-3 w-3 text-warning shrink-0" />
                   <span>{streak}-Day Active Streak</span>
                 </div>
               </div>
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl text-foreground">
+              <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl text-foreground">
                 {greeting}, <span className="text-primary">{name}</span>
               </h1>
               <p className="mt-1 text-xs text-muted-foreground leading-relaxed max-w-lg">
@@ -230,7 +230,7 @@ export function ExecutiveTelemetryRibbon({
               <Button
                 asChild
                 size="sm"
-                className="h-8 rounded-lg text-xs font-semibold shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="h-8 rounded-md text-xs font-bold shadow-brutal-xs bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 <Link to="/resumes">
                   <Sparkles className="mr-1.5 h-3.5 w-3.5 text-white" /> Open Resume Studio
@@ -240,7 +240,7 @@ export function ExecutiveTelemetryRibbon({
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-8 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated"
+                className="h-8 rounded-md text-xs font-semibold border-2 border-border bg-surface hover:bg-surface-elevated shadow-brutal-xs"
               >
                 <Link to="/jobs">
                   <Search className="mr-1.5 h-3.5 w-3.5 text-primary" /> Browse Match Pool
@@ -250,66 +250,66 @@ export function ExecutiveTelemetryRibbon({
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-8 rounded-lg text-xs font-medium border-border/80 bg-surface/80 hover:bg-surface-elevated text-muted-foreground hover:text-foreground"
+                className="h-8 rounded-md text-xs font-semibold border-2 border-border bg-surface hover:bg-surface-elevated text-muted-foreground hover:text-foreground shadow-brutal-xs"
               >
                 <Link to="/resumes">
-                  <Target className="mr-1.5 h-3.5 w-3.5 text-accent" /> Match Intelligence
+                  <Target className="mr-1.5 h-3.5 w-3.5 text-primary" /> Match Intelligence
                 </Link>
               </Button>
             </div>
           </div>
 
           {/* Telemetry Gauge Strip */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 border-t border-border/60 pt-4 xl:border-t-0 xl:border-l xl:border-border/60 xl:pl-6 xl:pt-0">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 border-t-2 border-border pt-4 xl:border-t-0 xl:border-l-2 xl:border-border xl:pl-6 xl:pt-0">
             {/* 1. Health Score Ring */}
-            <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-primary/40">
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-md border-2 border-border bg-surface-elevated p-3 text-center shadow-brutal-xs hover:border-primary transition-all">
               <ProgressRing value={health.overall} tone="primary" sublabel="Health" />
-              <div className="flex items-center gap-1 font-mono text-[11px] font-semibold text-success">
+              <div className="flex items-center gap-1 font-mono text-[11px] font-bold text-success">
                 <ArrowUpRight className="h-3 w-3" />+{health.delta}%
               </div>
-              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
+              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider font-semibold">
                 Career Health
               </span>
             </div>
 
             {/* 2. ATS Readiness */}
-            <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-accent/40">
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-md border-2 border-border bg-surface-elevated p-3 text-center shadow-brutal-xs hover:border-primary transition-all">
               <ProgressRing value={resumeScore} tone="accent" sublabel="ATS" />
               <Badge
                 variant="outline"
-                className="h-4 border-accent/40 bg-accent/10 px-1.5 font-mono text-[9px] text-accent"
+                className="h-4 border-primary/40 bg-primary/10 px-1.5 font-mono text-[9px] font-bold text-primary"
               >
                 Target 90+
               </Badge>
-              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
+              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider font-semibold">
                 ATS Readiness
               </span>
             </div>
 
             {/* 3. Matching Pool */}
-            <div className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-primary/40">
-              <div className="grid h-12 w-12 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary">
+            <div className="flex flex-col items-center justify-center gap-1 rounded-md border-2 border-border bg-surface-elevated p-3 text-center shadow-brutal-xs hover:border-primary transition-all">
+              <div className="grid h-12 w-12 place-items-center rounded-md border-2 border-primary/40 bg-primary/10 text-primary shadow-brutal-xs">
                 <Target className="h-6 w-6" />
               </div>
               <div className="mt-1 font-mono text-lg font-bold text-foreground">
                 {matchPoolCount}{" "}
                 <span className="text-xs font-normal text-muted-foreground">Roles</span>
               </div>
-              <div className="text-[10px] font-mono text-emerald-400 font-medium">
+              <div className="text-[10px] font-mono text-emerald-400 font-bold">
                 {highFitCount} High-Fit (80%+)
               </div>
-              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
+              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider font-semibold">
                 Target Pool
               </span>
             </div>
 
             {/* 4. Weekly Velocity */}
-            <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-surface-instrument/70 p-3 text-center transition-colors hover:border-success/40">
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-md border-2 border-border bg-surface-elevated p-3 text-center shadow-brutal-xs hover:border-primary transition-all">
               <ProgressRing value={weeklyProgress} tone="success" sublabel="Velocity" />
-              <div className="truncate text-[10px] font-medium text-muted-foreground font-mono max-w-[90px]">
+              <div className="truncate text-[10px] font-bold text-muted-foreground font-mono max-w-[90px]">
                 {weeklyGoalLabel}
               </div>
-              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider">
+              <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-wider font-semibold">
                 Weekly Goal
               </span>
             </div>
@@ -374,43 +374,43 @@ export function CareerActionDirectives({ directives }: { directives: CareerDirec
     { ring: string; badge: string; text: string; bg: string }
   > = {
     primary: {
-      ring: "border-primary/40 hover:border-primary/70",
-      badge: "border-primary/30 text-primary bg-primary/10",
+      ring: "border-primary/50 hover:border-primary",
+      badge: "border-2 border-primary/40 text-primary bg-primary/10",
       text: "text-primary",
       bg: "bg-primary/10 text-primary",
     },
     success: {
-      ring: "border-success/40 hover:border-success/70",
-      badge: "border-success/30 text-success bg-success/10",
+      ring: "border-success/50 hover:border-success",
+      badge: "border-2 border-success/40 text-success bg-success/10",
       text: "text-success",
       bg: "bg-success/10 text-success",
     },
     warning: {
-      ring: "border-warning/40 hover:border-warning/70",
-      badge: "border-warning/30 text-warning bg-warning/10",
+      ring: "border-warning/50 hover:border-warning",
+      badge: "border-2 border-warning/40 text-warning bg-warning/10",
       text: "text-warning",
       bg: "bg-warning/10 text-warning",
     },
     accent: {
-      ring: "border-accent/40 hover:border-accent/70",
-      badge: "border-accent/30 text-accent bg-accent/10",
-      text: "text-accent",
-      bg: "bg-accent/10 text-accent",
+      ring: "border-primary/50 hover:border-primary",
+      badge: "border-2 border-primary/40 text-primary bg-primary/10",
+      text: "text-primary",
+      bg: "bg-primary/10 text-primary",
     },
   };
 
   return (
-    <div className="workstation-panel spatial-card relative flex flex-col h-full overflow-hidden rounded-xl border border-border/80 bg-surface shadow-elevation-2 p-4 sm:p-5">
-      <div className="flex items-center justify-between border-b border-border/60 pb-3">
+    <div className="relative flex flex-col h-full overflow-hidden rounded-lg border-2 border-border bg-surface shadow-brutal-md p-4 sm:p-5">
+      <div className="flex items-center justify-between border-b-2 border-border pb-3">
         <div className="flex items-center gap-2">
-          <Zap className="h-4 w-4 text-warning animate-pulse" />
-          <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
+          <Zap className="h-4 w-4 text-warning" />
+          <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
             High-Leverage Career Directives
           </h2>
         </div>
         <Badge
           variant="outline"
-          className="font-mono text-[10px] text-muted-foreground border-border/60"
+          className="font-mono text-[10px] font-bold text-muted-foreground border-2 border-border"
         >
           {directives.length} PENDING
         </Badge>
@@ -425,14 +425,14 @@ export function CareerActionDirectives({ directives }: { directives: CareerDirec
             <div
               key={d.id}
               className={cn(
-                "group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border/70 bg-surface-instrument/80 p-3 transition-all hover:bg-surface-elevated/70 shadow-2xs",
+                "group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-md border-2 border-border bg-surface p-3 transition-all hover:bg-surface-elevated hover:shadow-brutal-xs hover:border-primary",
                 tone.ring,
               )}
             >
               <div className="flex items-start gap-3 min-w-0">
                 <div
                   className={cn(
-                    "grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border/50",
+                    "grid h-9 w-9 shrink-0 place-items-center rounded-md border-2 border-border",
                     tone.bg,
                   )}
                 >
@@ -653,7 +653,7 @@ export function PriorityTile({ p }: { p: PriorityCard }) {
     >
       <a
         href={p.href}
-        className="group glass spatial-card relative flex h-full flex-col overflow-hidden rounded-xl border border-border/80 p-4 transition-colors hover:border-primary/40 hover:shadow-elevation-2"
+        className="group relative flex h-full flex-col overflow-hidden rounded-lg border-2 border-border bg-surface p-4 transition-all hover:border-primary hover:shadow-brutal-sm"
       >
         <div className="flex items-start justify-between gap-3">
           <div
@@ -1120,12 +1120,12 @@ export function QuickActionsGrid({
           <Link
             key={a.id}
             to={a.href}
-            className="group glass spatial-card flex flex-col items-start gap-2 rounded-lg border border-border/70 bg-surface-instrument/70 p-3 transition-colors hover:border-primary/50 hover:bg-surface-elevated shadow-2xs"
+            className="group flex flex-col items-start gap-2 rounded-md border-2 border-border bg-surface p-3 transition-all hover:border-primary hover:bg-surface-elevated hover:shadow-brutal-xs"
           >
-            <div className="grid h-8 w-8 place-items-center rounded-md border border-primary/20 bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
+            <div className="grid h-8 w-8 place-items-center rounded-sm border-2 border-primary/40 bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
               <Icon className="h-4 w-4" />
             </div>
-            <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+            <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
               {a.label}
             </span>
           </Link>
@@ -1190,12 +1190,12 @@ export function AchievementCard({ a }: { a: Achievement }) {
 /* ─────────────────────────────────────── Insight ribbon */
 
 const insightStyle: Record<CareerInsight["kind"], { badge: string; border: string }> = {
-  trend: { badge: "bg-primary/10 text-primary border-primary/20", border: "border-primary/30" },
+  trend: { badge: "bg-primary/10 text-primary border-primary/40", border: "border-primary" },
   opportunity: {
-    badge: "bg-success/10 text-success border-success/20",
-    border: "border-success/30",
+    badge: "bg-success/10 text-success border-success/40",
+    border: "border-success",
   },
-  gap: { badge: "bg-warning/10 text-warning border-warning/20", border: "border-warning/30" },
+  gap: { badge: "bg-warning/10 text-warning border-warning/40", border: "border-warning" },
 };
 
 export function InsightPill({ i }: { i: CareerInsight }) {
@@ -1203,20 +1203,20 @@ export function InsightPill({ i }: { i: CareerInsight }) {
   return (
     <div
       className={cn(
-        "glass spatial-card relative rounded-xl border border-border/80 bg-surface/70 p-3.5 shadow-xs transition-colors hover:border-border hover:bg-surface-elevated/70",
+        "relative rounded-md border-2 border-border bg-surface p-3.5 shadow-brutal-xs transition-colors hover:border-primary",
       )}
     >
       <div className="flex items-start gap-2.5">
         <div
-          className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-md border", meta.badge)}
+          className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-sm border-2", meta.badge)}
         >
           <TrendingUp className="h-3.5 w-3.5" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
             {i.kind === "trend" ? "Trend" : i.kind === "opportunity" ? "Opportunity" : "Next Step"}
           </div>
-          <p className="mt-0.5 text-xs text-foreground/90 leading-snug">{i.text}</p>
+          <p className="mt-0.5 text-xs text-foreground/90 font-medium leading-snug">{i.text}</p>
         </div>
       </div>
     </div>

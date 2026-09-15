@@ -454,11 +454,11 @@ function JobsPage() {
   return (
     <div className="flex h-[calc(100dvh-56px)] flex-col bg-background">
       {/* Top Workspace Bar: Search & Page Identity */}
-      <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border/80 bg-background/95 backdrop-blur-md px-4 py-2.5 sm:px-6">
+      <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b-2 border-border bg-surface px-4 py-2.5 sm:px-6">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="min-w-0 shrink-0 hidden sm:block">
-            <h1 className="truncate text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <h1 className="truncate text-sm font-extrabold tracking-tight text-foreground flex items-center gap-2 uppercase font-mono">
+              <Briefcase className="h-4 w-4 text-primary" />
               Job Intelligence
             </h1>
           </div>
@@ -471,7 +471,7 @@ function JobsPage() {
         <div className="flex shrink-0 items-center gap-2">
           {isFetching && !isLoading && (
             <span
-              className="h-2 w-2 animate-pulse rounded-full bg-primary"
+              className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary"
               aria-label="Updating data"
               title="Updating..."
             />
@@ -497,9 +497,9 @@ function JobsPage() {
 
       {/* Recoverable inline error when query fails but previous jobs exist */}
       {isError && jobs.length > 0 && (
-        <div className="border-b border-destructive/30 bg-destructive/10 px-4 py-2 flex items-center justify-between text-xs text-destructive">
+        <div className="border-b-2 border-destructive bg-destructive/10 px-4 py-2 flex items-center justify-between text-xs text-destructive font-semibold">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>
               Failed to load requested page ({getErrorMessage(error)}). Current opportunities
               preserved.
@@ -508,7 +508,7 @@ function JobsPage() {
           <Button
             variant="outline"
             size="sm"
-            className="h-6 px-2 text-[11px] border-destructive/40 hover:bg-destructive/15 text-destructive"
+            className="h-6.5 px-2.5 text-[11px] font-bold border-2 border-destructive hover:bg-destructive/15 text-destructive"
             onClick={() => refetch()}
           >
             Try again
@@ -526,7 +526,7 @@ function JobsPage() {
           {isDesktop ? (
             <div className="grid min-h-0 flex-1 grid-cols-[minmax(380px,430px)_1fr]">
               {/* Left Zone: Opportunities Stream */}
-              <div className="min-h-0 border-r border-border/80 flex flex-col bg-background/50">
+              <div className="min-h-0 border-r-2 border-border flex flex-col bg-background">
                 <div className="flex-1 min-h-0 [perspective:1200px]">
                   <AnimatePresence mode="wait" custom={pageDirection}>
                     <motion.div
@@ -569,7 +569,7 @@ function JobsPage() {
               </div>
 
               {/* Right Zone: Opportunity Intelligence & Brief */}
-              <div className="min-h-0 flex-1 flex flex-col bg-surface/20">
+              <div className="min-h-0 flex-1 flex flex-col bg-background">
                 <AnimatePresence mode="wait">
                   {selected ? (
                     <motion.div
@@ -728,33 +728,33 @@ function Pagination({
   const canNext = (hasNext ?? page < totalPages) && !isFetching;
 
   return (
-    <div className="flex items-center justify-between gap-2 border-t border-border/70 px-4 py-2 text-xs text-muted-foreground font-mono bg-surface/30">
-      <span className="truncate">
-        Page {page} of {totalPages} ({total.toLocaleString()} total)
+    <div className="flex items-center justify-between gap-2 border-t-2 border-border px-4 py-2 text-xs text-muted-foreground font-mono bg-surface">
+      <span className="truncate font-semibold">
+        PAGE {page} OF {totalPages} ({total.toLocaleString()} TOTAL)
       </span>
       <div className="flex items-center gap-1.5 shrink-0">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="h-6.5 px-2 text-xs"
+          className="h-7 px-2.5 text-xs font-bold border-2 border-border shadow-brutal-xs"
           onClick={onPrev}
           disabled={!canPrev}
           aria-label="Previous page"
         >
-          Prev
+          PREV
         </Button>
-        <span className="px-1 text-[11px]">
+        <span className="px-1.5 text-[11px] font-bold text-foreground">
           {page} / {totalPages}
         </span>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="h-6.5 px-2 text-xs"
+          className="h-7 px-2.5 text-xs font-bold border-2 border-border shadow-brutal-xs"
           onClick={onNext}
           disabled={!canNext}
           aria-label="Next page"
         >
-          Next
+          NEXT
         </Button>
       </div>
     </div>
@@ -777,12 +777,12 @@ function ErrorState({ error, onRetry }: { error: unknown; onRetry: () => void })
   return (
     <div className="grid flex-1 place-items-center p-10 text-center">
       <div className="max-w-[320px] space-y-3">
-        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-destructive/15 text-destructive">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-md bg-destructive/15 text-destructive border-2 border-destructive shadow-brutal-xs">
           <Icon className="h-6 w-6" />
         </div>
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <h3 className="text-sm font-bold uppercase tracking-tight text-foreground">{title}</h3>
         <p className="text-xs text-muted-foreground leading-relaxed">{message}</p>
-        <Button variant="outline" size="sm" className="mt-2 rounded-lg text-xs" onClick={onRetry}>
+        <Button variant="outline" size="sm" className="mt-2 rounded-md text-xs font-bold border-2 border-border shadow-brutal-xs" onClick={onRetry}>
           Try again
         </Button>
       </div>

@@ -80,7 +80,11 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [webglSupported, setWebglSupported] = useState(true);
-  const [hoveredNode, setHoveredNode] = useState<number | null>(null);
+  const activeNodeRef = useRef(activeNode);
+  activeNodeRef.current = activeNode;
+  const hoveredNodeRef = useRef<number | null>(null);
+  const onSelectNodeRef = useRef(onSelectNode);
+  onSelectNodeRef.current = onSelectNode;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -262,7 +266,7 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
       if (intersects.length > 0) {
         const id = intersects[0].object.userData.nodeId;
         if (typeof id === "number") {
-          onSelectNode(id);
+          onSelectNodeRef.current(id);
         }
       }
     };
@@ -312,16 +316,19 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
       const intersects = raycaster.intersectObjects(hitSpheres);
       if (intersects.length > 0) {
         const id = intersects[0].object.userData.nodeId;
-        setHoveredNode(id);
+        hoveredNodeRef.current = id;
         canvas.style.cursor = "pointer";
       } else {
-        setHoveredNode(null);
+        hoveredNodeRef.current = null;
         canvas.style.cursor = "default";
       }
 
+      const curActive = activeNodeRef.current;
+      const curHovered = hoveredNodeRef.current;
+
       nodeMeshes.forEach((group, idx) => {
-        const isActive = idx === activeNode;
-        const isHovered = idx === hoveredNode;
+        const isActive = idx === curActive;
+        const isHovered = idx === curHovered;
 
         const outerWire = group.getObjectByName("outerWire") as THREE.Mesh;
         const orbitRing = group.getObjectByName("orbitRing") as THREE.Mesh;
@@ -388,31 +395,34 @@ export function CareerSignalCanvas({ activeNode, onSelectNode }: CareerSignalCan
       particleGeo.dispose();
       pTex.dispose();
 
-      renderer?.dispose();
+      if (renderer) {
+        renderer.dispose();
+        renderer.forceContextLoss();
+      }
       scene = null;
       camera = null;
       renderer = null;
     };
-  }, [activeNode, hoveredNode, onSelectNode]);
+  }, []);
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[420px] sm:h-[480px] lg:h-[520px] rounded-2xl overflow-hidden border border-border/70 bg-gradient-to-b from-surface/80 via-background to-surface/90 shadow-2xl"
+      className="relative w-full h-[420px] sm:h-[480px] lg:h-[520px] rounded-lg overflow-hidden border-2 border-border bg-surface shadow-brutal-md"
     >
-      <div className="absolute top-3 left-4 right-4 z-10 flex items-center justify-between text-[11px] font-mono text-muted-foreground border-b border-border/40 pb-2">
+      <div className="absolute top-3 left-4 right-4 z-10 flex items-center justify-between text-[11px] font-mono text-muted-foreground border-b-2 border-border pb-2 bg-surface/90">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-foreground/90 font-semibold tracking-wider">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-background" />
+          <span className="text-foreground font-bold tracking-wider">
             CAREEROS FLIGHT VECTOR
           </span>
-          <span className="text-muted-foreground/60 hidden sm:inline">| REALTIME_TOPOLOGY</span>
+          <span className="text-muted-foreground hidden sm:inline font-mono">| REALTIME_TOPOLOGY</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline text-muted-foreground/80">
+          <span className="hidden md:inline text-muted-foreground font-mono">
             INTERACTIVE 3D WEBGL NODE MAP
           </span>
-          <span className="px-2 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium text-[10px]">
+          <span className="px-2 py-0.5 rounded-sm bg-primary/20 border border-primary text-primary font-mono font-bold text-[10px]">
             ACTIVE: {NODES_DATA[activeNode].tag}
           </span>
         </div>

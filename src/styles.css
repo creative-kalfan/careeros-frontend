@@ -10,11 +10,11 @@
   --font-sans: "Inter Variable", system-ui, -apple-system, "SF Pro Display", sans-serif;
   --font-mono: "Fira Code Variable", "SF Mono", Monaco, monospace;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-  --radius-2xl: 28px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -61,22 +61,25 @@
   --color-brand-hover: var(--primary-hover);
   --color-copper: var(--copper);
 
-  --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
-  --shadow-elevation-2: 0 4px 12px -2px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.18);
-  --shadow-elevation-3: 0 12px 28px -4px rgba(0, 0, 0, 0.4), 0 4px 10px -2px rgba(0, 0, 0, 0.25);
-  --shadow-document:
-    0 24px 60px -12px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
-  --shadow-document-raised:
-    0 32px 72px -16px rgba(0, 0, 0, 0.75), 0 4px 12px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.12);
-  --shadow-workbench: 0 16px 40px -10px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-inner-recessed: inset 0 2px 4px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  --shadow-brutal-xs: 1px 1px 0px 0px var(--border);
+  --shadow-brutal-sm: 2px 2px 0px 0px var(--border);
+  --shadow-brutal-md: 4px 4px 0px 0px var(--border);
+  --shadow-brutal-lg: 6px 6px 0px 0px var(--border);
+  --shadow-brutal-primary: 3px 3px 0px 0px var(--primary);
+  --shadow-brutal-primary-md: 5px 5px 0px 0px var(--primary);
+
+  --shadow-elevation-1: 2px 2px 0px 0px var(--border);
+  --shadow-elevation-2: 4px 4px 0px 0px var(--border);
+  --shadow-elevation-3: 6px 6px 0px 0px var(--border);
+  --shadow-document: 4px 4px 0px 0px var(--border);
+  --shadow-document-raised: 8px 8px 0px 0px var(--border);
+  --shadow-workbench: 4px 4px 0px 0px var(--border);
+  --shadow-inner-recessed: inset 1px 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 /* Dark theme — premium technical graphite & CareerOS blue */
 :root {
-  --radius: 10px;
+  --radius: 6px;
 
   /* Canvas */
   --background: #080a0d;
@@ -126,8 +129,8 @@
   --copper: #d56b3f;
 
   /* Borders & Inputs */
-  --border: #242a35;
-  --input: #242a35;
+  --border: #2b3345;
+  --input: #2b3345;
   --ring: #315cff;
 
   --chart-1: #315cff;
@@ -143,102 +146,100 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #151922;
   --sidebar-accent-foreground: #f4f7fb;
-  --sidebar-border: #1f242e;
+  --sidebar-border: #242c3b;
   --sidebar-ring: #315cff;
 }
 
-/* Light theme — clean, neutral and professional */
+/* Light theme — crisp neo-brutalist technical styling */
 .light {
   /* Canvas */
-  --background: #f7f8fa;
-  --foreground: #171a1f;
+  --background: #f5f6f9;
+  --foreground: #0f1218;
 
   /* Surfaces */
   --surface: #ffffff;
-  --surface-elevated: #f1f3f6;
-  --surface-instrument: #f8f9fb;
-  --surface-hud: #ebeef2;
+  --surface-elevated: #ebedf2;
+  --surface-instrument: #f0f2f7;
+  --surface-hud: #e3e6ed;
 
   --card: #ffffff;
-  --card-foreground: #171a1f;
+  --card-foreground: #0f1218;
 
   --popover: #ffffff;
-  --popover-foreground: #171a1f;
+  --popover-foreground: #0f1218;
 
   /* Primary Brand / Action — CareerOS Blue */
-  --primary: #315cff;
-  --primary-hover: #2552e8;
+  --primary: #2552e8;
+  --primary-hover: #1b42c4;
   --primary-foreground: #ffffff;
 
-  --secondary: #f1f3f6;
-  --secondary-foreground: #171a1f;
+  --secondary: #ebedf2;
+  --secondary-foreground: #0f1218;
 
   /* Neutrals & Text */
-  --muted: #f1f3f6;
-  --muted-foreground: #89919d;
+  --muted: #ebedf2;
+  --muted-foreground: #5a6375;
 
-  --accent: #f1f3f6;
-  --accent-foreground: #171a1f;
+  --accent: #ebedf2;
+  --accent-foreground: #0f1218;
 
   /* Semantic Status Colors */
-  --success: #37845c;
+  --success: #1b8a53;
   --success-foreground: #ffffff;
 
-  --warning: #c58a2b;
+  --warning: #b27517;
   --warning-foreground: #ffffff;
 
-  --destructive: #c94b45;
+  --destructive: #b93732;
   --destructive-foreground: #ffffff;
 
-  --info: #315cff;
+  --info: #2552e8;
   --info-foreground: #ffffff;
 
   /* Secondary Semantic Accent only */
   --copper: #b9542f;
 
   /* Borders & Inputs */
-  --border: #dde1e7;
-  --input: #dde1e7;
-  --ring: #315cff;
+  --border: #1a1e28;
+  --input: #1a1e28;
+  --ring: #2552e8;
 
-  --chart-1: #315cff;
-  --chart-2: #37845c;
-  --chart-3: #c58a2b;
-  --chart-4: #c94b45;
+  --chart-1: #2552e8;
+  --chart-2: #1b8a53;
+  --chart-3: #b27517;
+  --chart-4: #b93732;
   --chart-5: #4f46e5;
 
   /* Sidebar */
-  --sidebar: #f3f5f8;
-  --sidebar-foreground: #5e6673;
-  --sidebar-primary: #315cff;
+  --sidebar: #f0f2f6;
+  --sidebar-foreground: #475060;
+  --sidebar-primary: #2552e8;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e8ecf2;
-  --sidebar-accent-foreground: #171a1f;
-  --sidebar-border: #dde1e7;
-  --sidebar-ring: #315cff;
+  --sidebar-accent: #e2e6ed;
+  --sidebar-accent-foreground: #0f1218;
+  --sidebar-border: #1a1e28;
+  --sidebar-ring: #2552e8;
 }
 
 @utility glass {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
 }
 
 @utility glass-strong {
   background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-elevation-1);
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0px 0px var(--border);
 }
 
 @utility glass-topbar {
-  background: color-mix(in srgb, var(--background) 88%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  background: var(--background);
+  border-bottom: 2px solid var(--border);
 }
 
 @utility glass-sidebar {
   background: var(--sidebar);
-  border-right: 1px solid var(--sidebar-border);
+  border-right: 2px solid var(--sidebar-border);
 }
 
 @utility bg-app {
@@ -248,22 +249,23 @@
 @utility workstation-panel {
   position: relative;
   background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-elevation-1);
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0px 0px var(--border);
 }
 
 @utility workstation-panel-hover {
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, border-color 0.12s ease-out;
   &:hover {
-    border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
-    box-shadow: var(--shadow-elevation-2);
+    border-color: var(--primary);
+    box-shadow: 4px 4px 0px 0px var(--border);
+    transform: translate(-1px, -1px);
   }
 }
 
 @utility workstation-instrument {
   position: relative;
   background: var(--surface-instrument);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
 }
 
 @utility telemetry-pill {
@@ -271,13 +273,46 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
+  border-radius: 4px;
   font-family: var(--font-mono, monospace);
   font-size: 0.6875rem;
+  font-weight: 600;
   letter-spacing: -0.01em;
   background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  color: var(--muted-foreground);
+  border: 1.5px solid var(--border);
+  color: var(--foreground);
+}
+
+@utility shadow-brutal-xs {
+  box-shadow: 1px 1px 0px 0px var(--border);
+}
+
+@utility shadow-brutal-sm {
+  box-shadow: 2px 2px 0px 0px var(--border);
+}
+
+@utility shadow-brutal-md {
+  box-shadow: 4px 4px 0px 0px var(--border);
+}
+
+@utility shadow-brutal-lg {
+  box-shadow: 6px 6px 0px 0px var(--border);
+}
+
+@utility shadow-brutal-primary {
+  box-shadow: 3px 3px 0px 0px var(--primary);
+}
+
+@utility shadow-brutal-primary-md {
+  box-shadow: 5px 5px 0px 0px var(--primary);
+}
+
+@utility btn-tactile {
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
+  &:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: none !important;
+  }
 }
 
 @layer base {

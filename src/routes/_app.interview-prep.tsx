@@ -88,15 +88,15 @@ function InterviewPrepListPage() {
       />
 
       {contextApp && (
-        <div className="workstation-panel flex items-center gap-3 rounded-xl p-3.5 text-sm">
+        <div className="flex items-center gap-3 rounded-lg border-2 border-border bg-card p-3.5 text-sm shadow-brutal-xs">
           <Building2 className="h-4 w-4 shrink-0 text-primary" />
-          <p className="min-w-0 grow truncate">
-            Preparing for <span className="font-semibold">{contextApp.role}</span>
-            <span className="text-muted-foreground"> at {contextApp.company}</span>
+          <p className="min-w-0 grow truncate text-xs sm:text-sm">
+            Target Context: <span className="font-semibold tracking-tight">{contextApp.role}</span>
+            <span className="font-mono text-muted-foreground"> @{contextApp.company}</span>
           </p>
           <Link
             to="/applications"
-            className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
+            className="shrink-0 font-mono text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
           >
             ← Mission Control
           </Link>
@@ -108,7 +108,7 @@ function InterviewPrepListPage() {
       {isLoading ? (
         <div className="space-y-2.5">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-24 rounded-xl" />
+            <Skeleton key={i} className="h-24 rounded-lg border-2 border-border/40" />
           ))}
         </div>
       ) : isError ? (
@@ -129,7 +129,7 @@ function InterviewPrepListPage() {
             search.applicationId ? (
               <Button
                 size="sm"
-                className="gap-1.5"
+                className="gap-1.5 border-2 border-primary shadow-brutal-primary font-mono text-xs uppercase tracking-wider"
                 disabled={generating}
                 onClick={() => handleGenerate(search.applicationId as string, search.interviewId)}
               >
@@ -137,7 +137,7 @@ function InterviewPrepListPage() {
                 {generating ? "Generating…" : "Generate preparation"}
               </Button>
             ) : (
-              <Button size="sm" asChild>
+              <Button size="sm" asChild className="border-2 border-primary shadow-brutal-primary font-mono text-xs uppercase tracking-wider">
                 <Link to="/applications">Open Mission Control</Link>
               </Button>
             )
@@ -152,32 +152,32 @@ function InterviewPrepListPage() {
                 <Link
                   to="/interview-prep/$sessionId"
                   params={{ sessionId: s.id }}
-                  className="glass group flex items-center gap-3 rounded-xl border border-border/80 p-4 shadow-xs transition-colors hover:border-primary/40"
+                  className="group flex items-center gap-3 rounded-lg border-2 border-border/80 bg-card p-4 shadow-brutal-xs transition-all hover:border-primary/80 hover:shadow-brutal-sm"
                 >
                   <div className="min-w-0 grow">
-                    <p className="truncate text-sm font-medium">
+                    <p className="truncate text-sm font-semibold tracking-tight">
                       {meta.job_title ?? "Interview preparation"}
                       {meta.company_name ? (
-                        <span className="text-muted-foreground"> · {meta.company_name}</span>
+                        <span className="font-mono text-xs text-muted-foreground font-normal"> · {meta.company_name}</span>
                       ) : null}
                     </p>
-                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                      <Badge variant="secondary" className="rounded-full text-[11px]">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <Badge variant="secondary" className="rounded border border-border font-mono text-[10px] uppercase">
                         {INTERVIEW_TYPE_LABELS[s.interview_type] ?? s.interview_type}
                       </Badge>
-                      <Badge variant="outline" className="rounded-full text-[11px]">
+                      <Badge variant="outline" className="rounded border border-border/80 font-mono text-[10px]">
                         {s.status === "ready"
                           ? `${s.question_count} questions · ${s.prepared_count} prepared`
                           : s.status === "generating"
                             ? "Generating…"
                             : "Failed — retry available"}
                       </Badge>
-                      <Badge variant="outline" className="rounded-full font-mono text-[11px]">
+                      <Badge variant="outline" className="rounded border border-border/80 font-mono text-[10px] text-primary">
                         v{s.version}
                       </Badge>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                 </Link>
               </li>
             );

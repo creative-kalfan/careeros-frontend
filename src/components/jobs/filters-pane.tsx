@@ -128,18 +128,18 @@ export function AdditionalFiltersDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col w-full sm:max-w-md p-0 gap-0 border-l border-border/80 bg-background/95 backdrop-blur-xl">
-        <SheetHeader className="p-5 border-b border-border text-left">
+      <SheetContent className="flex flex-col w-full sm:max-w-md p-0 gap-0 border-l-2 border-border bg-surface shadow-brutal-lg">
+        <SheetHeader className="p-5 border-b-2 border-border text-left">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              <SheetTitle className="text-sm font-semibold tracking-tight">
+              <SlidersHorizontal className="h-4 w-4 text-primary" />
+              <SheetTitle className="text-sm font-extrabold tracking-tight uppercase">
                 Additional Filters
               </SheetTitle>
               {activeCount > 0 && (
                 <Badge
                   variant="secondary"
-                  className="rounded-full text-[10px] bg-primary/15 text-primary border-0 font-mono font-medium"
+                  className="rounded-sm text-[10px] bg-primary text-primary-foreground border border-primary font-mono font-bold"
                 >
                   {activeCount} active
                 </Badge>
@@ -156,12 +156,12 @@ export function AdditionalFiltersDrawer({
             {/* Skills & Tech Stack Filter */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Wrench className="h-3.5 w-3.5 text-muted-foreground" />
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 font-mono">
+                  <Wrench className="h-3.5 w-3.5 text-primary" />
                   Skills & Technologies
                 </label>
                 {selected.skills.size > 0 && (
-                  <span className="text-[11px] font-mono text-primary font-medium">
+                  <span className="text-[11px] font-mono text-primary font-bold">
                     {selected.skills.size} selected
                   </span>
                 )}
@@ -172,7 +172,7 @@ export function AdditionalFiltersDrawer({
                   value={skillSearch}
                   onChange={(e) => setSkillSearch(e.target.value)}
                   placeholder="Filter skills (e.g. React, Python)..."
-                  className="h-8 rounded-lg pl-8 text-xs bg-surface-elevated/40 border-border/70"
+                  className="h-8.5 rounded-md pl-8 text-xs bg-background border-2 border-border font-medium"
                 />
               </div>
               <div className="flex flex-wrap gap-1.5 pt-1">
@@ -183,10 +183,10 @@ export function AdditionalFiltersDrawer({
                       key={skill}
                       type="button"
                       onClick={() => toggle("skills", skill)}
-                      className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium transition-all ${
+                      className={`inline-flex items-center gap-1 rounded-sm border-2 px-2.5 py-1 text-xs font-mono font-bold transition-all ${
                         active
-                          ? "border-primary/40 bg-primary/10 text-primary shadow-xs"
-                          : "border-border/70 bg-surface-elevated/30 text-muted-foreground hover:border-border hover:text-foreground"
+                          ? "border-primary bg-primary/10 text-primary shadow-brutal-xs"
+                          : "border-border bg-surface-elevated text-muted-foreground hover:border-border hover:text-foreground"
                       }`}
                     >
                       {active && <Check className="h-3 w-3 text-primary" />}
@@ -199,39 +199,39 @@ export function AdditionalFiltersDrawer({
 
             {/* Target Company Filter */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 font-mono">
+                <Building2 className="h-3.5 w-3.5 text-primary" />
                 Company
               </label>
               <Input
                 value={companyQuery}
                 onChange={(e) => setCompanyQuery(e.target.value)}
                 placeholder="e.g. Stripe, OpenAI, Google"
-                className="h-8.5 rounded-lg text-xs bg-surface-elevated/40 border-border/70"
+                className="h-9 rounded-md text-xs bg-background border-2 border-border font-medium"
               />
             </div>
 
             {/* Target Location / City Filter */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 font-mono">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
                 Specific City or Region
               </label>
               <Input
                 value={locationQuery}
                 onChange={(e) => setLocationQuery(e.target.value)}
                 placeholder="e.g. Bengaluru, San Francisco, London"
-                className="h-8.5 rounded-lg text-xs bg-surface-elevated/40 border-border/70"
+                className="h-9 rounded-md text-xs bg-background border-2 border-border font-medium"
               />
             </div>
 
             {/* Sort Criteria */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 font-mono">
+                <ArrowUpDown className="h-3.5 w-3.5 text-primary" />
                 Sort By
               </label>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-2">
                 {filterOptions.sort.map((s) => {
                   const active = selectedSort === s.value;
                   return (
@@ -239,10 +239,10 @@ export function AdditionalFiltersDrawer({
                       key={s.value}
                       type="button"
                       onClick={() => setSelectedSort(s.value)}
-                      className={`rounded-lg border px-3 py-2 text-left text-xs font-medium transition-all ${
+                      className={`rounded-md border-2 px-3 py-2 text-left text-xs font-semibold transition-all ${
                         active
-                          ? "border-border bg-surface-elevated text-foreground font-semibold shadow-xs"
-                          : "border-border/70 bg-surface-elevated/30 text-muted-foreground hover:border-border hover:text-foreground"
+                          ? "border-primary bg-surface-elevated text-foreground shadow-brutal-xs"
+                          : "border-border bg-background text-muted-foreground hover:border-border hover:text-foreground"
                       }`}
                     >
                       {s.label}
@@ -254,12 +254,12 @@ export function AdditionalFiltersDrawer({
           </div>
         </ScrollArea>
 
-        <SheetFooter className="p-4 border-t border-border bg-surface-elevated/20 flex flex-row items-center justify-between gap-2">
+        <SheetFooter className="p-4 border-t-2 border-border bg-surface flex flex-row items-center justify-between gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleReset}
-            className="h-8.5 rounded-lg px-3 text-xs text-muted-foreground hover:text-foreground"
+            className="h-9 rounded-md px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
           >
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
             Reset all
@@ -269,14 +269,14 @@ export function AdditionalFiltersDrawer({
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="h-8.5 rounded-lg px-3 text-xs"
+              className="h-9 rounded-md px-3 text-xs font-semibold border-2 border-border shadow-brutal-xs"
             >
               Cancel
             </Button>
             <Button
               size="sm"
               onClick={handleApply}
-              className="h-8.5 rounded-lg px-4 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground border-0"
+              className="h-9 rounded-md px-4 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-primary shadow-brutal-primary"
             >
               Apply Filters
             </Button>

@@ -73,7 +73,7 @@ function InterviewPrepSessionPage() {
         eyebrow="Interview Intelligence"
         title="Preparation workspace"
         actions={
-          <Button variant="ghost" size="sm" className="gap-1.5" asChild>
+          <Button variant="outline" size="sm" className="gap-1.5 border-2 border-border shadow-brutal-xs font-mono text-xs uppercase" asChild>
             <Link to="/interview-prep">
               <ArrowLeft className="h-3.5 w-3.5" /> All sessions
             </Link>
@@ -83,9 +83,9 @@ function InterviewPrepSessionPage() {
 
       {isLoading ? (
         <div className="space-y-2.5">
-          <Skeleton className="h-36 rounded-xl" />
+          <Skeleton className="h-36 rounded-lg border-2 border-border/40" />
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-28 rounded-xl" />
+            <Skeleton key={i} className="h-28 rounded-lg border-2 border-border/40" />
           ))}
         </div>
       ) : isError || !session ? (
@@ -96,16 +96,16 @@ function InterviewPrepSessionPage() {
         />
       ) : session.status === "generating" ? (
         <div className="space-y-2.5">
-          <div className="workstation-panel rounded-xl p-6 text-center">
+          <div className="rounded-lg border-2 border-border bg-card p-6 text-center shadow-brutal-xs">
             <RefreshCw className="mx-auto h-5 w-5 animate-spin text-primary" />
-            <p className="mt-2 text-sm font-medium">Generating your preparation…</p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-2 text-sm font-mono font-bold uppercase tracking-tight">Generating Telemetry & Drills…</p>
+            <p className="mt-1 text-xs font-mono text-muted-foreground">
               Grounding questions in your resume and the job description. This updates
               automatically.
             </p>
           </div>
-          <Skeleton className="h-28 rounded-xl" />
-          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-lg border-2 border-border/40" />
+          <Skeleton className="h-28 rounded-lg border-2 border-border/40" />
         </div>
       ) : session.status === "failed" ? (
         <EmptyState
@@ -117,7 +117,7 @@ function InterviewPrepSessionPage() {
           action={
             <Button
               size="sm"
-              className="gap-1.5"
+              className="gap-1.5 border-2 border-primary shadow-brutal-primary font-mono text-xs uppercase tracking-wider"
               disabled={regenerate.isPending}
               onClick={handleRegenerate}
             >
