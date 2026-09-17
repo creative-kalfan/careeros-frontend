@@ -115,6 +115,7 @@ function JobsPage() {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const updateSearch = (updates: Partial<JobSearchParams>) => {
+    setSelectedId(null);
     navigate({
       search: (prev) => {
         const next: Record<string, unknown> = { ...prev, ...updates };
