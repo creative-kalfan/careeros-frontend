@@ -353,6 +353,18 @@ export function adaptJob(raw: RawJobWithScores, overrides: Partial<Job> = {}): J
   const emplType = pickStr(r, "employment_type", "employmentType");
   const postedLabel = humanPostedDate(postedRaw);
 
+  const massHiring = pickStr(r, "mass_hiring", "massHiring") || null;
+  const massHiringStatus = pickStr(r, "mass_hiring_status", "massHiringStatus") || null;
+  const rawDetails = (pick(r, "mass_hiring_details", "massHiringDetails") as Record<string, unknown> | null) || null;
+  const massHiringDetails = rawDetails ? {
+    confidence: (rawDetails.confidence as string) || undefined,
+    status: (rawDetails.status as string) || undefined,
+    signals_detected: (rawDetails.signals_detected as string[]) || undefined,
+    vacancy_count: typeof rawDetails.vacancy_count === "number" ? rawDetails.vacancy_count : null,
+    deadline: (rawDetails.deadline as string) || null,
+    detected_at: (rawDetails.detected_at as string) || undefined,
+  } : null;
+
   // Match breakdown from snake_case or camelCase.
   const skillMatch = (matchObj && Number(pick(matchObj, "skill_match", "skillMatch"))) || 0;
   const resumeMatch = (matchObj && Number(pick(matchObj, "resume_match", "resumeMatch"))) || 0;
@@ -430,6 +442,9 @@ export function adaptJob(raw: RawJobWithScores, overrides: Partial<Job> = {}): J
     roleCategory: roleCat ?? null,
     applicationDeadline: appDeadline ?? null,
     applyUrl,
+    massHiring,
+    massHiringStatus,
+    massHiringDetails,
     sourcePlatform,
     sourceProvenance,
     match: matchObj

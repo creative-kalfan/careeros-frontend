@@ -241,9 +241,16 @@ function JobCard({
           </div>
 
           {/* Job Title */}
-          <h3 className="line-clamp-2 break-words text-[13.5px] font-bold tracking-tight text-foreground mt-0.5 leading-snug">
-            {job.role}
-          </h3>
+          <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+            {job.massHiring === "VERIFIED_MASS_HIRING" && job.massHiringStatus !== "EXPIRED" && (
+              <span className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[9.5px] font-black tracking-wider uppercase border-2 border-primary bg-primary text-primary-foreground shadow-brutal-xs">
+                MASS HIRING
+              </span>
+            )}
+            <h3 className="line-clamp-2 break-words text-[13.5px] font-bold tracking-tight text-foreground leading-snug">
+              {job.role}
+            </h3>
+          </div>
 
           {/* Metadata badges row */}
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
@@ -255,6 +262,14 @@ function JobCard({
             <span className="font-mono text-[10.5px] font-semibold text-foreground">
               {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}
             </span>
+            {job.massHiringDetails?.vacancy_count && (
+              <>
+                <span>·</span>
+                <span className="font-mono text-[10.5px] font-bold text-primary">
+                  {job.massHiringDetails.vacancy_count}+ openings
+                </span>
+              </>
+            )}
           </div>
 
           {/* Bottom tag bar: Match score + Work mode + Freshness */}

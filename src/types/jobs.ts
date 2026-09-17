@@ -63,6 +63,17 @@ export type Job = {
   applicationDeadline?: string | null;
   // Direct apply URL (mapped from backend NormalizedJob.applyUrl)
   applyUrl?: string | null;
+  // Mass hiring campaign data
+  massHiring?: "VERIFIED_MASS_HIRING" | "POSSIBLE_MASS_HIRING" | "NOT_MASS_HIRING" | string | null;
+  massHiringStatus?: "ACTIVE" | "ENDING_SOON" | "EXPIRED" | "UNKNOWN" | string | null;
+  massHiringDetails?: {
+    confidence?: string;
+    status?: string;
+    signals_detected?: string[];
+    vacancy_count?: number | null;
+    deadline?: string | null;
+    detected_at?: string;
+  } | null;
   // Source platform & human-friendly provenance metadata
   sourcePlatform?: string | null;
   sourceProvenance?: {
@@ -114,6 +125,13 @@ export type NormalizedJob = {
   roleCategory?: string | null;
   applicationDeadline?: string | null;
   isActive?: boolean | null;
+  // Mass hiring intelligence
+  mass_hiring?: string | null;
+  massHiring?: string | null;
+  mass_hiring_status?: string | null;
+  massHiringStatus?: string | null;
+  mass_hiring_details?: Record<string, unknown> | null;
+  massHiringDetails?: Record<string, unknown> | null;
 };
 
 export type JobSearchFilters = {

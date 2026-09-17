@@ -120,6 +120,15 @@ export function JobDetails({
                     {status.label}
                   </Badge>
                 )}
+
+                {job.massHiring === "VERIFIED_MASS_HIRING" && job.massHiringStatus !== "EXPIRED" && (
+                  <Badge
+                    variant="outline"
+                    className="h-5 rounded-sm border-2 border-primary bg-primary text-primary-foreground px-2 text-[10px] font-mono font-black uppercase shadow-brutal-xs"
+                  >
+                    MASS HIRING
+                  </Badge>
+                )}
               </div>
 
               <h2 className="mt-0.5 text-base sm:text-lg font-extrabold tracking-tight text-foreground leading-snug break-words">
@@ -137,6 +146,22 @@ export function JobDetails({
                 <span className="font-mono text-foreground font-bold">
                   {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}
                 </span>
+                {job.massHiringDetails?.vacancy_count && (
+                  <>
+                    <span>·</span>
+                    <span className="font-mono text-primary font-bold">
+                      {job.massHiringDetails.vacancy_count}+ openings
+                    </span>
+                  </>
+                )}
+                {job.massHiringDetails?.deadline && (
+                  <>
+                    <span>·</span>
+                    <span className="font-mono text-foreground font-semibold">
+                      Apply by {job.massHiringDetails.deadline}
+                    </span>
+                  </>
+                )}
                 <span>·</span>
                 <span className="font-mono text-[11px] text-muted-foreground">
                   {job.postedAt}
