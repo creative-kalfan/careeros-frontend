@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../auth/useAuth";
 import { request } from "../utils/request";
 
@@ -33,61 +34,59 @@ export const Route = createFileRoute("/_app/profile")({
 });
 
 function ProfilePage() {
-  const { user, isLoading } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { user, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [fullName, setFullName] = useState("");
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
+  const { data: profile, isLoading: profileLoading } = useQuery<Profile | null>({
+    queryKey: ["profile", "me"],
+    queryFn: async () => {
+      const res = await request<{ success: boolean; data: Profile }>({
+        method: "GET",
+        path: "/api/profile/me",
+      });
+      return res?.success && res?.data ? res.data : null;
+    },
+    enabled: !!user?.email,
+    staleTime: 120_000,
+  });
+
   useEffect(() => {
-    const loadProfile = async () => {
-      if (!user?.email) return;
-      try {
-        const res = await request<{ success: boolean; data: Profile }>({
-          method: "GET",
-          path: "/api/profile/me",
-        });
-        if (res?.success && res?.data) {
-          setProfile(res.data);
-          setFullName(res.data.full_name || "");
-        }
-      } catch (err) {
-        console.error("Failed to load profile:", err);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
+    if (profile?.full_name) {
+      setFullName(profile.full_name);
+    }
+  }, [profile?.full_name]);
 
-    loadProfile();
-  }, [user]);
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setSaving(true);
-    setSaveMessage("");
-
-    try {
+  const saveMutation = useMutation({
+    mutationFn: async (newName: string) => {
       const res = await request<{ success: boolean; data: Profile }>({
         method: "PATCH",
         path: "/api/profile/me",
-        body: {
-          full_name: fullName,
-        },
+        body: { full_name: newName },
       });
-
       if (!res?.success) throw new Error("Failed to update profile");
+      return res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["profile", "me"], data);
       setSaveMessage("Profile updated successfully");
-    } catch (err: any) {
-      setSaveMessage(err?.message || "Failed to update profile");
-    } finally {
-      setSaving(false);
       setTimeout(() => setSaveMessage(""), 3000);
-    }
+    },
+    onError: (err: any) => {
+      setSaveMessage(err?.message || "Failed to update profile");
+      setTimeout(() => setSaveMessage(""), 3000);
+    },
+  });
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    saveMutation.mutate(fullName);
   };
 
-  const loading = isLoading || profileLoading;
+  const loading = authLoading || (profileLoading && !profile);
+  const saving = saveMutation.isPending;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">

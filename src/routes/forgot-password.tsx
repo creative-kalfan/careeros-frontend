@@ -31,7 +31,7 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative min-h-dvh flex flex-col justify-between bg-[#11110F] text-[#F3F0E8] selection:bg-[#315CFF]/30 selection:text-[#F3F0E8] overflow-x-hidden">
+    <div className="relative min-h-dvh flex flex-col justify-between bg-background text-foreground selection:bg-primary/30 selection:text-foreground overflow-x-hidden">
       {/* Subtle grid backdrop */}
       <div
         className="fixed inset-0 pointer-events-none opacity-20 z-0"
@@ -44,24 +44,24 @@ function ForgotPasswordPage() {
       />
 
       {/* Top Header */}
-      <header className="relative z-10 w-full border-b border-[#302E29]/60 bg-[#11110F]/80 backdrop-blur-md">
+      <header className="relative z-10 w-full border-b-2 border-border bg-surface/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-[#1A1916] border border-[#302E29] flex items-center justify-center text-[#315CFF] group-hover:border-[#315CFF]/40 transition">
+            <div className="w-8 h-8 rounded-md bg-surface-elevated border-2 border-border flex items-center justify-center text-primary group-hover:border-primary transition shadow-brutal-xs">
               <Compass className="w-4 h-4" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold tracking-tight text-[#F3F0E8]">
+              <span className="text-base font-bold tracking-tight text-foreground font-mono">
                 CareerOS
               </span>
-              <span className="hidden sm:inline text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#1A1916] border border-[#302E29] text-[#A8A49A]">
+              <span className="hidden sm:inline text-[11px] font-semibold px-2 py-0.5 rounded-md bg-surface-elevated border-2 border-border text-muted-foreground font-mono uppercase">
                 Career Intelligence
               </span>
             </div>
           </Link>
           <Link
             to="/login"
-            className="text-xs sm:text-sm font-medium text-[#A8A49A] hover:text-[#F3F0E8] transition py-1.5 px-3 rounded-lg hover:bg-[#1A1916] flex items-center gap-1.5"
+            className="text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground transition py-1.5 px-3 rounded-md hover:bg-surface-elevated flex items-center gap-1.5 font-mono"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Sign In</span>
@@ -72,25 +72,25 @@ function ForgotPasswordPage() {
       {/* Center Stage */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-[#302E29] bg-[#1A1916]/90 p-6 sm:p-8 backdrop-blur-sm shadow-2xl shadow-black/50">
+          <div className="rounded-lg border-2 border-border bg-surface p-6 sm:p-8 shadow-brutal">
             <div className="mb-6 text-left">
-              <h1 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">
+              <h1 className="text-xl font-bold tracking-tight text-foreground font-mono">
                 Reset password
               </h1>
-              <p className="mt-1 text-xs text-[#A8A49A]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Enter your account email and we'll send you a secure reset link.
               </p>
             </div>
 
             {sent ? (
               <div className="space-y-4">
-                <div className="rounded-xl border border-[#45A875]/30 bg-[#45A875]/10 px-4 py-3.5 text-xs text-[#45A875] flex items-start gap-2.5">
+                <div className="rounded-md border-2 border-emerald-500/40 bg-emerald-500/10 px-4 py-3.5 text-xs text-emerald-400 flex items-start gap-2.5 font-mono">
                   <MailCheck className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>Check your email for a password reset link to access your workspace.</span>
                 </div>
                 <Link
                   to="/login"
-                  className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-[#315CFF] hover:bg-[#274BDB] text-sm font-medium text-[#F3F0E8] transition shadow-md shadow-[#315CFF]/20 cursor-pointer"
+                  className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-md bg-primary hover:bg-primary-hover active:translate-x-[1px] active:translate-y-[1px] text-sm font-semibold text-primary-foreground border-2 border-border shadow-brutal-sm transition cursor-pointer"
                 >
                   <span>Return to Sign In</span>
                   <ArrowRight className="w-4 h-4" />
@@ -101,7 +101,7 @@ function ForgotPasswordPage() {
                 {error && (
                   <div
                     role="alert"
-                    className="rounded-xl border border-[#E4573D]/30 bg-[#E4573D]/10 px-3.5 py-2.5 text-xs text-[#E4573D] flex items-center gap-2"
+                    className="rounded-md border-2 border-destructive/40 bg-destructive/10 px-3.5 py-2.5 text-xs text-destructive flex items-center gap-2 font-mono"
                   >
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{error.message}</span>
@@ -109,7 +109,7 @@ function ForgotPasswordPage() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label htmlFor="email" className="text-xs font-medium text-[#F3F0E8]">
+                  <label htmlFor="email" className="text-xs font-semibold text-foreground font-mono">
                     Email address
                   </label>
                   <input
@@ -121,14 +121,14 @@ function ForgotPasswordPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
                     required
-                    className="flex h-11 w-full rounded-xl border border-[#302E29] bg-[#11110F] px-3.5 py-2 text-sm text-[#F3F0E8] placeholder:text-[#6E6B63] transition-colors focus:border-[#315CFF] focus:outline-none focus:ring-1 focus:ring-[#315CFF]"
+                    className="flex h-11 w-full rounded-md border-2 border-border bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none focus:ring-0"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-[#315CFF] hover:bg-[#274BDB] active:bg-[#1E3EB8] text-sm font-medium text-[#F3F0E8] transition shadow-md shadow-[#315CFF]/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-md bg-primary hover:bg-primary-hover active:translate-x-[1px] active:translate-y-[1px] text-sm font-semibold text-primary-foreground border-2 border-border shadow-brutal-sm transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isLoading ? (
                     <>
@@ -145,11 +145,11 @@ function ForgotPasswordPage() {
               </form>
             )}
 
-            <div className="mt-6 pt-5 border-t border-[#302E29]/80 text-center text-xs text-[#A8A49A]">
+            <div className="mt-6 pt-5 border-t-2 border-border text-center text-xs text-muted-foreground font-mono">
               Remember your password?{" "}
               <Link
                 to="/login"
-                className="font-medium text-[#F3F0E8] hover:text-[#315CFF] transition-colors"
+                className="font-semibold text-foreground hover:text-primary transition-colors"
               >
                 Sign in
               </Link>

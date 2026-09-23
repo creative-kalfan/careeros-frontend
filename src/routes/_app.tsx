@@ -69,50 +69,13 @@ function AppLayout() {
     navigate,
   ]);
 
-  // Show loading while initializing. A background profile refetch
-  // (isProfileLoading) must NOT unmount the whole layout when a cached
-  // profile already exists — that would flash the sidebar/topbar out and
-  // remount them on every route change. The `!profile` gate below still
-  // hard-blocks protected content until a confirmed profile arrives.
+  // Show loading while session initializes
   if (!isInitialized || isLoading) {
     return <AuthLoadingSpinner />;
   }
 
   // If not authenticated, show loading (redirect will happen in useEffect)
   if (!isAuthenticated) {
-    return <AuthLoadingSpinner />;
-  }
-
-  // STRICT ONBOARDING GATE (root layout level):
-  // While authenticated, if we don't yet have a confirmed profile we must NOT
-  // render any protected content. A failed fetch shows a retryable error — it
-  // must never spin forever (fetchProfile latches failures by design).
-  if (isAuthenticated && !profile && !isProfileLoading && profileFetchFailed) {
-    return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 px-4 text-center">
-        <AlertCircle className="h-10 w-10 text-destructive" />
-        <h2 className="text-base font-semibold">Couldn&apos;t load your profile</h2>
-        <p className="max-w-xs text-xs text-muted-foreground">
-          Check your connection and try again. If this persists, sign out and back in.
-        </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => fetchProfile(true)}>
-            Retry
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => logout()}>
-            Sign out
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  if (isAuthenticated && !profile) {
-    return <AuthLoadingSpinner />;
-  }
-
-  // If profile exists and onboarding not completed, allow rendering onboarding route
-  // Only show loading spinner if we're NOT on the onboarding route yet
-  if (profile && !profile.onboardingCompleted && !isOnboardingRoute) {
     return <AuthLoadingSpinner />;
   }
 
@@ -130,6 +93,17 @@ function AppLayout() {
           <AppSidebar />
           <SidebarInset className="flex min-w-0 flex-1 flex-col">
             <AppTopbar onOpenCommand={() => setCmdOpen(true)} />
+            {profileFetchFailed && !profile && (
+              <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 text-xs flex items-center justify-between text-destructive">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>Couldn&apos;t load profile settings. Some preferences may be unavailable.</span>
+                </div>
+                <Button variant="outline" size="sm" className="h-6 text-[11px] px-2" onClick={() => fetchProfile(true)}>
+                  Retry
+                </Button>
+              </div>
+            )}
             <main className="min-w-0 flex-1">
               <PageTransition>
                 <Outlet />

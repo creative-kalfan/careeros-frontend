@@ -129,6 +129,9 @@ export async function request<T>(options: RequestOptions): Promise<T> {
 
     if (error instanceof Error) {
       if (error.name === "AbortError") {
+        if (options.signal?.aborted) {
+          throw error;
+        }
         throw new ApiClientError({
           message: "Request timeout",
           statusCode: 408,
@@ -270,6 +273,9 @@ export async function requestBlob(
 
     if (error instanceof Error) {
       if (error.name === "AbortError") {
+        if (options.signal?.aborted) {
+          throw error;
+        }
         throw new ApiClientError({
           message: "Request timeout",
           statusCode: 408,

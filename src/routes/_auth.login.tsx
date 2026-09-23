@@ -73,50 +73,50 @@ function LoginPage() {
     <div className="w-full max-w-5xl mx-auto flex flex-col-reverse lg:grid lg:grid-cols-12 gap-8 lg:gap-16 items-center">
       {/* Left Column: Contextual Positioning & Narrative (Secondary on Mobile) */}
       <div className="lg:col-span-7 flex flex-col justify-center text-left pt-2 lg:pt-0">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-[#1A1916] border border-[#302E29] text-[#A8A49A] mb-4 w-fit">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#315CFF]" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-semibold bg-surface-elevated border-2 border-border text-muted-foreground mb-4 w-fit font-mono uppercase tracking-wider shadow-brutal-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
           <span>Career Workspace</span>
         </div>
 
-        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-[#F3F0E8] leading-[1.14]">
+        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.14]">
           Your next application
           <br />
-          <span className="text-[#315CFF]">starts here.</span>
+          <span className="text-primary">starts here.</span>
         </h1>
 
-        <p className="text-sm sm:text-base text-[#A8A49A] leading-relaxed mt-3 sm:mt-4 max-w-lg">
+        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mt-3 sm:mt-4 max-w-lg">
           Pick up where you left off. Your career profile, resume versions, job matches, and
           application strategy are waiting.
         </p>
 
         {/* 3 Core Value Proofs */}
         <div className="mt-6 sm:mt-8 space-y-3.5 max-w-lg">
-          <div className="flex items-start gap-3 text-xs sm:text-sm text-[#A8A49A]">
-            <div className="mt-0.5 rounded-md p-1.5 bg-[#1A1916] border border-[#302E29] text-[#315CFF] shrink-0">
+          <div className="flex items-start gap-3 text-xs sm:text-sm text-muted-foreground">
+            <div className="mt-0.5 rounded-md p-1.5 bg-surface-elevated border-2 border-border text-primary shrink-0 shadow-brutal-xs">
               <ShieldCheck className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">One verified profile.</span> Never
+              <span className="font-semibold text-foreground">One verified profile.</span> Never
               rewrite your experience from scratch for each opportunity.
             </div>
           </div>
 
-          <div className="flex items-start gap-3 text-xs sm:text-sm text-[#A8A49A]">
-            <div className="mt-0.5 rounded-md p-1.5 bg-[#1A1916] border border-[#302E29] text-[#315CFF] shrink-0">
+          <div className="flex items-start gap-3 text-xs sm:text-sm text-muted-foreground">
+            <div className="mt-0.5 rounded-md p-1.5 bg-surface-elevated border-2 border-border text-primary shrink-0 shadow-brutal-xs">
               <Target className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">Targeted role versions.</span> Safe,
+              <span className="font-semibold text-foreground">Targeted role versions.</span> Safe,
               truth-preserving tailoring matching exact job requirements.
             </div>
           </div>
 
-          <div className="flex items-start gap-3 text-xs sm:text-sm text-[#A8A49A]">
-            <div className="mt-0.5 rounded-md p-1.5 bg-[#1A1916] border border-[#302E29] text-[#315CFF] shrink-0">
+          <div className="flex items-start gap-3 text-xs sm:text-sm text-muted-foreground">
+            <div className="mt-0.5 rounded-md p-1.5 bg-surface-elevated border-2 border-border text-primary shrink-0 shadow-brutal-xs">
               <Cpu className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-medium text-[#F3F0E8]">Deterministic gap analysis.</span> Know
+              <span className="font-semibold text-foreground">Deterministic gap analysis.</span> Know
               your evidence match score before recruiters open your PDF.
             </div>
           </div>
@@ -125,12 +125,12 @@ function LoginPage() {
 
       {/* Right Column: Authentication Form Card (Primary on Mobile) */}
       <div className="lg:col-span-5 w-full max-w-md mx-auto lg:mx-0">
-        <div className="rounded-2xl border border-[#302E29] bg-[#1A1916]/90 p-6 sm:p-8 backdrop-blur-sm shadow-2xl shadow-black/50">
+        <div className="rounded-lg border-2 border-border bg-surface p-6 sm:p-8 shadow-brutal-sm">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold tracking-tight text-[#F3F0E8]">
+            <h2 className="text-xl font-bold tracking-tight text-foreground font-mono">
               Sign in to CareerOS
             </h2>
-            <p className="mt-1 text-xs text-[#A8A49A]">Access your career intelligence workspace</p>
+            <p className="mt-1 text-xs text-muted-foreground">Access your career intelligence workspace</p>
           </div>
 
           <SocialAuthButtons className="mb-6" />
@@ -139,7 +139,7 @@ function LoginPage() {
             {error && (
               <div
                 role="alert"
-                className="rounded-xl border border-[#E4573D]/30 bg-[#E4573D]/10 px-3.5 py-2.5 text-xs text-[#E4573D] flex items-center gap-2"
+                className="rounded-md border-2 border-destructive/40 bg-destructive/10 px-3.5 py-2.5 text-xs text-destructive flex items-center gap-2 font-medium"
               >
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error.message}</span>
@@ -147,7 +147,7 @@ function LoginPage() {
             )}
 
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-xs font-medium text-[#F3F0E8]">
+              <label htmlFor="email" className="text-xs font-semibold text-foreground font-mono uppercase tracking-wider">
                 Email address
               </label>
               <input
@@ -159,18 +159,18 @@ function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
                 required
-                className="flex h-11 w-full rounded-xl border border-[#302E29] bg-[#11110F] px-3.5 py-2 text-sm text-[#F3F0E8] placeholder:text-[#6E6B63] transition-colors focus:border-[#315CFF] focus:outline-none focus:ring-1 focus:ring-[#315CFF]"
+                className="flex h-10 w-full rounded-md border-2 border-border bg-surface-elevated px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-xs font-medium text-[#F3F0E8]">
+                <label htmlFor="password" className="text-xs font-semibold text-foreground font-mono uppercase tracking-wider">
                   Password
                 </label>
                 <Link
                   to="/forgot-password"
-                  className="text-[11px] text-[#A8A49A] hover:text-[#F3F0E8] transition-colors"
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors font-mono"
                 >
                   Forgot password?
                 </Link>
@@ -185,13 +185,13 @@ function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="flex h-11 w-full rounded-xl border border-[#302E29] bg-[#11110F] px-3.5 pr-10 py-2 text-sm text-[#F3F0E8] placeholder:text-[#6E6B63] transition-colors focus:border-[#315CFF] focus:outline-none focus:ring-1 focus:ring-[#315CFF]"
+                  className="flex h-10 w-full rounded-md border-2 border-border bg-surface-elevated px-3 pr-10 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8A49A] hover:text-[#F3F0E8] transition-colors p-1"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -201,7 +201,7 @@ function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-[#315CFF] hover:bg-[#274BDB] active:bg-[#1E3EB8] text-sm font-medium text-[#F3F0E8] transition shadow-md shadow-[#315CFF]/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full h-10 inline-flex items-center justify-center gap-2 rounded-md bg-primary hover:bg-primary-hover active:opacity-90 text-sm font-semibold text-primary-foreground transition border-2 border-primary shadow-brutal-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-mono uppercase tracking-wider"
             >
               {isLoading ? (
                 <>
@@ -217,11 +217,11 @@ function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-[#302E29]/80 text-center text-xs text-[#A8A49A]">
+          <div className="mt-6 pt-5 border-t-2 border-border text-center text-xs text-muted-foreground">
             New to CareerOS?{" "}
             <Link
               to="/signup"
-              className="font-medium text-[#F3F0E8] hover:text-[#315CFF] transition-colors inline-flex items-center gap-1"
+              className="font-semibold text-primary hover:underline transition-colors inline-flex items-center gap-1 font-mono"
             >
               <span>Create your career profile</span>
               <ArrowRight className="w-3 h-3" />

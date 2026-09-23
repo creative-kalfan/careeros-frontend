@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   User,
   Palette,
@@ -36,14 +36,22 @@ export const Route = createFileRoute("/_app/settings")({
 });
 
 function SettingsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
-  // Form states
-  const [name, setName] = useState(user?.name ?? "Alex Morgan");
-  const [email, setEmail] = useState(user?.email ?? "alex.morgan@example.com");
-  const [jobTitle, setJobTitle] = useState("Staff Software Engineer");
-  const [location, setLocation] = useState("San Francisco, CA");
+  // Form states truthfully initialized from auth user/profile
+  const [name, setName] = useState(user?.name || profile?.fullName || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [jobTitle, setJobTitle] = useState(profile?.desiredRole || "");
+  const [location, setLocation] = useState(profile?.location || "");
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    if (user?.name && !name) setName(user.name);
+    else if (profile?.fullName && !name) setName(profile.fullName);
+    if (user?.email && !email) setEmail(user.email);
+    if (profile?.desiredRole && !jobTitle) setJobTitle(profile.desiredRole);
+    if (profile?.location && !location) setLocation(profile.location);
+  }, [user, profile]);
 
   // Appearance states
   const [theme, setTheme] = useState<"dark" | "light" | "system">("dark");
@@ -114,6 +122,7 @@ function SettingsPage() {
                     <Input
                       id="name"
                       value={name}
+                      placeholder="e.g. Alex Morgan"
                       onChange={(e) => setName(e.target.value)}
                       className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                       required
@@ -128,6 +137,7 @@ function SettingsPage() {
                       id="email"
                       type="email"
                       value={email}
+                      placeholder="e.g. alex@example.com"
                       onChange={(e) => setEmail(e.target.value)}
                       className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                       required
@@ -141,6 +151,7 @@ function SettingsPage() {
                     <Input
                       id="jobTitle"
                       value={jobTitle}
+                      placeholder="e.g. Staff Software Engineer"
                       onChange={(e) => setJobTitle(e.target.value)}
                       className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                     />
@@ -153,6 +164,7 @@ function SettingsPage() {
                     <Input
                       id="location"
                       value={location}
+                      placeholder="e.g. San Francisco, CA or Remote"
                       onChange={(e) => setLocation(e.target.value)}
                       className="h-10 rounded border-2 border-border bg-background text-xs sm:text-sm font-sans"
                     />

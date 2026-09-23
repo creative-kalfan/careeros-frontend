@@ -1,7 +1,12 @@
 import { useQueries } from "@tanstack/react-query";
-import { request } from "@/utils/request";
-import { API_ENDPOINTS } from "@/constants/api";
 import { useAuth } from "@/auth/useAuth";
+import { jobsApi } from "@/api/jobs";
+import { jobsQueryKeys } from "./useJobs";
+import { applicationsApi } from "@/api/applications";
+import { applicationQueryKeys } from "./useApplications";
+import { recommendationsApi } from "@/api/recommendations";
+import { notificationsApi } from "@/api/notifications";
+import { NOTIFICATIONS_QUERY_KEY } from "./useNotifications";
 
 type BackendResponse<T> = {
   success: boolean;
@@ -98,72 +103,35 @@ export function useDashboardData() {
   const queries = useQueries({
     queries: [
       {
-        queryKey: ["dashboard", "personalized-jobs"],
-        queryFn: async () => {
-          try {
-            return await request<BackendResponse<any[]>>({
-              method: "GET",
-              path: API_ENDPOINTS.JOBS.PERSONALIZED,
-            });
-          } catch {
-            return { success: true, data: [] };
-          }
-        },
+        queryKey: jobsQueryKeys.personalized({}),
+        queryFn: ({ signal }) => jobsApi.getPersonalizedJobs({}, signal),
         staleTime: 60_000,
       },
       {
-        queryKey: ["dashboard", "applications-stats"],
-        queryFn: async () => {
-          try {
-            return await request<
-              BackendResponse<{ total: number; byStatus: Record<string, number> }>
-            >({
-              method: "GET",
-              path: API_ENDPOINTS.APPLICATIONS.STATS,
-            });
-          } catch {
-            return { success: true, data: { total: 0, byStatus: {} } };
-          }
-        },
+        queryKey: applicationQueryKeys.stats,
+        queryFn: () => applicationsApi.getStats(),
         staleTime: 60_000,
       },
       {
-        queryKey: ["dashboard", "recommendations"],
-        queryFn: async () => {
-          try {
-            return await request<BackendResponse<{ recommendations: any[] }>>({
-              method: "GET",
-              path: API_ENDPOINTS.RECOMMENDATIONS.USER,
-            });
-          } catch {
-            return { success: true, data: { recommendations: [] } };
-          }
-        },
+        queryKey: ["recommendations", "top", 5] as const,
+        queryFn: () => recommendationsApi.getTopRecommendations(5),
         staleTime: 60_000,
       },
       {
-        queryKey: ["dashboard", "notifications"],
-        queryFn: async () => {
-          try {
-            return await request<BackendResponse<{ notifications: any[] }>>({
-              method: "GET",
-              path: API_ENDPOINTS.NOTIFICATIONS.LIST,
-            });
-          } catch {
-            return { success: true, data: { notifications: [] } };
-          }
-        },
+        queryKey: [NOTIFICATIONS_QUERY_KEY, undefined] as const,
+        queryFn: () => notificationsApi.getAll(),
         staleTime: 60_000,
       },
     ],
   });
 
   const [jobsQuery, appsQuery, recsQuery, notifsQuery] = queries;
-  const isLoading = queries.some((q) => q.isLoading && !q.data);
+  const isAllLoading = queries.every((q) => q.isLoading && !q.data);
+  const isAnyLoading = queries.some((q) => q.isLoading && !q.data);
   const isError = queries.every((q) => q.isError);
 
-  // Derive dashboard data from all query results
-  const data: DashboardData | null = isLoading
+  // Derive dashboard data progressively from whatever queries have resolved
+  const data: DashboardData | null = isAllLoading
     ? null
     : {
         firstName: user?.name?.split(" ")[0] || "there",
@@ -171,27 +139,37 @@ export function useDashboardData() {
         streakDays: profile?.onboardingStep || 0,
 
         healthScore: {
-          overall: calculateOverallScore(appsQuery.data?.data, recsQuery.data?.data),
-          resume: 0, // would need ATS reports
-          applications: appsQuery.data?.data?.total
-            ? Math.min(100, Math.round((appsQuery.data.data.total / 25) * 100))
+          overall: calculateTruthfulHealthScore(
+            profile?.onboardingStep || 0,
+            appsQuery.data?.total || 0,
+          ),
+          resume: 0,
+          applications: appsQuery.data?.total
+            ? Math.min(100, Math.round((appsQuery.data.total / 10) * 100))
             : 0,
           skills: 0,
-          weeklyProgress: 0,
-          weeklyGoalLabel: "Set up your profile",
+          weeklyProgress: appsQuery.data?.total ? Math.min(100, appsQuery.data.total * 20) : 0,
+          weeklyGoalLabel: appsQuery.data?.total
+            ? `${appsQuery.data.total} logged`
+            : "Set target",
         },
 
-        applicationsByStatus: formatAppStatus(appsQuery.data?.data?.byStatus),
-        jobMatchDistribution: formatMatchDistribution(jobsQuery.data?.data || []),
+        applicationsByStatus: formatAppStatus(appsQuery.data?.byStatus),
+        jobMatchDistribution: formatMatchDistribution(jobsQuery.data?.jobs || []),
 
-        recommendations: formatRecommendations(recsQuery.data?.data?.recommendations || []),
-        recentActivity: formatActivity(notifsQuery.data?.data?.notifications || []),
-        upcoming: formatUpcoming(appsQuery.data?.data?.byStatus),
+        recommendations: formatRecommendations(recsQuery.data || []),
+        recentActivity: formatActivity(notifsQuery.data?.notifications || []),
+        upcoming: formatUpcoming(appsQuery.data?.byStatus),
       };
 
   return {
     data,
-    isLoading,
+    isLoading: isAllLoading,
+    isAnyLoading,
+    isJobsLoading: jobsQuery.isLoading && !jobsQuery.data,
+    isAppsLoading: appsQuery.isLoading && !appsQuery.data,
+    isRecsLoading: recsQuery.isLoading && !recsQuery.data,
+    isNotifsLoading: notifsQuery.isLoading && !notifsQuery.data,
     isError,
     refetch: () => queries.forEach((q) => q.refetch()),
   };
@@ -288,10 +266,10 @@ function formatUpcoming(byStatus?: Record<string, number>) {
   return items;
 }
 
-function calculateOverallScore(appsData: any, recsData: any): number {
-  const appScore = appsData?.total ? Math.min(100, (appsData.total / 25) * 100) : 0;
-  const recScore = recsData?.recommendations?.length
-    ? Math.min(100, recsData.recommendations.length * 20)
-    : 0;
-  return Math.round(appScore * 0.4 + recScore * 0.6);
+function calculateTruthfulHealthScore(onboardingStep: number, appsTotal: number): number {
+  // Truthful score: strictly bounded by real user progress, never fabricated.
+  // Profile onboarding completion contributes up to 60%, real applications up to 40%.
+  const onboardingContribution = Math.min(60, Math.round((onboardingStep / 4) * 60));
+  const appContribution = Math.min(40, Math.round((appsTotal / 5) * 40));
+  return onboardingContribution + appContribution;
 }

@@ -257,23 +257,18 @@ export const authService = {
   getProfile: async (): Promise<{
     onboardingCompleted: boolean;
     onboardingStep: number;
-  } | null> => {
-    try {
-      const res = await request<{ success: boolean; data: any }>({
-        method: "GET",
-        path: "/api/profile/me",
-      });
-      if (!res?.success || !res?.data) {
-        return null;
-      }
-      return {
-        onboardingCompleted: res.data.onboarding_completed ?? false,
-        onboardingStep: res.data.onboarding_step ?? 0,
-      };
-    } catch (err) {
-      console.error("Failed to fetch profile from python backend:", err);
-      return null;
+  }> => {
+    const res = await request<{ success: boolean; data: any }>({
+      method: "GET",
+      path: "/api/profile/me",
+    });
+    if (!res?.success || !res?.data) {
+      throw new Error("Invalid profile response");
     }
+    return {
+      onboardingCompleted: res.data.onboarding_completed ?? false,
+      onboardingStep: res.data.onboarding_step ?? 0,
+    };
   },
 
   // Update profile onboarding step

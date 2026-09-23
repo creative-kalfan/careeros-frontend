@@ -54,16 +54,16 @@ function AuthLayout() {
   if (isAuthenticated) {
     if (!isProfileLoading && !profile && profileFetchFailed) {
       return (
-        <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-[#11110F] px-4 text-center text-[#F3F0E8]">
+        <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background px-4 text-center text-foreground">
           <AlertCircle className="h-10 w-10 text-destructive" />
           <h2 className="text-base font-semibold">Couldn&apos;t load your profile</h2>
-          <p className="max-w-xs text-xs text-[#A8A49A]">
+          <p className="max-w-xs text-xs text-muted-foreground">
             Check your connection and try again.
           </p>
           <button
             type="button"
             onClick={() => fetchProfile(true)}
-            className="rounded-lg border border-[#302E29] bg-[#1A1916] px-4 py-2 text-xs font-medium transition hover:border-[#315CFF]/40"
+            className="rounded-lg border-2 border-border bg-surface px-4 py-2 text-xs font-semibold transition hover:border-primary shadow-brutal-xs"
           >
             Retry
           </button>
@@ -74,30 +74,30 @@ function AuthLayout() {
   }
 
   return (
-    <div className="relative min-h-dvh flex flex-col justify-between bg-[#11110F] text-[#F3F0E8] selection:bg-[#315CFF]/30 selection:text-[#F3F0E8] overflow-x-hidden">
+    <div className="relative min-h-dvh flex flex-col justify-between bg-background text-foreground selection:bg-primary/30 selection:text-foreground overflow-x-hidden">
       {/* Subtle textured grid backdrop */}
       <div
         className="fixed inset-0 pointer-events-none opacity-20 z-0"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(243, 240, 232, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(243, 240, 232, 0.04) 1px, transparent 1px)",
+            "linear-gradient(rgba(244, 247, 251, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 247, 251, 0.04) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
           maskImage: "radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 90%)",
         }}
       />
 
       {/* Top Header */}
-      <header className="relative z-10 w-full border-b border-[#302E29]/60 bg-[#11110F]/80 backdrop-blur-md">
+      <header className="relative z-10 w-full border-b-2 border-border bg-surface/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-[#1A1916] border border-[#302E29] flex items-center justify-center text-[#315CFF] group-hover:border-[#315CFF]/40 transition">
+            <div className="w-8 h-8 rounded-lg bg-surface-elevated border-2 border-border flex items-center justify-center text-primary group-hover:border-primary transition shadow-brutal-xs">
               <Compass className="w-4 h-4" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold tracking-tight text-[#F3F0E8]">
+              <span className="text-base font-bold tracking-tight text-foreground font-mono">
                 CareerOS
               </span>
-              <span className="hidden sm:inline text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#1A1916] border border-[#302E29] text-[#A8A49A]">
+              <span className="hidden sm:inline text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded-md bg-surface-elevated border border-border text-muted-foreground">
                 Career Intelligence
               </span>
             </div>
@@ -106,7 +106,7 @@ function AuthLayout() {
           <div className="flex items-center gap-3">
             <Link
               to="/"
-              className="text-xs sm:text-sm font-medium text-[#A8A49A] hover:text-[#F3F0E8] transition py-1.5 px-3 rounded-lg hover:bg-[#1A1916]"
+              className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition py-1.5 px-3 rounded-lg hover:bg-surface-elevated border border-transparent hover:border-border"
             >
               Back to Overview
             </Link>
@@ -120,17 +120,17 @@ function AuthLayout() {
       </main>
 
       {/* Trust Footnote */}
-      <footer className="relative z-10 border-t border-[#302E29]/50 py-4 px-4 text-center bg-[#11110F]/60">
-        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-[11px] text-[#A8A49A]">
-          <span className="flex items-center gap-1.5 text-[#45A875]">
+      <footer className="relative z-10 border-t-2 border-border py-4 px-4 text-center bg-surface/60">
+        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-[11px] text-muted-foreground font-mono">
+          <span className="flex items-center gap-1.5 text-success font-semibold">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Zero Experience Fabrication
           </span>
-          <span className="text-[#302E29]">·</span>
+          <span className="text-border">·</span>
           <span>Deterministic Matching</span>
-          <span className="text-[#302E29]">·</span>
+          <span className="text-border">·</span>
           <span>Role-Specific Applications</span>
-          <span className="text-[#302E29]">·</span>
+          <span className="text-border">·</span>
           <span>© {new Date().getFullYear()} CareerOS</span>
         </div>
       </footer>

@@ -29,6 +29,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // gate must not retrigger the fetch indefinitely.
   const profileFetchFailedRef = useRef(false);
 
+  const fetchProfile = useCallback(async (force?: boolean) => {
+    if (profileFetchFailedRef.current && !force) return;
+    setIsProfileLoading(true);
+    try {
+      const profileData = await authService.getProfile();
+      profileFetchFailedRef.current = false;
+      setProfileFetchFailed(false);
+      setProfile(profileData);
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+      profileFetchFailedRef.current = true;
+      setProfileFetchFailed(true);
+      setProfile(null);
+    } finally {
+      setIsProfileLoading(false);
+    }
+  }, []);
+
   // Initialize auth state from Supabase session
   useEffect(() => {
     const initializeAuth = async () => {
@@ -47,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(result.user);
           setSession(result.session);
           setStatus("authenticated");
+          fetchProfile();
         } else {
           setStatus("unauthenticated");
         }
@@ -58,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, []);
+  }, [fetchProfile]);
 
   // Listen for Supabase auth state changes
   useEffect(() => {
@@ -314,28 +333,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearError = useCallback(() => {
     setError(null);
-  }, []);
-
-  const fetchProfile = useCallback(async (force?: boolean) => {
-    // A previous failed fetch must not be retried in a render-loop. The
-    // request layer performs a single token-refresh retry; after that, a
-    // genuine auth failure should surface to the user, not spin forever.
-    // Pass force=true (retry button) to attempt again after a failure.
-    if (profileFetchFailedRef.current && !force) return;
-    setIsProfileLoading(true);
-    try {
-      const profileData = await authService.getProfile();
-      profileFetchFailedRef.current = false;
-      setProfileFetchFailed(false);
-      setProfile(profileData);
-    } catch (err) {
-      console.error("Failed to fetch profile:", err);
-      profileFetchFailedRef.current = true;
-      setProfileFetchFailed(true);
-      setProfile(null);
-    } finally {
-      setIsProfileLoading(false);
-    }
   }, []);
 
   const updateOnboardingStep = useCallback(async (step: number) => {

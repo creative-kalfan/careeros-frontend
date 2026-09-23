@@ -16,7 +16,7 @@ import {
   QuickActionsGrid,
   InsightPill,
 } from "@/components/dashboard/widgets";
-import { useDashboardData } from "@/hooks/api/useDashboardData";
+import { useDashboardData, type DashboardData } from "@/hooks/api/useDashboardData";
 import { useDashboardTelemetry, mapTelemetryToTimeline } from "@/hooks/api/useDashboardTelemetry";
 
 export const Route = createFileRoute("/_app/dashboard")({
@@ -41,25 +41,47 @@ function Dashboard() {
   const telemetry = telemetryQuery.data?.data;
   const telemetryLoading = telemetryQuery.isLoading && !telemetryQuery.data;
   const telemetryFailed = telemetryQuery.isError && !telemetry;
+  const liveAtsScore = telemetry?.average_ats_score ?? 0;
 
-  // `data` is derived only from live backend queries (jobs, applications,
-  // recommendations, notifications). It is null while loading and real —
-  // possibly all-zero — afterwards. There is intentionally no demo fallback:
-  // an empty workspace must render empty states, never fabricated metrics.
-  const activeData = data;
+  // `data` is derived progressively from live backend queries (jobs, applications,
+  // recommendations, notifications). If telemetry loads before data queries,
+  // we provide a minimal truthful projection rather than blocking behind a blank screen.
+  const fallbackData: DashboardData = {
+    firstName: "there",
+    greeting: "Welcome",
+    streakDays: 0,
+    healthScore: {
+      overall: liveAtsScore,
+      resume: liveAtsScore,
+      applications: telemetry?.applications_tracked ?? 0,
+      skills: 0,
+      weeklyProgress: 0,
+      weeklyGoalLabel: "Track your progress",
+    },
+    applicationsByStatus: [],
+    jobMatchDistribution: [],
+    recommendations: [],
+    recentActivity: [],
+    upcoming: [],
+  };
+
+  const activeData = data || (telemetry ? fallbackData : null);
+
   // Real backend timeline wins when telemetry loaded; otherwise keep the
   // aggregated activity (or the empty state below when there is nothing).
   const timelineItems = telemetry
     ? mapTelemetryToTimeline(telemetry.activity_timeline)
     : (activeData?.recentActivity ?? []);
-  const liveAtsScore = telemetry?.average_ats_score ?? 0;
-  const matchCount = (activeData?.jobMatchDistribution ?? []).reduce((s, d) => s + d.value, 0);
+  const matchCount = (activeData?.jobMatchDistribution ?? []).reduce(
+    (s: number, d: { label: string; value: number }) => s + d.value,
+    0,
+  );
   const highFitCount =
     activeData?.jobMatchDistribution.find(
-      (d) => d.label.includes("High") || d.label.includes("90"),
+      (d: { label: string; value: number }) => d.label.includes("High") || d.label.includes("90"),
     )?.value ?? 0;
 
-  if (isError) {
+  if (isError && !telemetry) {
     return (
       <div className="w-full max-w-[1536px] mx-auto flex flex-col items-center justify-center gap-4 px-4 sm:px-6 lg:px-8 py-20">
         <AlertCircle className="h-10 w-10 text-destructive" />
@@ -74,7 +96,8 @@ function Dashboard() {
     );
   }
 
-  if (isLoading || telemetryLoading) {
+  // Progressive loading: only block full-page behind skeleton if NOTHING has loaded yet
+  if (isLoading && telemetryLoading) {
     return (
       <div className="w-full max-w-[1536px] mx-auto flex flex-col gap-5 px-4 sm:px-6 lg:px-8 py-5">
         <div className="flex items-center justify-between">
@@ -99,8 +122,7 @@ function Dashboard() {
     );
   }
 
-  // Defensive: the hook returns null only while loading (handled above), but
-  // an empty workspace must say so truthfully instead of showing demo data.
+  // Defensive: only display empty notice if completely lacking workspace data
   if (!activeData) {
     return (
       <div className="w-full max-w-[1536px] mx-auto flex flex-col items-center justify-center gap-4 px-4 sm:px-6 lg:px-8 py-20 text-center">
@@ -217,7 +239,13 @@ function Dashboard() {
 
       {/* 1b. LIVE WORKSPACE TELEMETRY (GET /api/dashboard) */}
       <motion.div variants={staggerItem}>
-        {telemetry ? (
+        {telemetryLoading ? (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-14 rounded-md border-2 border-border" />
+            ))}
+          </div>
+        ) : telemetry ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
               { label: "Resumes", value: telemetry.total_resumes },
@@ -227,9 +255,9 @@ function Dashboard() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="flex items-center justify-between rounded-xl border border-border/60 bg-surface px-4 py-3 shadow-elevation-1"
+                className="flex items-center justify-between rounded-md border-2 border-border bg-surface px-4 py-3 shadow-brutal-xs"
               >
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold">
                   {stat.label}
                 </span>
                 <span className="font-mono text-lg font-bold text-foreground">{stat.value}</span>
@@ -237,15 +265,15 @@ function Dashboard() {
             ))}
           </div>
         ) : telemetryFailed ? (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-warning/30 bg-warning/5 px-4 py-2.5">
-            <p className="text-[11px] text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border-2 border-warning/40 bg-warning/10 px-4 py-2.5">
+            <p className="text-[11px] text-muted-foreground font-mono">
               Live telemetry unavailable — showing cached workspace data.
             </p>
             <Button
               variant="outline"
               size="sm"
               onClick={() => telemetryQuery.refetch()}
-              className="h-7 rounded-lg text-[11px]"
+              className="h-7 rounded-md text-[11px] font-mono border-2 border-border"
             >
               Retry Telemetry
             </Button>

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-[#11110F] text-[#F3F0E8] selection:bg-[#315CFF]/30 selection:text-[#F3F0E8] overflow-hidden">
+    <div className="flex min-h-dvh flex-col bg-background text-foreground selection:bg-primary/30 selection:text-foreground overflow-hidden">
       <LandingNav />
       <main className="flex-1 w-full h-full">
         <CinematicSceneController />

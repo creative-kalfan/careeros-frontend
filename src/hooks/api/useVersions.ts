@@ -19,6 +19,7 @@ export function useVersions(resumeId: string) {
     queryKey: versionQueryKeys.list(resumeId),
     queryFn: () => versionsApi.list(resumeId),
     enabled: !!resumeId,
+    staleTime: 120_000,
   });
 }
 
@@ -27,6 +28,7 @@ export function useVersion(versionId: string) {
     queryKey: versionQueryKeys.get(versionId),
     queryFn: () => versionsApi.get(versionId),
     enabled: !!versionId,
+    staleTime: 120_000,
   });
 }
 
