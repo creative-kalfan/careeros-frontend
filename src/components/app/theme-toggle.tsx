@@ -1,31 +1,13 @@
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/lib/theme";
 
-const STORAGE_KEY = "careeros-theme";
-
-function applyTheme(theme: "dark" | "light") {
-  const root = document.documentElement;
-  root.classList.toggle("dark", theme === "dark");
-  root.classList.toggle("light", theme === "light");
-}
-
+/** Persisted light/dark toggle. Follows the system until explicitly set. */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const stored = (localStorage.getItem(STORAGE_KEY) as "dark" | "light" | null) ?? "dark";
-    setTheme(stored);
-    applyTheme(stored);
-    setMounted(true);
-  }, []);
+  const { resolved, setPreference } = useTheme();
 
   const toggle = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    localStorage.setItem(STORAGE_KEY, next);
-    applyTheme(next);
+    setPreference(resolved === "dark" ? "light" : "dark");
   };
 
   return (
@@ -33,13 +15,13 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggle}
-      aria-label="Toggle theme"
-      className="rounded-full"
+      aria-label={resolved === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      title={resolved === "dark" ? "Switch to light theme" : "Switch to dark theme"}
     >
-      {mounted && theme === "dark" ? (
-        <Sun className="h-[18px] w-[18px]" />
+      {resolved === "dark" ? (
+        <Sun className="h-[18px] w-[18px]" aria-hidden="true" />
       ) : (
-        <Moon className="h-[18px] w-[18px]" />
+        <Moon className="h-[18px] w-[18px]" aria-hidden="true" />
       )}
     </Button>
   );

@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { QueryProvider } from "../providers/query-provider";
 import { AuthProvider } from "../auth/AuthProvider";
+import { ThemeProvider } from "../lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -86,7 +87,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "CareerOS is the AI Career Operating System — a premium workspace for resumes, ATS optimization, job intelligence and applications.",
       },
       { name: "author", content: "CareerOS" },
-      { name: "theme-color", content: "#0a0a0f" },
+      { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#F4F6F7" },
+      { name: "theme-color", media: "(prefers-color-scheme: dark)", content: "#0F1A22" },
       { property: "og:title", content: "CareerOS — AI Career Operating System" },
       {
         property: "og:description",
@@ -112,8 +114,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("careeros-theme");var t=s==="light"||s==="dark"?s:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");var r=document.documentElement;r.dataset.theme=t;r.classList.toggle("dark",t==="dark");}catch(e){}})();`,
+          }}
+        />
         <HeadContent />
       </head>
       <body className="bg-app min-h-dvh">
@@ -129,10 +136,12 @@ function RootComponent() {
 
   return (
     <QueryProvider>
-      <AuthProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryProvider>
   );
 }

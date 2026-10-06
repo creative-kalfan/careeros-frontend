@@ -1,5 +1,4 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   FileText,
@@ -63,7 +62,7 @@ function Section({
 }) {
   return (
     <SidebarGroup className="py-1">
-      <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 px-2.5">
+      <SidebarGroupLabel className="px-2.5 text-[11px] font-semibold text-muted-foreground">
         {label}
       </SidebarGroupLabel>
       <SidebarGroupContent>
@@ -79,34 +78,32 @@ function Section({
                 <SidebarMenuButton
                   asChild
                   isActive={active}
-                  className={`group relative h-9 rounded-md px-2.5 text-xs font-semibold transition-all duration-100 ${
+                  aria-current={active ? "page" : undefined}
+                  className={`group relative h-10 rounded-md px-2.5 text-[13px] font-medium transition-colors duration-150 ${
                     active
-                      ? "bg-surface-elevated text-foreground border-2 border-primary shadow-brutal-xs"
-                      : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground border-2 border-transparent hover:border-border"
+                      ? "bg-brand-subtle text-foreground border border-brand/40"
+                      : "text-muted-foreground hover:bg-surface-muted hover:text-foreground border border-transparent"
                   }`}
                 >
                   <Link to={item.url} className="flex items-center gap-2.5">
                     {active && (
-                      <motion.span
-                        layoutId="sidebar-active"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-r-sm bg-primary"
-                        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                      <span
+                        aria-hidden="true"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-r bg-brand"
                       />
                     )}
                     <item.icon
-                      className={`h-4 w-4 shrink-0 transition-transform ${
-                        active
-                          ? "text-primary"
-                          : "text-muted-foreground/70 group-hover:text-foreground"
+                      className={`h-4 w-4 shrink-0 ${
+                        active ? "text-brand" : "text-muted-foreground group-hover:text-foreground"
                       }`}
                     />
                     <span className="truncate">{item.title}</span>
                     {item.badge && (
                       <span
-                        className={`ml-auto text-xs px-1.5 py-0.5 rounded-sm font-mono font-bold ${
+                        className={`ml-auto rounded border px-1.5 py-px text-[11px] font-semibold ${
                           active
-                            ? "bg-primary text-primary-foreground border border-primary"
-                            : "bg-surface-instrument text-muted-foreground border border-border"
+                            ? "bg-brand text-on-brand border-brand"
+                            : "bg-surface-muted text-muted-foreground border-border"
                         }`}
                       >
                         {item.badge}
@@ -129,28 +126,28 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="glass-sidebar border-r-2 border-sidebar-border select-none"
+      aria-label="Primary"
+      className="border-r border-sidebar-border bg-sidebar select-none"
     >
       <SidebarHeader className="px-3 pt-3.5 pb-2">
         <Link
           to="/dashboard"
-          className="flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors hover:bg-surface-elevated border-2 border-transparent hover:border-border"
+          className="flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors hover:bg-surface-muted border border-transparent"
         >
-          <div className="relative grid h-8 w-8 shrink-0 place-items-center rounded-md border-2 border-primary bg-primary text-primary-foreground font-mono text-xs font-bold tracking-tight shadow-brutal-xs">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-brand bg-brand text-on-brand text-xs font-bold">
             <span>C</span>
-            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 rounded-full bg-emerald-500 border border-background" />
           </div>
           <div className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
             <div className="flex items-center gap-1.5">
               <span className="truncate text-sm font-bold tracking-tight text-foreground">
                 CareerOS
               </span>
-              <span className="text-xs font-mono font-bold px-1.5 py-0.2 rounded-sm bg-primary/20 text-primary border border-primary/40">
+              <span className="text-[11px] font-semibold px-1.5 py-px rounded border border-brand/40 bg-brand-subtle text-brand">
                 PRO
               </span>
             </div>
-            <span className="truncate text-xs uppercase tracking-wider text-muted-foreground font-mono font-semibold">
-              Workstation
+            <span className="truncate text-[11px] text-muted-foreground font-medium">
+              Career workspace
             </span>
           </div>
         </Link>
@@ -163,18 +160,18 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-3 pb-3 group-data-[collapsible=icon]:hidden">
-        <div className="rounded-lg border-2 border-border bg-surface p-2.5 space-y-2 shadow-brutal-xs">
+        <div className="rounded-md border border-border bg-surface p-2.5 space-y-2">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-              <Activity className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Telemetry</span>
+              <Activity className="h-3.5 w-3.5 text-success" />
+              <span>Sync status</span>
             </div>
-            <span className="font-mono text-xs font-bold text-emerald-500">Live RLS</span>
+            <span className="tnum text-xs font-semibold text-success">Live</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1.5 border-t-2 border-border">
-            <Command className="h-3 w-3 text-primary" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1.5 border-t border-border">
+            <Command className="h-3 w-3 text-brand" />
             <span className="font-medium">Command Bar</span>
-            <kbd className="ml-auto rounded-sm border-2 border-border bg-muted px-1.5 py-0.5 font-mono text-xs font-bold text-foreground">
+            <kbd className="tnum ml-auto rounded border border-border bg-surface-muted px-1.5 py-0.5 text-[11px] font-medium text-foreground">
               ⌘K
             </kbd>
           </div>

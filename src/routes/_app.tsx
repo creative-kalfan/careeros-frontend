@@ -90,6 +90,12 @@ function AppLayout() {
         }
       >
         <div className="bg-app flex min-h-dvh w-full">
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[60] focus:rounded-md focus:border focus:border-border-strong focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-foreground"
+          >
+            Skip to content
+          </a>
           <AppSidebar />
           <SidebarInset className="flex min-w-0 flex-1 flex-col">
             <AppTopbar onOpenCommand={() => setCmdOpen(true)} />
@@ -97,14 +103,21 @@ function AppLayout() {
               <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 text-xs flex items-center justify-between text-destructive">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>Couldn&apos;t load profile settings. Some preferences may be unavailable.</span>
+                  <span>
+                    Couldn&apos;t load profile settings. Some preferences may be unavailable.
+                  </span>
                 </div>
-                <Button variant="outline" size="sm" className="h-6 text-[11px] px-2" onClick={() => fetchProfile(true)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-[11px] px-2"
+                  onClick={() => fetchProfile(true)}
+                >
                   Retry
                 </Button>
               </div>
             )}
-            <main className="min-w-0 flex-1">
+            <main id="main" className="min-w-0 flex-1">
               <PageTransition>
                 <Outlet />
               </PageTransition>

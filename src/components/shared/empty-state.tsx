@@ -22,14 +22,13 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "workstation-instrument relative flex flex-col items-center justify-center gap-3.5 rounded-xl border border-dashed border-border/80 p-8 sm:p-12 text-center shadow-inner-recessed",
+        "relative flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-surface p-8 sm:p-10 text-center",
         className,
       )}
       role="status"
     >
-      <div className="relative grid h-12 w-12 place-items-center rounded-xl bg-surface-elevated text-primary ring-1 ring-border/80 shadow-elevation-1">
-        <Icon className="h-6 w-6" />
-        <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary/40 ring-2 ring-background animate-pulse" />
+      <div className="grid h-11 w-11 place-items-center rounded-md border border-border bg-surface-muted text-brand">
+        <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0 max-w-md space-y-1">
         <h3 className="text-sm font-semibold tracking-tight text-foreground">{title}</h3>
@@ -39,7 +38,7 @@ export function EmptyState({
       </div>
 
       {guidance && (
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] text-primary/90 font-mono">
+        <div className="inline-flex items-center gap-1.5 rounded border border-brand/30 bg-brand-subtle px-2.5 py-1 text-[11px] text-brand">
           <Compass className="h-3 w-3 shrink-0" />
           <span>{guidance}</span>
         </div>

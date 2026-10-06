@@ -16,6 +16,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DevUiRouteImport } from './routes/dev.ui'
 import { Route as AuthSignupRouteImport } from './routes/_auth.signup'
 import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
@@ -69,6 +70,11 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevUiRoute = DevUiRouteImport.update({
+  id: '/dev/ui',
+  path: '/dev/ui',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/dev/ui': typeof DevUiRoute
   '/interview-prep/$sessionId': typeof AppInterviewPrepSessionIdRoute
   '/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/resumes/$id': typeof AppResumesIdRoute
@@ -226,6 +233,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/dev/ui': typeof DevUiRoute
   '/interview-prep/$sessionId': typeof AppInterviewPrepSessionIdRoute
   '/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/resumes/$id': typeof AppResumesIdRoute
@@ -257,6 +265,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
+  '/dev/ui': typeof DevUiRoute
   '/_app/interview-prep/$sessionId': typeof AppInterviewPrepSessionIdRoute
   '/_app/optimizer/$resumeId': typeof AppOptimizerResumeIdRoute
   '/_app/resumes/$id': typeof AppResumesIdRoute
@@ -287,6 +296,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/signup'
+    | '/dev/ui'
     | '/interview-prep/$sessionId'
     | '/optimizer/$resumeId'
     | '/resumes/$id'
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/signup'
+    | '/dev/ui'
     | '/interview-prep/$sessionId'
     | '/optimizer/$resumeId'
     | '/resumes/$id'
@@ -344,6 +355,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_auth/login'
     | '/_auth/signup'
+    | '/dev/ui'
     | '/_app/interview-prep/$sessionId'
     | '/_app/optimizer/$resumeId'
     | '/_app/resumes/$id'
@@ -360,6 +372,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SentryTestRoute: typeof SentryTestRoute
+  DevUiRoute: typeof DevUiRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -411,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev/ui': {
+      id: '/dev/ui'
+      path: '/dev/ui'
+      fullPath: '/dev/ui'
+      preLoaderRoute: typeof DevUiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/signup': {
@@ -648,6 +668,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SentryTestRoute: SentryTestRoute,
+  DevUiRoute: DevUiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

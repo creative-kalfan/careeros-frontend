@@ -38,13 +38,13 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        "workstation-instrument flex flex-col items-center justify-center gap-3.5 rounded-xl border border-destructive/30 bg-destructive/5 p-8 sm:p-10 text-center shadow-inner-recessed",
+        "flex flex-col items-center justify-center gap-3 rounded-lg border border-danger/30 bg-danger-subtle p-8 sm:p-10 text-center",
         className,
       )}
       role="alert"
     >
-      <div className="grid h-12 w-12 place-items-center rounded-xl bg-destructive/10 text-destructive ring-1 ring-destructive/25 shadow-elevation-1">
-        <Icon className="h-6 w-6" />
+      <div className="grid h-11 w-11 place-items-center rounded-md border border-danger/30 bg-surface text-danger">
+        <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0 max-w-md space-y-1">
         <h3 className="text-sm font-semibold tracking-tight text-foreground">{title}</h3>
@@ -54,9 +54,9 @@ export function ErrorState({
       </div>
 
       {errorCode && (
-        <div className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-surface-instrument px-2.5 py-1 text-[10px] text-muted-foreground font-mono">
-          <Terminal className="h-3 w-3 text-destructive" />
-          <span>DIAG: {errorCode}</span>
+        <div className="tnum inline-flex items-center gap-1.5 rounded border border-border bg-surface px-2.5 py-1 text-[11px] text-muted-foreground">
+          <Terminal className="h-3 w-3 text-danger" />
+          <span>Code: {errorCode}</span>
         </div>
       )}
 

@@ -6,7 +6,12 @@ import { describe, expect, it } from "vitest";
 
 const root = resolve(__dirname, "../..");
 const DIRS = ["src/components/ui", "src/components/app"];
-const FILES = ["src/lib/theme.tsx", "src/routes/__root.tsx", "src/routes/_app.tsx", "src/routes/dev.ui.tsx"];
+const FILES = [
+  "src/lib/theme.tsx",
+  "src/routes/__root.tsx",
+  "src/routes/_app.tsx",
+  "src/routes/dev.ui.tsx",
+];
 // chart.tsx is shadcn/recharts code owned by the D4 dependency audit.
 const EXCLUDE = new Set(["src/components/ui/chart.tsx"]);
 const ALLOW = new Set(["src/lib/contrast.test.ts", "src/lib/token-guard.test.ts"]);
@@ -29,17 +34,23 @@ describe("token exclusivity (D1 scope)", () => {
       ...DIRS.flatMap((d) => walk(resolve(root, d))),
       ...FILES.map((f) => resolve(root, f)),
     ].filter((f) => {
-      try { return statSync(f).isFile(); } catch { return false; }
+      try {
+        return statSync(f).isFile();
+      } catch {
+        return false;
+      }
     });
     const hits: string[] = [];
     for (const f of files) {
       const rel = f.slice(root.length + 1).replace(/\\/g, "/");
       if (ALLOW.has(rel) || EXCLUDE.has(rel)) continue;
-      readFileSync(f, "utf8").split("\n").forEach((line, i) => {
-        // theme-color meta requires a literal hex for browser chrome; values mirror --bg.
-        if (line.includes("theme-color")) return;
-        if (LITERAL.test(line)) hits.push(`${rel}:${i + 1}: ${line.trim().slice(0, 80)}`);
-      });
+      readFileSync(f, "utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          // theme-color meta requires a literal hex for browser chrome; values mirror --bg.
+          if (line.includes("theme-color")) return;
+          if (LITERAL.test(line)) hits.push(`${rel}:${i + 1}: ${line.trim().slice(0, 80)}`);
+        });
     }
     expect(hits, hits.join("\n")).toEqual([]);
   });
