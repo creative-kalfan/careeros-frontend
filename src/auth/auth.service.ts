@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import { perfMark } from "../lib/perf-marks";
 import { request } from "../utils/request";
 import type {
   User,
@@ -69,6 +70,7 @@ function mapSupabaseSession(sbSession: {
 export const authService = {
   login: async (data: LoginRequest): Promise<{ user: User; tokens: Tokens; session: Session }> => {
     console.log("Calling backend: Supabase signInWithPassword");
+    perfMark("careeros:login-start");
     const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -94,6 +96,7 @@ export const authService = {
       };
     }
 
+    perfMark("careeros:auth-complete");
     return mapSupabaseSession(authData.session);
   },
 

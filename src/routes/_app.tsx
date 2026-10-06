@@ -1,5 +1,5 @@
 import { Outlet, createFileRoute, useNavigate, useLocation } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AlertCircle } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app/sidebar";
@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { CopilotProvider } from "@/components/copilot/copilot-context";
 import { CopilotPanel } from "@/components/copilot/copilot-panel";
 import { PageTransition } from "@/components/shared/page-transition";
+import { perfMark, perfMeasure } from "@/lib/perf-marks";
 import { AuthLoadingSpinner } from "../auth/components/AuthLoadingSpinner";
 import { useAuth } from "../auth/useAuth";
 
@@ -34,6 +35,17 @@ function AppLayout() {
 
   // Check if current route is the onboarding route
   const isOnboardingRoute = location.pathname === "/onboarding";
+
+  // Timing-only: shell-visible marks first authenticated shell paint so
+  // login→shell latency is measurable (dev / VITE_PERF_MARKS=1 only).
+  const shellMarkedRef = useRef(false);
+  useEffect(() => {
+    if (isAuthenticated && isInitialized && !shellMarkedRef.current) {
+      shellMarkedRef.current = true;
+      perfMark("careeros:shell-visible");
+      perfMeasure("careeros:login-to-shell", "careeros:login-start", "careeros:shell-visible");
+    }
+  }, [isAuthenticated, isInitialized]);
 
   // _app owns the profile behind the shell. AuthProvider init also fires
   // fetchProfile, but the single-flight guard dedupes concurrent callers

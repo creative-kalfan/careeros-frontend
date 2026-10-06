@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { ArrowRight, AlertCircle, Sparkles, Target, Zap, Activity } from "lucide-react";
 import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion";
+import { perfMark, perfMeasure } from "@/lib/perf-marks";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,6 +51,38 @@ function Dashboard() {
   const telemetryLoading = telemetryQuery.isLoading && !telemetryQuery.data;
   const telemetryFailed = telemetryQuery.isError && !telemetry;
   const liveAtsScore = telemetry?.average_ats_score ?? 0;
+
+  // Timing-only (dev / VITE_PERF_MARKS=1): mount → Tier-1 usable →
+  // noncritical hydration, so dashboard data legs are measurable.
+  const mountedRef = useRef(false);
+  const usableMarkedRef = useRef(false);
+  const hydratedMarkedRef = useRef(false);
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      perfMark("careeros:dashboard-mounted");
+    }
+  }, []);
+  useEffect(() => {
+    if (data && !isLoading && !usableMarkedRef.current) {
+      usableMarkedRef.current = true;
+      perfMark("careeros:dashboard-usable");
+      perfMeasure(
+        "careeros:dashboard-mount-to-usable",
+        "careeros:dashboard-mounted",
+        "careeros:dashboard-usable",
+      );
+    }
+    if (telemetry && !hydratedMarkedRef.current) {
+      hydratedMarkedRef.current = true;
+      perfMark("careeros:noncritical-hydrated");
+      perfMeasure(
+        "careeros:dashboard-mount-to-hydrated",
+        "careeros:dashboard-mounted",
+        "careeros:noncritical-hydrated",
+      );
+    }
+  }, [data, isLoading, telemetry]);
 
   // `data` is derived progressively from live backend queries (jobs, applications,
   // recommendations, notifications). If telemetry loads before data queries,
