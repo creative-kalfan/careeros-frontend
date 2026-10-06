@@ -1,23 +1,12 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import { getAppQueryClient } from "../lib/query-client";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: 1,
-            refetchOnWindowFocus: false,
-            staleTime: 1000 * 60 * 5,
-            gcTime: 1000 * 60 * 10,
-          },
-          mutations: {
-            retry: 1,
-          },
-        },
-      }),
-  );
+  // Singleton shared with the router context (src/router.tsx). Stable per
+  // mount via useState; identical instance across remounts and tests that
+  // share the module registry.
+  const [queryClient] = useState(getAppQueryClient);
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
