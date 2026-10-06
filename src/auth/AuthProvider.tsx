@@ -28,23 +28,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // fails (e.g. transient 401 during token refresh), a `profile === null`
   // gate must not retrigger the fetch indefinitely.
   const profileFetchFailedRef = useRef(false);
+  // Single-flight guard: concurrent callers (init + layout + login effects)
+  // share one in-flight GET /api/profile/me instead of firing 2-3x.
+  const profilePromiseRef = useRef<Promise<void> | null>(null);
 
-  const fetchProfile = useCallback(async (force?: boolean) => {
+  const fetchProfile = useCallback(async (force?: boolean): Promise<void> => {
     if (profileFetchFailedRef.current && !force) return;
+    if (profilePromiseRef.current && !force) return profilePromiseRef.current;
     setIsProfileLoading(true);
-    try {
-      const profileData = await authService.getProfile();
-      profileFetchFailedRef.current = false;
-      setProfileFetchFailed(false);
-      setProfile(profileData);
-    } catch (err) {
-      console.error("Failed to fetch profile:", err);
-      profileFetchFailedRef.current = true;
-      setProfileFetchFailed(true);
-      setProfile(null);
-    } finally {
-      setIsProfileLoading(false);
-    }
+    const promise = (async (): Promise<void> => {
+      try {
+        const profileData = await authService.getProfile();
+        profileFetchFailedRef.current = false;
+        setProfileFetchFailed(false);
+        setProfile(profileData);
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+        profileFetchFailedRef.current = true;
+        setProfileFetchFailed(true);
+        setProfile(null);
+      } finally {
+        setIsProfileLoading(false);
+        profilePromiseRef.current = null;
+      }
+    })();
+    profilePromiseRef.current = promise;
+    return promise;
   }, []);
 
   // Initialize auth state from Supabase session
@@ -86,30 +95,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, supabaseSession) => {
       if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
         if (supabaseSession) {
-          // We re-fetch to get consistent mapping
-          try {
-            const result = await authService.getSession();
-            if (result) {
-              setTokens(result.tokens);
-              setUser(result.user);
-              setSession(result.session);
-              setStatus("authenticated");
-              setError(null);
-            }
-          } catch {
-            // Fallback: map directly from session
-            if (supabaseSession.user) {
-              const {
-                user: mappedUser,
-                tokens: mappedTokens,
-                session: mappedSession,
-              } = mapSessionDirect(supabaseSession);
-              setTokens(mappedTokens);
-              setUser(mappedUser);
-              setSession(mappedSession);
-              setStatus("authenticated");
-              setError(null);
-            }
+          // Map directly from the event session — no extra getSession()
+          // storage read. TOKEN_REFRESHED must never blank the UI, so the
+          // global status goes straight to authenticated, never loading.
+          if (supabaseSession.user) {
+            const {
+              user: mappedUser,
+              tokens: mappedTokens,
+              session: mappedSession,
+            } = mapSessionDirect(supabaseSession);
+            setTokens(mappedTokens);
+            setUser(mappedUser);
+            setSession(mappedSession);
+            setStatus("authenticated");
+            setError(null);
           }
         }
       } else if (event === "SIGNED_OUT") {
@@ -118,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(null);
         setProfile(null);
         profileFetchFailedRef.current = false;
+        profilePromiseRef.current = null;
         setProfileFetchFailed(false);
         setStatus("unauthenticated");
         setError(null);
@@ -211,6 +211,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSession(null);
       setProfile(null);
+      profileFetchFailedRef.current = false;
+      profilePromiseRef.current = null;
+      setProfileFetchFailed(false);
       setStatus("unauthenticated");
       setError(null);
     }

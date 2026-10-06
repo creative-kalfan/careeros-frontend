@@ -9,13 +9,64 @@ import { supabase } from "../lib/supabase";
 
 let refreshPromise: Promise<string | null> | null = null;
 
+// In-memory access-token cache. Supabase persists the session in storage,
+// but every `request()` awaited a storage `getSession()` read serially
+// before its fetch (6+ reads on dashboard mount). The cache serves the hot
+// path; `onAuthStateChange` invalidates it so refresh/logout stay correct.
+let cachedToken: string | null = null;
+let cachedExpMs = 0;
+let tokenCacheSubscribed = false;
+
+function cacheSessionToken(accessToken: string | null, expiresAtSec?: number | null) {
+  cachedToken = accessToken;
+  cachedExpMs = typeof expiresAtSec === "number" ? expiresAtSec * 1000 : 0;
+}
+
+function clearCachedToken() {
+  cachedToken = null;
+  cachedExpMs = 0;
+}
+
+function getFreshCachedToken(): string | null {
+  if (!cachedToken) return null;
+  // 60s clock-skew buffer; expiry itself is handled by the 401 refresh path.
+  if (cachedExpMs && Date.now() > cachedExpMs - 60 * 1000) return null;
+  return cachedToken;
+}
+
+function ensureTokenCacheSubscription() {
+  if (tokenCacheSubscribed) return;
+  tokenCacheSubscribed = true;
+  try {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        clearCachedToken();
+      } else if (session?.access_token) {
+        cacheSessionToken(session.access_token, session.expires_at ?? null);
+      }
+    });
+  } catch {
+    // Subscription is an optimization; per-request fallback still works.
+  }
+}
+
 /**
  * Attach Supabase session access token to request headers
  * @param headers - Existing headers object
  * @returns Headers with authorization token
  */
 export async function attachAuthToken(headers: HeadersInit = {}): Promise<HeadersInit> {
+  ensureTokenCacheSubscription();
+  const cached = getFreshCachedToken();
+  if (cached) {
+    return {
+      ...headers,
+      Authorization: `Bearer ${cached}`,
+    };
+  }
+
   const { data } = await supabase.auth.getSession();
+  cacheSessionToken(data.session?.access_token ?? null, data.session?.expires_at ?? null);
 
   if (!data.session?.access_token) {
     return headers;
@@ -73,9 +124,11 @@ async function refreshAccessToken(): Promise<string | null> {
 
   if (error || !data.session) {
     console.error("Token refresh failed:", error?.message);
+    clearCachedToken();
     return null;
   }
 
+  cacheSessionToken(data.session.access_token, data.session.expires_at ?? null);
   return data.session.access_token;
 }
 
@@ -83,6 +136,7 @@ async function refreshAccessToken(): Promise<string | null> {
  * Handle session expired - redirect to login
  */
 function handleSessionExpired(): void {
+  clearCachedToken();
   // Clear all auth data
   supabase.auth.signOut().catch(() => {});
   window.location.href = "/login";
@@ -131,6 +185,11 @@ export async function retryRequest<T>(
  * @returns True if session expires within buffer time
  */
 export async function isSessionExpiringSoon(): Promise<boolean> {
+  ensureTokenCacheSubscription();
+  if (cachedToken && cachedExpMs) {
+    const buffer = 5 * 60 * 1000; // 5 minutes
+    return cachedExpMs - Date.now() < buffer;
+  }
   const { data } = await supabase.auth.getSession();
   if (!data.session?.expires_at) return true;
 

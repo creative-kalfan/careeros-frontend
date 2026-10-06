@@ -1,3 +1,7 @@
+# CareerOS frontend — container preview / non-Vercel host only.
+# Authoritative production is Vercel (Nitro preset `vercel` in vite.config.ts).
+# This image exists for container previews and hosts that run the Node server
+# directly. Do not treat it as the Vercel prod artifact.
 FROM node:22-alpine AS builder
 
 WORKDIR /app
