@@ -157,7 +157,10 @@ export function useDashboardData() {
         applicationsByStatus: formatAppStatus(appsQuery.data?.byStatus),
         jobMatchDistribution: formatMatchDistribution(jobsQuery.data?.jobs || []),
 
-        recommendations: formatRecommendations(recsQuery.data || []),
+        recommendations: formatRecommendations(
+          (recsQuery.data as any)?.data?.recommendations ||
+          (Array.isArray(recsQuery.data) ? recsQuery.data : [])
+        ),
         recentActivity: formatActivity(notifsQuery.data?.notifications || []),
         upcoming: formatUpcoming(appsQuery.data?.byStatus),
       };

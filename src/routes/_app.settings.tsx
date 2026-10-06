@@ -39,18 +39,19 @@ function SettingsPage() {
   const { user, profile } = useAuth();
 
   // Form states truthfully initialized from auth user/profile
-  const [name, setName] = useState(user?.name || profile?.fullName || "");
+  const extProfile = profile as any;
+  const [name, setName] = useState(user?.name || extProfile?.fullName || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [jobTitle, setJobTitle] = useState(profile?.desiredRole || "");
-  const [location, setLocation] = useState(profile?.location || "");
+  const [jobTitle, setJobTitle] = useState(extProfile?.desiredRole || "");
+  const [location, setLocation] = useState(extProfile?.location || "");
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
     if (user?.name && !name) setName(user.name);
-    else if (profile?.fullName && !name) setName(profile.fullName);
+    else if (extProfile?.fullName && !name) setName(extProfile.fullName);
     if (user?.email && !email) setEmail(user.email);
-    if (profile?.desiredRole && !jobTitle) setJobTitle(profile.desiredRole);
-    if (profile?.location && !location) setLocation(profile.location);
+    if (extProfile?.desiredRole && !jobTitle) setJobTitle(extProfile.desiredRole);
+    if (extProfile?.location && !location) setLocation(extProfile.location);
   }, [user, profile]);
 
   // Appearance states
