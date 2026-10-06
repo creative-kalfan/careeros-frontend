@@ -1,48 +1,73 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/fira-code";
+@import "@fontsource-variable/schibsted-grotesk";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark variant responds to the persisted data-theme (set pre-hydration in
+   __root.tsx) and to the legacy .dark class during the D1–D4 migration. */
+@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
 
 @theme inline {
-  --font-sans: "Inter Variable", system-ui, -apple-system, "SF Pro Display", sans-serif;
-  --font-mono: "Fira Code Variable", "SF Mono", Monaco, monospace;
+  --font-sans: "Schibsted Grotesk Variable", system-ui, -apple-system, "Segoe UI",
+    "Noto Sans Devanagari", "Noto Sans Telugu", sans-serif;
+  /* Single typeface: former Fira Code usages render in the same grotesk. */
+  --font-mono: "Schibsted Grotesk Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
 
+  /* Shape: chip 4 / control 6 / panel 10 / table rows 0. */
   --radius-sm: 4px;
   --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-lg: 10px;
   --radius-xl: 12px;
   --radius-2xl: 16px;
+  --radius-chip: 4px;
+  --radius-control: 6px;
+  --radius-panel: 10px;
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  /* Semantic colors (values live on [data-theme] below). */
+  --color-bg: var(--bg);
   --color-surface: var(--surface);
-  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-muted: var(--surface-muted);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-on-brand: var(--on-brand);
+  --color-evidence: var(--evidence);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-brand-subtle: var(--brand-subtle);
+  --color-success-subtle: var(--success-subtle);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-focus: var(--focus);
+
+  /* Legacy aliases so D2/D3 screens keep resolving during migration. */
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--brand);
+  --color-primary-foreground: var(--on-brand);
+  --color-secondary: var(--surface-muted);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--text-muted);
+  --color-accent: var(--surface-muted);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--on-brand);
+  --color-success-foreground: var(--on-brand);
+  --color-warning-foreground: var(--on-brand);
+  --color-info: var(--brand);
+  --color-info-foreground: var(--on-brand);
+  --color-input: var(--border-strong);
+  --color-ring: var(--focus);
+  --color-surface-elevated: var(--surface-muted);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -56,263 +81,103 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-
-  --color-brand: var(--primary);
-  --color-brand-hover: var(--primary-hover);
   --color-copper: var(--copper);
 
-  --shadow-brutal-xs: 1px 1px 0px 0px var(--border);
-  --shadow-brutal-sm: 2px 2px 0px 0px var(--border);
-  --shadow-brutal-md: 4px 4px 0px 0px var(--border);
-  --shadow-brutal-lg: 6px 6px 0px 0px var(--border);
-  --shadow-brutal-primary: 3px 3px 0px 0px var(--primary);
-  --shadow-brutal-primary-md: 5px 5px 0px 0px var(--primary);
-
-  --shadow-elevation-1: 2px 2px 0px 0px var(--border);
-  --shadow-elevation-2: 4px 4px 0px 0px var(--border);
-  --shadow-elevation-3: 6px 6px 0px 0px var(--border);
-  --shadow-document: 4px 4px 0px 0px var(--border);
-  --shadow-document-raised: 8px 8px 0px 0px var(--border);
-  --shadow-workbench: 4px 4px 0px 0px var(--border);
-  --shadow-inner-recessed: inset 1px 1px 2px rgba(0, 0, 0, 0.4);
+  /* Sole elevation: floating layers only (menu/popover/dialog/palette). */
+  --shadow-float: var(--shadow-float-value);
 }
 
-/* Dark theme — premium technical graphite & CareerOS blue */
-:root {
+/* Light theme (also the no-JS/SSR default). */
+:root,
+[data-theme="light"] {
   --radius: 6px;
 
-  /* Canvas */
-  --background: #080a0d;
-  --foreground: #f4f7fb;
-
-  /* Surfaces */
-  --surface: #101318;
-  --surface-elevated: #151922;
-  --surface-instrument: #0d1014;
-  --surface-hud: #1a1f29;
-
-  --card: #101318;
-  --card-foreground: #f4f7fb;
-
-  --popover: #151922;
-  --popover-foreground: #f4f7fb;
-
-  /* Primary Brand / Action — CareerOS Blue */
-  --primary: #315cff;
-  --primary-hover: #4770ff;
-  --primary-foreground: #ffffff;
-
-  --secondary: #151922;
-  --secondary-foreground: #f4f7fb;
-
-  /* Neutrals & Text */
-  --muted: #151922;
-  --muted-foreground: #737c8c;
-
-  --accent: #151922;
-  --accent-foreground: #f4f7fb;
-
-  /* Semantic Status Colors */
-  --success: #3fa66b;
-  --success-foreground: #ffffff;
-
-  --warning: #c58a2b;
-  --warning-foreground: #ffffff;
-
-  --destructive: #c94b45;
-  --destructive-foreground: #ffffff;
-
-  --info: #315cff;
-  --info-foreground: #ffffff;
-
-  /* Secondary Semantic Accent only */
-  --copper: #d56b3f;
-
-  /* Borders & Inputs */
-  --border: #2b3345;
-  --input: #2b3345;
-  --ring: #315cff;
-
-  --chart-1: #315cff;
-  --chart-2: #3fa66b;
-  --chart-3: #c58a2b;
-  --chart-4: #c94b45;
-  --chart-5: #6366f1;
-
-  /* Sidebar */
-  --sidebar: #090b0f;
-  --sidebar-foreground: #a7afbd;
-  --sidebar-primary: #315cff;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #151922;
-  --sidebar-accent-foreground: #f4f7fb;
-  --sidebar-border: #242c3b;
-  --sidebar-ring: #315cff;
-}
-
-/* Light theme — crisp neo-brutalist technical styling */
-.light {
-  /* Canvas */
-  --background: #f5f6f9;
-  --foreground: #0f1218;
-
-  /* Surfaces */
+  --bg: #f4f6f7;
   --surface: #ffffff;
-  --surface-elevated: #ebedf2;
-  --surface-instrument: #f0f2f7;
-  --surface-hud: #e3e6ed;
+  --surface-muted: #e9edef;
+  --text: #14202b;
+  --text-muted: #4a5866;
+  --border: #d9dfe4;
+  --border-strong: #64748b;
+  --brand: #0b5563;
+  --brand-hover: #08434f;
+  --on-brand: #ffffff;
+  --evidence: #f6dd6b;
+  --success: #177a45;
+  --warning: #8a5b00;
+  --danger: #b3382c;
+  --brand-subtle: #ddeef2;
+  --success-subtle: #e8f4ed;
+  --warning-subtle: #f6ecd2;
+  --danger-subtle: #f8e2de;
+  --focus: #0b5563;
 
-  --card: #ffffff;
-  --card-foreground: #0f1218;
+  --shadow-float-value: 0 8px 24px rgb(0 0 0 / 0.12);
 
-  --popover: #ffffff;
-  --popover-foreground: #0f1218;
+  --sidebar: #edf0f3;
+  --sidebar-foreground: #4a5866;
+  --sidebar-primary: #0b5563;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e9edef;
+  --sidebar-accent-foreground: #14202b;
+  --sidebar-border: #d9dfe4;
+  --sidebar-ring: #0b5563;
 
-  /* Primary Brand / Action — CareerOS Blue */
-  --primary: #2552e8;
-  --primary-hover: #1b42c4;
-  --primary-foreground: #ffffff;
-
-  --secondary: #ebedf2;
-  --secondary-foreground: #0f1218;
-
-  /* Neutrals & Text */
-  --muted: #ebedf2;
-  --muted-foreground: #5a6375;
-
-  --accent: #ebedf2;
-  --accent-foreground: #0f1218;
-
-  /* Semantic Status Colors */
-  --success: #1b8a53;
-  --success-foreground: #ffffff;
-
-  --warning: #b27517;
-  --warning-foreground: #ffffff;
-
-  --destructive: #b93732;
-  --destructive-foreground: #ffffff;
-
-  --info: #2552e8;
-  --info-foreground: #ffffff;
-
-  /* Secondary Semantic Accent only */
   --copper: #b9542f;
 
-  /* Borders & Inputs */
-  --border: #1a1e28;
-  --input: #1a1e28;
-  --ring: #2552e8;
-
-  --chart-1: #2552e8;
-  --chart-2: #1b8a53;
-  --chart-3: #b27517;
-  --chart-4: #b93732;
+  --chart-1: #0b5563;
+  --chart-2: #177a45;
+  --chart-3: #8a5b00;
+  --chart-4: #b3382c;
   --chart-5: #4f46e5;
-
-  /* Sidebar */
-  --sidebar: #f0f2f6;
-  --sidebar-foreground: #475060;
-  --sidebar-primary: #2552e8;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e2e6ed;
-  --sidebar-accent-foreground: #0f1218;
-  --sidebar-border: #1a1e28;
-  --sidebar-ring: #2552e8;
 }
 
-@utility glass {
-  background: var(--surface);
-  border: 2px solid var(--border);
-}
+/* Dark theme. */
+[data-theme="dark"] {
+  --radius: 6px;
 
-@utility glass-strong {
-  background: var(--surface-elevated);
-  border: 2px solid var(--border);
-  box-shadow: 2px 2px 0px 0px var(--border);
-}
+  --bg: #0f1a22;
+  --surface: #16232d;
+  --surface-muted: #1d2c38;
+  --text: #e6ecf0;
+  --text-muted: #9aa8b4;
+  --border: #2a3542;
+  --border-strong: #7e8fa0;
+  --brand: #5fb5c4;
+  --brand-hover: #7cc6d3;
+  --on-brand: #0a1e24;
+  --evidence: #7a6c2f;
+  --success: #4cc38a;
+  --warning: #e0a93b;
+  --danger: #f07a6c;
+  --brand-subtle: #14333b;
+  --success-subtle: #12372a;
+  --warning-subtle: #3a2e14;
+  --danger-subtle: #3d1f1c;
+  --focus: #8ad0dc;
 
-@utility glass-topbar {
-  background: var(--background);
-  border-bottom: 2px solid var(--border);
-}
+  --shadow-float-value: 0 8px 28px rgb(0 0 0 / 0.45);
 
-@utility glass-sidebar {
-  background: var(--sidebar);
-  border-right: 2px solid var(--sidebar-border);
+  --sidebar: #0c141b;
+  --sidebar-foreground: #9aa8b4;
+  --sidebar-primary: #5fb5c4;
+  --sidebar-primary-foreground: #0a1e24;
+  --sidebar-accent: #1d2c38;
+  --sidebar-accent-foreground: #e6ecf0;
+  --sidebar-border: #2a3542;
+  --sidebar-ring: #8ad0dc;
+
+  --copper: #d56b3f;
+
+  --chart-1: #5fb5c4;
+  --chart-2: #4cc38a;
+  --chart-3: #e0a93b;
+  --chart-4: #f07a6c;
+  --chart-5: #818cf8;
 }
 
 @utility bg-app {
-  background-color: var(--background);
-}
-
-@utility workstation-panel {
-  position: relative;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  box-shadow: 2px 2px 0px 0px var(--border);
-}
-
-@utility workstation-panel-hover {
-  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, border-color 0.12s ease-out;
-  &:hover {
-    border-color: var(--primary);
-    box-shadow: 4px 4px 0px 0px var(--border);
-    transform: translate(-1px, -1px);
-  }
-}
-
-@utility workstation-instrument {
-  position: relative;
-  background: var(--surface-instrument);
-  border: 1.5px solid var(--border);
-}
-
-@utility telemetry-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  background: var(--surface-elevated);
-  border: 1.5px solid var(--border);
-  color: var(--foreground);
-}
-
-@utility shadow-brutal-xs {
-  box-shadow: 1px 1px 0px 0px var(--border);
-}
-
-@utility shadow-brutal-sm {
-  box-shadow: 2px 2px 0px 0px var(--border);
-}
-
-@utility shadow-brutal-md {
-  box-shadow: 4px 4px 0px 0px var(--border);
-}
-
-@utility shadow-brutal-lg {
-  box-shadow: 6px 6px 0px 0px var(--border);
-}
-
-@utility shadow-brutal-primary {
-  box-shadow: 3px 3px 0px 0px var(--primary);
-}
-
-@utility shadow-brutal-primary-md {
-  box-shadow: 5px 5px 0px 0px var(--primary);
-}
-
-@utility btn-tactile {
-  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
-  &:active:not(:disabled) {
-    transform: translate(2px, 2px);
-    box-shadow: none !important;
-  }
+  background-color: var(--bg);
 }
 
 @layer base {
@@ -320,7 +185,7 @@
     border-color: var(--color-border);
   }
   *:focus-visible {
-    outline: 2px solid var(--ring);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
   html,
@@ -328,16 +193,17 @@
     height: 100%;
   }
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: var(--color-bg);
+    color: var(--color-text);
     font-family: var(--font-sans);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    font-size: 0.9375rem;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
   ::selection {
-    background: color-mix(in srgb, var(--primary) 28%, transparent);
-    color: var(--foreground);
+    background: color-mix(in srgb, var(--brand) 28%, transparent);
+    color: var(--text);
   }
   h1,
   h2,
@@ -346,24 +212,51 @@
     letter-spacing: -0.022em;
   }
 
-  /* Custom Sleek Scrollbar */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--border) 90%, transparent);
+    background: var(--border-strong);
     border-radius: 9999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--border) 100%, black 15%);
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--border) 90%, transparent) transparent;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+}
+
+@layer components {
+  /* Type scale: 12 / 13 / 14 / 16 / 20 / 24 / 32 with explicit line-heights.
+     12/14/16/20/24 map to text-xs/sm/base/xl/2xl; 13 and 32 are custom. */
+  .text-13 {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .text-display {
+    font-size: 32px;
+    line-height: 1.25;
+    letter-spacing: -0.022em;
+  }
+  /* Tabular numerals for tables, scores, telemetry (replaces font-mono). */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Readable measure for prose blocks. */
+  .prose {
+    max-width: 70ch;
+  }
+  /* Evidence-backed text: highlight wash under the lower ~40%, ink unchanged. */
+  .evidence-mark {
+    background-image: linear-gradient(
+      transparent 62%,
+      color-mix(in srgb, var(--evidence) 55%, transparent) 62%
+    );
+    border-radius: 2px;
+    color: inherit;
   }
 }
 
