@@ -9,7 +9,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const variants = reducedMotion ? fadeOnly : pageVariants;
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    // mode="sync": the incoming route renders immediately while the outgoing
+    // view exits underneath. mode="wait" held every route transition until
+    // the exit animation finished (+200-400ms perceived) for zero data
+    // benefit. initial={false} is preserved (no animation on first mount).
+    <AnimatePresence mode="sync" initial={false}>
       <motion.div
         key={key}
         variants={variants}

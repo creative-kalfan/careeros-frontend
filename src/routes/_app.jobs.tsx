@@ -546,7 +546,8 @@ function JobsPage() {
               {/* Left Zone: Opportunities Stream */}
               <div className="min-h-0 border-r-2 border-border flex flex-col bg-background">
                 <div className="flex-1 min-h-0 [perspective:1200px]">
-                  <AnimatePresence mode="wait" custom={pageDirection}>
+                  {/* mode="sync": next page renders immediately; exit plays underneath */}
+                  <AnimatePresence mode="sync" custom={pageDirection}>
                     <motion.div
                       key={`desktop-page-${page}`}
                       custom={pageDirection}
@@ -588,7 +589,8 @@ function JobsPage() {
 
               {/* Right Zone: Opportunity Intelligence & Brief */}
               <div className="min-h-0 flex-1 flex flex-col bg-background">
-                <AnimatePresence mode="wait">
+                {/* mode="sync": newly selected job renders immediately on select */}
+                <AnimatePresence mode="sync">
                   {selected ? (
                     <motion.div
                       key={selected.id}
@@ -650,7 +652,8 @@ function JobsPage() {
               ) : (
                 <div className="flex min-h-0 flex-1 flex-col">
                   <div className="flex-1 min-h-0 [perspective:1200px]">
-                    <AnimatePresence mode="wait" custom={pageDirection}>
+                    {/* mode="sync": next page renders immediately; exit plays underneath */}
+                    <AnimatePresence mode="sync" custom={pageDirection}>
                       <motion.div
                         key={`mobile-page-${page}`}
                         custom={pageDirection}
