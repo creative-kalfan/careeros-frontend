@@ -211,3 +211,79 @@ Verdict preview: keeping TanStack is viable. A Next.js migration is not justifie
 - npm run build: success, client plus nitro server in about 3 s. npx tsc --noEmit: exit 0. npm test, vitest run src: 17 files, 320 tests, all pass. npm run lint: fails on pre-existing prettier CRLF violations repo-wide, unrelated to this task, no new violation class introduced.
 
 - Functional verification was static plus suite-based: login, logout, session restore, protected routes, dashboard, jobs, resumes, and API auth paths were traced through AuthProvider, GuestRoute, ProtectedRoute, _app layout, request plus interceptor, and the 320 passing unit tests. No live browser session was available in this environment, so timings above are code-path derived plus build-measured bundle sizes, flagged as such.
+
+## 24. Production-performance hardening implementation (2026-10-06, keep-TanStack)
+
+No migration. TanStack Router plus Query plus Vite retained. Backend untouched
+(zero `careeros-backend-py/` diff). All commits on `main`, no history rewrite.
+
+- Phase 1 runtime (`a61dc53`): `vite.config.ts` pins `nitro: { preset: "vercel" }`
+  (wrapper defaults to `cloudflare-module`; Lovable sandbox still forces
+  Cloudflare for preview only). `Dockerfile` header-marked container-preview
+  only. Build emits `.vercel/output/nitro.json` with `preset: "vercel"`,
+  `deploy: vercel deploy --prebuilt`. No `vercel.json` created (detection is
+  deterministic with the explicit preset).
+
+- Phase 2 auth (`a61dc53`): in-memory access-token cache in
+  `src/auth/http-interceptor.ts` with `onAuthStateChange` invalidation;
+  `attachAuthToken` serves fresh cache, single `getSession` fallback;
+  401 refresh path unchanged. `AuthProvider.tsx`: `SIGNED_IN`/`TOKEN_REFRESHED`
+  map directly from the event session (listener duplicate `getSession`
+  removed, refresh never blanks UI); `fetchProfile` single-flight shared
+  promise keeps the `Promise<void>` contract; sign-out/logout clear the
+  in-flight ref.
+
+- Phase 3 shell (`a55b555`): `_auth.login.tsx` navigates on `isAuthenticated`
+  immediately (no profile wait — removed one 600-2500ms serial leg on cold
+  Render). `_app.tsx` owns the profile behind the shell and redirects to
+  onboarding only once the profile resolves as incomplete.
+
+- Phase 4 bootstrap (`9f1523d`): `useDashboardData` two-tier — Tier-1
+  (personalized jobs plus app stats) gates skeleton release; recs plus
+  notifications hydrate progressively. Notifications bounded to
+  `getAll({ limit: 6 })` with key `["notifications", { limit: 6 }]`
+  (server already supported `limit`; full history stays on `/notifications`;
+  prefix invalidations still match).
+
+- Phase 5 query (`252056a`): `src/lib/query-client.ts` singleton shared by
+  router context and `QueryProvider` (dead bare router client deleted);
+  `defaultPreloadStaleTime: 0` to `30_000`. Per-query `staleTime` values
+  unchanged; broad prefix invalidation deliberately kept (narrowing risks
+  stale filtered lists).
+
+- Phase 6 splits (`fae591d`, `880370f`): dashboard `Career3DTopology`
+  `React.lazy` plus `Suspense` skeleton — route chunk 576KB to 34KB raw,
+  three.js in on-demand 529KB raw (133KB gzip) chunk. Landing mounts 1 of 6
+  scenes (`key={activeScene}` re-triggers enter; scenes are light DOM, no
+  lazy needed; three.js lives only in dead `CareerSignalCanvas`, zero usages,
+  untouched). Resume `PdfCanvasPreview` lazy inside `preview-pane` —
+  route chunk 510KB to 170KB raw, pdfjs in on-demand 336KB raw (99KB gzip)
+  chunk, `A4DocumentSkeleton` fallback, template path unaffected. recharts,
+  `ui/calendar`, `ui/carousel`: zero usages in `src/`, tree-shaken or
+  unshipped — no action taken.
+
+- Phase 8 transitions (`a9c0b3c`): `AnimatePresence mode="wait"` to `"sync"`
+  globally (`page-transition.tsx`) and all 3 `_app.jobs.tsx` instances.
+  Enter/exit variants and reduced-motion path untouched.
+
+- Phase 9 gates (`159f11e`): `scripts/check-bundle-budget.mjs` plus
+  `npm run check:budgets` — 10 raw+gzip caps, all passing (dashboard 34/10,
+  resume 170/39, landing 120, shell 24, topology-on-demand 133, pdf-on-demand
+  99, CSS 27, largest 133 KB gzip). No frontend CI workflow exists in this
+  repo, so wiring the gate into CI is a follow-up. `src/lib/perf-marks.ts`
+  timing-only marks (dev / `VITE_PERF_MARKS=1`, no PII): `login-start` to
+  `auth-complete` to `shell-visible`, dashboard mount to usable to
+  noncritical-hydrated, with `performance.measure` debug output.
+
+BEFORE/AFTER (build-measured, `.vercel/output/static/assets`): dashboard
+route 576 to 34KB raw; resume route 510 to 170KB raw; per-login `getSession`
+hot-path 7-10 reads to 1 cold plus cache; duplicate `GET /api/profile/me`
+eliminated via single-flight; login-to-dashboard serial legs reduced by one
+full profile round trip plus 4-5 session reads. Perceived login-to-usable
+improvement is INFERRED from code paths plus bundle deltas, not browser
+measured — use the perf marks in a live session to confirm.
+
+Deferred (explicit): invalidation narrowing, WebGL idle/reduced-motion/
+device-memory gating plus raycast throttling, CI workflow wiring, live
+browser timing confirmation (flows A-G), root `COMPLETE_SYSTEM.md` update
+(lives in the backend repo — left to its own flow).
