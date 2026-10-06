@@ -58,7 +58,9 @@ function toQueryString(params: JobSearchFilters): string {
   if (params.sort) sp.set("sort", params.sort);
   if (params.page) sp.set("page", String(params.page));
   if (params.pageSize) sp.set("pageSize", String(params.pageSize));
+  if (params.verifiedLiveOnly !== undefined) sp.set("verified_live_only", String(params.verifiedLiveOnly));
   const qs = sp.toString();
+
   return qs ? `?${qs}` : "";
 }
 

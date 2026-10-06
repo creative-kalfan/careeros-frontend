@@ -247,10 +247,29 @@ function JobCard({
                 MASS HIRING
               </span>
             )}
+            {job.isVerifiedLive && (
+
+              <span
+                title="Verified live on ATS"
+                className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[9.5px] font-bold uppercase border border-success/40 bg-success/10 text-success"
+              >
+                <CheckCircle2 className="h-2.5 w-2.5" />
+                Live
+              </span>
+            )}
+            {job.ghostRisk && job.ghostRisk.level === "high" && (
+              <span
+                title={job.ghostRisk.signals?.join(", ") || "Stale or reposted posting risk"}
+                className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[9.5px] font-bold uppercase border border-warning/40 bg-warning/10 text-warning"
+              >
+                High Ghost Risk
+              </span>
+            )}
             <h3 className="line-clamp-2 break-words text-[13.5px] font-bold tracking-tight text-foreground leading-snug">
               {job.role}
             </h3>
           </div>
+
 
           {/* Metadata badges row */}
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">

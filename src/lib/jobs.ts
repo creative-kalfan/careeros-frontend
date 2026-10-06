@@ -468,9 +468,15 @@ export function adaptJob(raw: RawJobWithScores, overrides: Partial<Job> = {}): J
       (pick(r, "ats_missing_keywords", "atsMissingKeywords") as string[]) ?? undefined,
     atsRecommendations:
       (pick(r, "ats_recommendations", "atsRecommendations") as string[]) ?? undefined,
+    // Phase 6 Quality Intelligence
+    isVerifiedLive: (pick(r, "is_verified_live", "isVerifiedLive") as boolean) ?? null,
+    ghostRisk: (pick(r, "ghost_risk", "ghostRisk") as Job["ghostRisk"]) ?? null,
+    alsoListedOn: (pick(r, "also_listed_on", "alsoListedOn") as Job["alsoListedOn"]) ?? null,
+    preferredApplyUrl: (pickStr(r, "preferred_apply_url", "preferredApplyUrl") as string) || applyUrl || null,
     ...overrides,
   };
 }
+
 
 // ---------------------------------------------------------------------------
 // UI helpers

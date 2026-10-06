@@ -18,6 +18,7 @@ export type PrimaryFilterState = {
   experience?: string;
   employmentType?: string;
   location?: string;
+  verifiedLiveOnly?: boolean;
 };
 
 export function PrimaryFiltersBar({
@@ -25,10 +26,12 @@ export function PrimaryFiltersBar({
   experience,
   employmentType,
   location,
+  verifiedLiveOnly,
   onWorkModeSelect,
   onExperienceSelect,
   onEmploymentTypeSelect,
   onLocationChange,
+  onToggleVerifiedLive,
   onOpenAdditional,
   onResetAll,
   activeAdditionalCount = 0,
@@ -38,16 +41,19 @@ export function PrimaryFiltersBar({
   experience?: string;
   employmentType?: string;
   location?: string;
+  verifiedLiveOnly?: boolean;
   onWorkModeSelect: (mode: "Remote" | "On-site" | "All") => void;
   onExperienceSelect: (exp: string | undefined) => void;
   onEmploymentTypeSelect: (type: string | undefined) => void;
   onLocationChange: (loc: string | undefined) => void;
+  onToggleVerifiedLive?: () => void;
   onOpenAdditional: () => void;
   onResetAll: () => void;
   activeAdditionalCount?: number;
   totalActiveCount?: number;
 }) {
   const currentWorkMode = workMode || "All";
+
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b-2 border-border bg-surface">
@@ -138,8 +144,25 @@ export function PrimaryFiltersBar({
       )}
 
       <div className="ml-auto flex items-center gap-1.5">
+        {/* Verified Live Only Toggle */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onToggleVerifiedLive}
+          className={`h-8 gap-1.5 rounded-md border-2 text-xs px-2.5 font-semibold transition-all ${
+            verifiedLiveOnly
+              ? "border-success bg-success/15 text-success shadow-brutal-xs"
+              : "border-border bg-surface text-muted-foreground hover:text-foreground shadow-brutal-xs"
+          }`}
+          title="Filter for jobs verified live on first-party ATS"
+        >
+          <span className={`h-2 w-2 rounded-full ${verifiedLiveOnly ? "bg-success" : "bg-muted-foreground"}`} />
+          <span>Verified Live</span>
+        </Button>
+
         {/* Additional Filters Button */}
         <Button
+
           variant="outline"
           size="sm"
           onClick={onOpenAdditional}

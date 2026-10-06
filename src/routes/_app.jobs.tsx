@@ -62,8 +62,17 @@ export const Route = createFileRoute("/_app/jobs")({
           ? search.sort
           : undefined,
       page: typeof search.page === "number" ? search.page : Number(search.page) || undefined,
+      verifiedLiveOnly:
+        typeof search.verifiedLiveOnly === "boolean"
+          ? search.verifiedLiveOnly
+          : search.verifiedLiveOnly === "true"
+            ? true
+            : search.verifiedLiveOnly === "false"
+              ? false
+              : undefined,
     };
   },
+
   head: () => ({
     meta: [
       { title: "Job Intelligence · CareerOS" },
@@ -106,8 +115,10 @@ function JobsPage() {
   const experience = searchParams.experience;
   const sort = searchParams.sort ?? "best-match";
   const page = searchParams.page ?? 1;
+  const verifiedLiveOnly = searchParams.verifiedLiveOnly;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobileViewingDetail, setMobileViewingDetail] = useState(false);
   const [editResumeJob, setEditResumeJob] = useState<Job | null>(null);
@@ -214,9 +225,11 @@ function JobsPage() {
       sort,
       page,
       pageSize: PAGE_SIZE,
+      verifiedLiveOnly,
     }),
-    [query, location, company, skills, remote, employmentType, experience, sort, page],
+    [query, location, company, skills, remote, employmentType, experience, sort, page, verifiedLiveOnly],
   );
+
 
   const { data, isLoading, isError, error, isFetching, refetch } = usePersonalizedJobs({
     ...filters,
@@ -486,15 +499,18 @@ function JobsPage() {
         experience={experience}
         employmentType={employmentType}
         location={location}
+        verifiedLiveOnly={verifiedLiveOnly}
         onWorkModeSelect={handleWorkModeSelect}
         onExperienceSelect={handleExperienceSelect}
         onEmploymentTypeSelect={handleEmploymentTypeSelect}
         onLocationChange={handleLocationChange}
+        onToggleVerifiedLive={() => updateSearch({ verifiedLiveOnly: verifiedLiveOnly ? undefined : true, page: 1 })}
         onOpenAdditional={() => setDrawerOpen(true)}
         onResetAll={handleResetAll}
         activeAdditionalCount={activeAdditionalCount}
         totalActiveCount={totalActiveCount}
       />
+
 
       {/* Recoverable inline error when query fails but previous jobs exist */}
       {isError && jobs.length > 0 && (

@@ -112,6 +112,13 @@ export function JobDetails({
                   </span>
                 )}
 
+                {job.isVerifiedLive && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-success border border-success/40 bg-success/10 px-1.5 py-0.5 rounded-sm font-mono">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>Verified Live on ATS</span>
+                  </span>
+                )}
+
                 {job.status !== "not_applied" && (
                   <Badge
                     variant="outline"
@@ -130,6 +137,7 @@ export function JobDetails({
                   </Badge>
                 )}
               </div>
+
 
               <h2 className="mt-0.5 text-base sm:text-lg font-extrabold tracking-tight text-foreground leading-snug break-words">
                 {job.role}
@@ -188,15 +196,15 @@ export function JobDetails({
 
         {/* Action Toolbar */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          {job.applyUrl ? (
+          {(job.preferredApplyUrl || job.applyUrl) ? (
             <Button
               size="sm"
               className="h-9 px-4 rounded-md text-xs font-bold gap-1.5 shadow-brutal-primary bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-primary"
               onClick={() => {
-                window.open(job.applyUrl as string, "_blank", "noopener,noreferrer");
+                window.open((job.preferredApplyUrl || job.applyUrl) as string, "_blank", "noopener,noreferrer");
               }}
             >
-              <span>Apply on Site</span>
+              <span>{job.preferredApplyUrl ? "Apply Directly (Preferred)" : "Apply on Site"}</span>
               <ExternalLink className="h-3.5 w-3.5" />
             </Button>
           ) : (
@@ -209,6 +217,7 @@ export function JobDetails({
               No direct link
             </Button>
           )}
+
 
           {onEditResume && (
             <Button
@@ -276,8 +285,28 @@ export function JobDetails({
           )}
         </div>
 
+        {/* Also listed on multi-source links */}
+        {job.alsoListedOn && job.alsoListedOn.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[11px] text-muted-foreground font-mono">
+            <span className="font-semibold text-foreground">Also listed on:</span>
+            {job.alsoListedOn.map((item, idx) => (
+              <a
+                key={idx}
+                href={item.url || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 underline hover:text-primary transition-colors uppercase"
+              >
+                {item.source}
+                <ExternalLink className="h-2.5 w-2.5" />
+              </a>
+            ))}
+          </div>
+        )}
+
         {/* Tab switcher */}
         <div className="inline-flex items-center rounded-md border-2 border-border bg-background p-0.5 text-xs">
+
           <button
             type="button"
             onClick={() => setActiveTab("brief")}
@@ -315,8 +344,34 @@ export function JobDetails({
         <div className="p-4 sm:p-5 space-y-4 max-w-4xl">
           {activeTab === "brief" ? (
             <>
+              {/* Ghost Risk Banner if present */}
+              {job.ghostRisk && (
+                <div
+                  className={`rounded-lg border-2 p-3.5 space-y-2 text-xs shadow-brutal-xs ${
+                    job.ghostRisk.level === "high"
+                      ? "border-warning bg-warning/10 text-foreground"
+                      : "border-border bg-surface-elevated text-muted-foreground"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                      <ShieldCheck className="h-4 w-4 text-warning" />
+                      Ghost Job Risk Assessment: {job.ghostRisk.level?.toUpperCase()} ({job.ghostRisk.score ?? 0}%)
+                    </span>
+                  </div>
+                  {job.ghostRisk.signals && job.ghostRisk.signals.length > 0 && (
+                    <ul className="list-disc list-inside space-y-1 font-mono text-[11px] text-muted-foreground">
+                      {job.ghostRisk.signals.map((sig, sIdx) => (
+                        <li key={sIdx}>{sig}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
               {/* Role Overview & Sanitized Description */}
               <section className="space-y-2">
+
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <Building2 className="h-3.5 w-3.5 text-primary" />

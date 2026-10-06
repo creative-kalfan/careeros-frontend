@@ -81,7 +81,21 @@ export type Job = {
     verified: boolean;
     type: "career_site" | "yc" | "direct" | "aggregator" | "general";
   };
+  // Phase 6 Quality Intelligence
+  isVerifiedLive?: boolean | null;
+  ghostRisk?: {
+    score?: number;
+    level?: "low" | "medium" | "high";
+    signals?: string[];
+  } | null;
+  alsoListedOn?: Array<{
+    source: string;
+    url?: string;
+    first_seen?: string;
+  }> | null;
+  preferredApplyUrl?: string | null;
 };
+
 
 // ---------------------------------------------------------------------------
 // Backend DTOs (mirror of careeros-backend-py/app/models/job.py)
@@ -132,7 +146,17 @@ export type NormalizedJob = {
   massHiringStatus?: string | null;
   mass_hiring_details?: Record<string, unknown> | null;
   massHiringDetails?: Record<string, unknown> | null;
+  // Phase 6 Quality Intelligence
+  is_verified_live?: boolean | null;
+  isVerifiedLive?: boolean | null;
+  ghost_risk?: Record<string, unknown> | null;
+  ghostRisk?: Record<string, unknown> | null;
+  also_listed_on?: Array<Record<string, unknown>> | null;
+  alsoListedOn?: Array<Record<string, unknown>> | null;
+  preferred_apply_url?: string | null;
+  preferredApplyUrl?: string | null;
 };
+
 
 export type JobSearchFilters = {
   role?: string;
@@ -145,7 +169,9 @@ export type JobSearchFilters = {
   sort?: "newest" | "oldest" | "best-match" | "salary";
   page?: number;
   pageSize?: number;
+  verifiedLiveOnly?: boolean;
 };
+
 
 export type JobSearchResult = {
   jobs: NormalizedJob[];
