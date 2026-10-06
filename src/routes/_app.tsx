@@ -35,8 +35,11 @@ function AppLayout() {
   // Check if current route is the onboarding route
   const isOnboardingRoute = location.pathname === "/onboarding";
 
-  // Fetch profile on mount when authenticated (and refetch if it's null so
-  // the onboarding gate never renders protected content on a failed fetch).
+  // _app owns the profile behind the shell. AuthProvider init also fires
+  // fetchProfile, but the single-flight guard dedupes concurrent callers
+  // into one GET /api/profile/me. Shell renders from cached session
+  // regardless; the onboarding redirect below only fires once the profile
+  // is known, so secondary data never blocks first paint.
   useEffect(() => {
     if (isAuthenticated && !profile && !isProfileLoading) {
       fetchProfile();

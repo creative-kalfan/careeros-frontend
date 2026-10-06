@@ -28,35 +28,27 @@ export const Route = createFileRoute("/_auth/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const {
-    login,
-    isLoading,
-    error,
-    clearError,
-    isAuthenticated,
-    fetchProfile,
-    profile,
-    isProfileLoading,
-  } = useAuth();
+  const { login, isLoading, error, clearError, isAuthenticated, profile } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Handle redirect after login
+  // Navigate optimistically on session: _app owns the profile behind the
+  // shell (single-flight fetch) and redirects to onboarding when the
+  // profile resolves as incomplete. Waiting here for profile added a full
+  // serial leg (600-2500ms on cold Render) before first dashboard paint.
   useEffect(() => {
-    if (isAuthenticated && !isProfileLoading) {
-      if (profile) {
-        if (profile.onboardingCompleted) {
-          navigate({ to: "/dashboard", replace: true });
-        } else {
-          navigate({ to: "/onboarding", replace: true });
-        }
+    if (!isAuthenticated) return;
+    if (profile) {
+      if (profile.onboardingCompleted) {
+        navigate({ to: "/dashboard", replace: true });
       } else {
-        // Fetch profile if not loaded
-        fetchProfile();
+        navigate({ to: "/onboarding", replace: true });
       }
+    } else {
+      navigate({ to: "/dashboard", replace: true });
     }
-  }, [isAuthenticated, isProfileLoading, profile, fetchProfile, navigate]);
+  }, [isAuthenticated, profile, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
