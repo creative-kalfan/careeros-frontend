@@ -26,7 +26,7 @@ export function ListRow({
       aria-selected={selected}
       onClick={onSelect}
       className={cn(
-        "tnum flex w-full items-center gap-3 rounded-none border-b border-border px-3 py-2.5 text-left text-sm transition-colors",
+        "tnum flex w-full items-center gap-3 rounded-none border-b border-border px-3 py-2.5 text-left text-sm text-foreground transition-colors",
         onSelect || href ? "cursor-pointer hover:bg-surface-muted/60" : "",
         selected
           ? "border-l-2 border-l-brand bg-brand-subtle/40"
