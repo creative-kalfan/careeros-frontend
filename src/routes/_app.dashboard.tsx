@@ -96,7 +96,10 @@ function Dashboard() {
     );
   }
 
-  // Progressive loading: only block full-page behind skeleton if NOTHING has loaded yet
+  // Progressive loading: skeleton holds only while Tier-1 critical data
+  // (jobs + app stats, via useDashboardData isLoading) AND telemetry are
+  // both pending without data. Tier-2 (recs, bounded notifs) hydrates below
+  // the fold and never blocks first paint.
   if (isLoading && telemetryLoading) {
     return (
       <div className="w-full max-w-[1536px] mx-auto flex flex-col gap-5 px-4 sm:px-6 lg:px-8 py-5">

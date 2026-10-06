@@ -100,6 +100,12 @@ function timeAgo(dateStr: string): string {
 export function useDashboardData() {
   const { user, profile } = useAuth();
 
+  // Two-tier bootstrap (all fired in parallel via useQueries):
+  // Tier-1 critical (blocks skeleton release in the route): personalized
+  // jobs + application stats. Tier-2 deferred-hydration (widgets tolerate
+  // undefined and fill in below the fold): recommendations + bounded
+  // notifications. Telemetry (useDashboardTelemetry) stays a separate
+  // graceful-degradation query owned by the route.
   const queries = useQueries({
     queries: [
       {
@@ -118,14 +124,20 @@ export function useDashboardData() {
         staleTime: 60_000,
       },
       {
-        queryKey: [NOTIFICATIONS_QUERY_KEY, undefined] as const,
-        queryFn: () => notificationsApi.getAll(),
+        // Bounded: the dashboard timeline renders 6 rows (formatActivity
+        // slices defensively). The full history stays on /notifications.
+        queryKey: [NOTIFICATIONS_QUERY_KEY, { limit: 6 }] as const,
+        queryFn: () => notificationsApi.getAll({ limit: 6 }),
         staleTime: 60_000,
       },
     ],
   });
 
   const [jobsQuery, appsQuery, recsQuery, notifsQuery] = queries;
+  // Skeleton release is Tier-1 gated: both critical queries pending without
+  // data. Tier-2 (recs/notifs) hydrates progressively and never blocks it.
+  const isTier1Loading =
+    (jobsQuery.isLoading && !jobsQuery.data) || (appsQuery.isLoading && !appsQuery.data);
   const isAllLoading = queries.every((q) => q.isLoading && !q.data);
   const isAnyLoading = queries.some((q) => q.isLoading && !q.data);
   const isError = queries.every((q) => q.isError);
@@ -167,7 +179,8 @@ export function useDashboardData() {
 
   return {
     data,
-    isLoading: isAllLoading,
+    isLoading: isTier1Loading,
+    isAllLoading,
     isAnyLoading,
     isJobsLoading: jobsQuery.isLoading && !jobsQuery.data,
     isAppsLoading: appsQuery.isLoading && !appsQuery.data,
