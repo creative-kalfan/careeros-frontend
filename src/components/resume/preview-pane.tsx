@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import {
   Minus,
   Plus,
@@ -32,7 +32,14 @@ import type {
 } from "@/types/resume";
 import type { OptimizationSuggestion } from "@/types/optimization";
 import { TemplatePreview } from "@/components/resume/templates/template-preview";
-import { PdfCanvasPreview } from "@/components/resume/pdf-canvas-preview";
+// Split: pdf-canvas-preview statically imports pdfjs-dist. Lazy keeps the PDF
+// engine off the resume route critical path; it loads only when canvas mode
+// (original-PDF view) actually renders. TemplatePreview stays static.
+const PdfCanvasPreview = lazy(() =>
+  import("@/components/resume/pdf-canvas-preview").then((m) => ({
+    default: m.PdfCanvasPreview,
+  })),
+);
 import type { AtsRequirementCoverage } from "@/api/ats";
 import type { EvidenceLocationMap } from "@/lib/evidence-location";
 import type { DocumentGeometryMap, GeometryBlock } from "@/types/geometry";
@@ -377,7 +384,8 @@ export function PreviewPane({
           </div>
         ) : isCanvasMode ? (
           <SpatialDocumentStage>
-            <PdfCanvasPreview
+            <Suspense fallback={<A4DocumentSkeleton />}>
+              <PdfCanvasPreview
               url={originalPdfUrl!}
               zoom={zoom / 100}
               isScanning={isScanning}
@@ -391,7 +399,8 @@ export function PreviewPane({
               selectedTargetId={selectedTargetId}
               onSelectElement={onSelectElement}
               onMutateBlock={onMutateBlock}
-            />
+              />
+            </Suspense>
           </SpatialDocumentStage>
         ) : !templateSlug && isUploadedDocument ? (
           <div className="flex min-h-full items-start justify-center p-6 sm:p-10">
