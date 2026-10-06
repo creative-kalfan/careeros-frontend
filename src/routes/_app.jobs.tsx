@@ -31,6 +31,7 @@ type JobSearchParams = {
   experience?: string;
   sort?: "best-match" | "newest" | "oldest" | "salary";
   page?: number;
+  verifiedLiveOnly?: boolean;
 };
 
 export const Route = createFileRoute("/_app/jobs")({

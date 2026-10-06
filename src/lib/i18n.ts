@@ -1,8 +1,7 @@
-"""i18n string scaffolding for CareerOS frontend.
-
-Centralizes key-based dictionary lookups so strings are never hardcoded
-across components without translation capability.
-"""
+// i18n string scaffolding for CareerOS frontend.
+//
+// Centralizes key-based dictionary lookups so strings are never hardcoded
+// across components without translation capability.
 
 export type Locale = "en" | "hi";
 
