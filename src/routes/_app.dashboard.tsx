@@ -1,11 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Suspense, lazy } from "react";
 import { ArrowRight, AlertCircle, Sparkles, Target, Zap, Activity } from "lucide-react";
 import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Career3DTopology } from "@/components/dashboard/career-3d-topology";
+// Split: career-3d-topology statically imports three.js (~500KB). Lazy keeps
+// it (and WebGL init) off the dashboard critical path; the skeleton holds
+// layout until the chunk resolves. Only rendered for the 3D horizon below.
+const Career3DTopology = lazy(() =>
+  import("@/components/dashboard/career-3d-topology").then((m) => ({
+    default: m.Career3DTopology,
+  })),
+);
 import {
   Widget,
   ExecutiveTelemetryRibbon,
@@ -288,7 +296,9 @@ function Dashboard() {
       <motion.div variants={staggerItem} className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         {/* Left Column (7 cols on xl / 12 on lg): 3D Career Vector & Skill Topology Canvas */}
         <div className="xl:col-span-7 col-span-12 flex flex-col">
-          <Career3DTopology careerScore={activeData.healthScore.overall} className="h-full" />
+          <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+            <Career3DTopology careerScore={activeData.healthScore.overall} className="h-full" />
+          </Suspense>
         </div>
 
         {/* Right Column (5 cols on xl / 12 on lg): High-Leverage Career Action Directives */}

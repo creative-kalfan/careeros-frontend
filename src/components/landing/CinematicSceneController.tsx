@@ -202,66 +202,22 @@ export function CinematicSceneController() {
         sceneProgress={sceneProgress}
       />
 
-      {/* Viewport Scene Container with Smooth Crossfade */}
+      {/* Viewport Scene Container: mount ONLY the active scene. Previously
+      all 6 scenes stayed mounted with opacity toggling, so the landing
+      page paid 6x DOM + animation cost on first paint. key={activeScene}
+      re-triggers the enter transition per scene. Scenes are light DOM
+      (no three.js), so no lazy split needed here. */}
       <div className="relative w-full h-full">
         <div
-          className={`absolute inset-0 transition-all duration-500 ease-out ${
-            activeScene === 0
-              ? "opacity-100 translate-y-0 pointer-events-auto z-10"
-              : "opacity-0 translate-y-3 pointer-events-none z-0"
-          }`}
+          key={activeScene}
+          className="absolute inset-0 transition-all duration-500 ease-out opacity-100 translate-y-0 pointer-events-auto z-10"
         >
-          <ProblemScene />
-        </div>
-
-        <div
-          className={`absolute inset-0 transition-all duration-500 ease-out ${
-            activeScene === 1
-              ? "opacity-100 translate-y-0 pointer-events-auto z-10"
-              : "opacity-0 translate-y-3 pointer-events-none z-0"
-          }`}
-        >
-          <SignalScene />
-        </div>
-
-        <div
-          className={`absolute inset-0 transition-all duration-500 ease-out ${
-            activeScene === 2
-              ? "opacity-100 translate-y-0 pointer-events-auto z-10"
-              : "opacity-0 translate-y-3 pointer-events-none z-0"
-          }`}
-        >
-          <DiagnosisScene />
-        </div>
-
-        <div
-          className={`absolute inset-0 transition-all duration-500 ease-out ${
-            activeScene === 3
-              ? "opacity-100 translate-y-0 pointer-events-auto z-10"
-              : "opacity-0 translate-y-3 pointer-events-none z-0"
-          }`}
-        >
-          <RefactorScene />
-        </div>
-
-        <div
-          className={`absolute inset-0 transition-all duration-500 ease-out ${
-            activeScene === 4
-              ? "opacity-100 translate-y-0 pointer-events-auto z-10"
-              : "opacity-0 translate-y-3 pointer-events-none z-0"
-          }`}
-        >
-          <MarketScene />
-        </div>
-
-        <div
-          className={`absolute inset-0 transition-all duration-500 ease-out ${
-            activeScene === 5
-              ? "opacity-100 translate-y-0 pointer-events-auto z-10"
-              : "opacity-0 translate-y-3 pointer-events-none z-0"
-          }`}
-        >
-          <ExecuteScene />
+          {activeScene === 0 && <ProblemScene />}
+          {activeScene === 1 && <SignalScene />}
+          {activeScene === 2 && <DiagnosisScene />}
+          {activeScene === 3 && <RefactorScene />}
+          {activeScene === 4 && <MarketScene />}
+          {activeScene === 5 && <ExecuteScene />}
         </div>
       </div>
     </div>
