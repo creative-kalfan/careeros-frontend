@@ -287,3 +287,37 @@ Deferred (explicit): invalidation narrowing, WebGL idle/reduced-motion/
 device-memory gating plus raycast throttling, CI workflow wiring, live
 browser timing confirmation (flows A-G), root `COMPLETE_SYSTEM.md` update
 (lives in the backend repo — left to its own flow).
+
+---
+
+## 11. Security Advisory Resolution — CVE-2026-102989 (TanStack Start XSS)
+
+### 11.1 Problem & Vercel Security Block
+- **Advisory:** CVE-2026-102989 — TanStack Start XSS vulnerability.
+- **Affected range:** `@tanstack/react-start` versions `>= 1.143.12`, patched in `>= 1.168.60`.
+- **Transitive requirement:** `@tanstack/start-server-core` must be `>= 1.169.39`.
+- **Vercel Block:** Vercel rejected production deployments with error:
+  `"Vulnerable TanStack Start package detected (@tanstack/react-start@1.168.27). Please update to a patched version."`
+- **Vulnerable version discovered:** `@tanstack/react-start@1.168.27` was resolved in `package-lock.json` with transitive `@tanstack/start-server-core@1.169.16`.
+
+### 11.2 Resolution & Dependency Graph Verification
+- **Upgraded packages:**
+  - `@tanstack/react-start`: `1.168.27` -> `1.168.60` (patched stable release)
+  - `@tanstack/react-router`: `1.170.17` -> `1.170.41`
+  - `@tanstack/router-plugin`: `1.168.19` -> `1.168.42`
+  - `@tanstack/start-server-core`: `1.169.16` -> `1.169.39` (transitive via `@tanstack/react-start@1.168.60`)
+  - `@tanstack/react-start-client`: `1.168.15` -> `1.168.39`
+  - `@tanstack/react-start-server`: `1.167.21` -> `1.167.46`
+  - `@tanstack/react-start-rsc`: `0.1.26` -> `0.1.59`
+  - `@tanstack/start-client-core`: `1.170.13` -> `1.170.34`
+  - `@tanstack/start-plugin-core`: `1.171.19` -> `1.171.49`
+- **Lockfile regenerated:** `package-lock.json` updated cleanly via npm.
+- **Auditable dependency check:** `npm ls @tanstack/react-start @tanstack/start-server-core` confirms zero vulnerable 1.168.27 references.
+- **Bypass Verification:** Confirmed `DANGEROUSLY_DEPLOY_VULNERABLE_TANSTACK_START_XSS` was **NOT** used anywhere in the codebase.
+- **Vercel Runtime & Preset:** `vite.config.ts` preserves `nitro: { preset: "vercel" }`. Build output in `.vercel/output/nitro.json` targets `vercel` preset with `nodejs22.x` runtime.
+- **Verification Baselines:**
+  - TypeScript: 0 errors (`npx tsc --noEmit` clean after updating root `ErrorComponent` error typing to `unknown`).
+  - Vitest: 320/320 tests passing.
+  - Production build: Succeeded (`vite build` -> `.vercel/output`).
+  - Bundle budgets: All 10 budget limits pass (`npm run check:budgets`).
+

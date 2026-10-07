@@ -9,49 +9,47 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SentryTestRouteImport } from './routes/sentry-test'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AuthRouteImport } from './routes/_auth'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DevUiRouteImport } from './routes/dev.ui'
-import { Route as AuthSignupRouteImport } from './routes/_auth.signup'
-import { Route as AuthLoginRouteImport } from './routes/_auth.login'
-import { Route as AppSettingsRouteImport } from './routes/_app.settings'
-import { Route as AppResumesRouteImport } from './routes/_app.resumes'
-import { Route as AppRecommendationsRouteImport } from './routes/_app.recommendations'
-import { Route as AppProfileRouteImport } from './routes/_app.profile'
-import { Route as AppOnboardingRouteImport } from './routes/_app.onboarding'
-import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
-import { Route as AppJobsRouteImport } from './routes/_app.jobs'
-import { Route as AppInterviewPrepRouteImport } from './routes/_app.interview-prep'
-import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
-import { Route as AppCopilotRouteImport } from './routes/_app.copilot'
-import { Route as AppAtsHistoryRouteImport } from './routes/_app.ats-history'
-import { Route as AppAtsRouteImport } from './routes/_app.ats'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SentryTestRouteImport } from './routes/sentry-test'
 import { Route as AppApplicationsRouteImport } from './routes/_app.applications'
-import { Route as AppResumesIndexRouteImport } from './routes/_app.resumes.index'
-import { Route as AppResumesTemplatesRouteImport } from './routes/_app.resumes.templates'
-import { Route as AppResumesSetupRouteImport } from './routes/_app.resumes.setup'
-import { Route as AppResumesIdRouteImport } from './routes/_app.resumes.$id'
-import { Route as AppOptimizerResumeIdRouteImport } from './routes/_app.optimizer.$resumeId'
+import { Route as AppAtsRouteImport } from './routes/_app.ats'
+import { Route as AppAtsHistoryRouteImport } from './routes/_app.ats-history'
+import { Route as AppCopilotRouteImport } from './routes/_app.copilot'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppInterviewPrepRouteImport } from './routes/_app.interview-prep'
+import { Route as AppJobsRouteImport } from './routes/_app.jobs'
+import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
+import { Route as AppOnboardingRouteImport } from './routes/_app.onboarding'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppRecommendationsRouteImport } from './routes/_app.recommendations'
+import { Route as AppResumesRouteImport } from './routes/_app.resumes'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AuthLoginRouteImport } from './routes/_auth.login'
+import { Route as AuthSignupRouteImport } from './routes/_auth.signup'
+import { Route as DevUiRouteImport } from './routes/dev.ui'
 import { Route as AppInterviewPrepSessionIdRouteImport } from './routes/_app.interview-prep.$sessionId'
+import { Route as AppOptimizerResumeIdRouteImport } from './routes/_app.optimizer.$resumeId'
+import { Route as AppResumesIndexRouteImport } from './routes/_app.resumes.index'
+import { Route as AppResumesIdRouteImport } from './routes/_app.resumes.$id'
+import { Route as AppResumesSetupRouteImport } from './routes/_app.resumes.setup'
+import { Route as AppResumesTemplatesRouteImport } from './routes/_app.resumes.templates'
 
-const SentryTestRoute = SentryTestRouteImport.update({
-  id: '/sentry-test',
-  path: '/sentry-test',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -59,87 +57,24 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/_auth',
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const SentryTestRoute = SentryTestRouteImport.update({
+  id: '/sentry-test',
+  path: '/sentry-test',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DevUiRoute = DevUiRouteImport.update({
-  id: '/dev/ui',
-  path: '/dev/ui',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppResumesRoute = AppResumesRouteImport.update({
-  id: '/resumes',
-  path: '/resumes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRecommendationsRoute = AppRecommendationsRouteImport.update({
-  id: '/recommendations',
-  path: '/recommendations',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProfileRoute = AppProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOnboardingRoute = AppOnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNotificationsRoute = AppNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppJobsRoute = AppJobsRouteImport.update({
-  id: '/jobs',
-  path: '/jobs',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppInterviewPrepRoute = AppInterviewPrepRouteImport.update({
-  id: '/interview-prep',
-  path: '/interview-prep',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCopilotRoute = AppCopilotRouteImport.update({
-  id: '/copilot',
-  path: '/copilot',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAtsHistoryRoute = AppAtsHistoryRouteImport.update({
-  id: '/ats-history',
-  path: '/ats-history',
+const AppApplicationsRoute = AppApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAtsRoute = AppAtsRouteImport.update({
@@ -147,35 +82,75 @@ const AppAtsRoute = AppAtsRouteImport.update({
   path: '/ats',
   getParentRoute: () => AppRoute,
 } as any)
-const AppApplicationsRoute = AppApplicationsRouteImport.update({
-  id: '/applications',
-  path: '/applications',
+const AppAtsHistoryRoute = AppAtsHistoryRouteImport.update({
+  id: '/ats-history',
+  path: '/ats-history',
   getParentRoute: () => AppRoute,
 } as any)
-const AppResumesIndexRoute = AppResumesIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppResumesRoute,
-} as any)
-const AppResumesTemplatesRoute = AppResumesTemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => AppResumesRoute,
-} as any)
-const AppResumesSetupRoute = AppResumesSetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
-  getParentRoute: () => AppResumesRoute,
-} as any)
-const AppResumesIdRoute = AppResumesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppResumesRoute,
-} as any)
-const AppOptimizerResumeIdRoute = AppOptimizerResumeIdRouteImport.update({
-  id: '/optimizer/$resumeId',
-  path: '/optimizer/$resumeId',
+const AppCopilotRoute = AppCopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
   getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInterviewPrepRoute = AppInterviewPrepRouteImport.update({
+  id: '/interview-prep',
+  path: '/interview-prep',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppJobsRoute = AppJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOnboardingRoute = AppOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecommendationsRoute = AppRecommendationsRouteImport.update({
+  id: '/recommendations',
+  path: '/recommendations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppResumesRoute = AppResumesRouteImport.update({
+  id: '/resumes',
+  path: '/resumes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => AuthRoute,
+} as any)
+const DevUiRoute = DevUiRouteImport.update({
+  id: '/dev/ui',
+  path: '/dev/ui',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppInterviewPrepSessionIdRoute =
   AppInterviewPrepSessionIdRouteImport.update({
@@ -183,6 +158,31 @@ const AppInterviewPrepSessionIdRoute =
     path: '/$sessionId',
     getParentRoute: () => AppInterviewPrepRoute,
   } as any)
+const AppOptimizerResumeIdRoute = AppOptimizerResumeIdRouteImport.update({
+  id: '/optimizer/$resumeId',
+  path: '/optimizer/$resumeId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppResumesIndexRoute = AppResumesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppResumesRoute,
+} as any)
+const AppResumesIdRoute = AppResumesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppResumesRoute,
+} as any)
+const AppResumesSetupRoute = AppResumesSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => AppResumesRoute,
+} as any)
+const AppResumesTemplatesRoute = AppResumesTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AppResumesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -377,39 +377,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sentry-test': {
-      id: '/sentry-test'
-      path: '/sentry-test'
-      fullPath: '/sentry-test'
-      preLoaderRoute: typeof SentryTestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_auth': {
-      id: '/_auth'
-      path: ''
+    '/': {
+      id: '/'
+      path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthRouteImport
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -419,109 +391,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
+    '/_auth': {
+      id: '/_auth'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dev/ui': {
-      id: '/dev/ui'
-      path: '/dev/ui'
-      fullPath: '/dev/ui'
-      preLoaderRoute: typeof DevUiRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_auth/signup': {
-      id: '/_auth/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof AuthSignupRouteImport
-      parentRoute: typeof AuthRoute
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_auth/login': {
-      id: '/_auth/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof AuthRoute
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
+    '/sentry-test': {
+      id: '/sentry-test'
+      path: '/sentry-test'
+      fullPath: '/sentry-test'
+      preLoaderRoute: typeof SentryTestRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/resumes': {
-      id: '/_app/resumes'
-      path: '/resumes'
-      fullPath: '/resumes'
-      preLoaderRoute: typeof AppResumesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/recommendations': {
-      id: '/_app/recommendations'
-      path: '/recommendations'
-      fullPath: '/recommendations'
-      preLoaderRoute: typeof AppRecommendationsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/profile': {
-      id: '/_app/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AppProfileRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/onboarding': {
-      id: '/_app/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof AppOnboardingRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/notifications': {
-      id: '/_app/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AppNotificationsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/jobs': {
-      id: '/_app/jobs'
-      path: '/jobs'
-      fullPath: '/jobs'
-      preLoaderRoute: typeof AppJobsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/interview-prep': {
-      id: '/_app/interview-prep'
-      path: '/interview-prep'
-      fullPath: '/interview-prep'
-      preLoaderRoute: typeof AppInterviewPrepRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/copilot': {
-      id: '/_app/copilot'
-      path: '/copilot'
-      fullPath: '/copilot'
-      preLoaderRoute: typeof AppCopilotRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/ats-history': {
-      id: '/_app/ats-history'
-      path: '/ats-history'
-      fullPath: '/ats-history'
-      preLoaderRoute: typeof AppAtsHistoryRouteImport
+    '/_app/applications': {
+      id: '/_app/applications'
+      path: '/applications'
+      fullPath: '/applications'
+      preLoaderRoute: typeof AppApplicationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/ats': {
@@ -531,11 +440,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAtsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/applications': {
-      id: '/_app/applications'
-      path: '/applications'
-      fullPath: '/applications'
-      preLoaderRoute: typeof AppApplicationsRouteImport
+    '/_app/ats-history': {
+      id: '/_app/ats-history'
+      path: '/ats-history'
+      fullPath: '/ats-history'
+      preLoaderRoute: typeof AppAtsHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/copilot': {
+      id: '/_app/copilot'
+      path: '/copilot'
+      fullPath: '/copilot'
+      preLoaderRoute: typeof AppCopilotRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/interview-prep': {
+      id: '/_app/interview-prep'
+      path: '/interview-prep'
+      fullPath: '/interview-prep'
+      preLoaderRoute: typeof AppInterviewPrepRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/jobs': {
+      id: '/_app/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof AppJobsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/onboarding': {
+      id: '/_app/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AppOnboardingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/recommendations': {
+      id: '/_app/recommendations'
+      path: '/recommendations'
+      fullPath: '/recommendations'
+      preLoaderRoute: typeof AppRecommendationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/resumes': {
+      id: '/_app/resumes'
+      path: '/resumes'
+      fullPath: '/resumes'
+      preLoaderRoute: typeof AppResumesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/signup': {
+      id: '/_auth/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/dev/ui': {
+      id: '/dev/ui'
+      path: '/dev/ui'
+      fullPath: '/dev/ui'
+      preLoaderRoute: typeof DevUiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/interview-prep/$sessionId': {
+      id: '/_app/interview-prep/$sessionId'
+      path: '/$sessionId'
+      fullPath: '/interview-prep/$sessionId'
+      preLoaderRoute: typeof AppInterviewPrepSessionIdRouteImport
+      parentRoute: typeof AppInterviewPrepRoute
+    }
+    '/_app/optimizer/$resumeId': {
+      id: '/_app/optimizer/$resumeId'
+      path: '/optimizer/$resumeId'
+      fullPath: '/optimizer/$resumeId'
+      preLoaderRoute: typeof AppOptimizerResumeIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/resumes/': {
@@ -545,11 +559,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppResumesIndexRouteImport
       parentRoute: typeof AppResumesRoute
     }
-    '/_app/resumes/templates': {
-      id: '/_app/resumes/templates'
-      path: '/templates'
-      fullPath: '/resumes/templates'
-      preLoaderRoute: typeof AppResumesTemplatesRouteImport
+    '/_app/resumes/$id': {
+      id: '/_app/resumes/$id'
+      path: '/$id'
+      fullPath: '/resumes/$id'
+      preLoaderRoute: typeof AppResumesIdRouteImport
       parentRoute: typeof AppResumesRoute
     }
     '/_app/resumes/setup': {
@@ -559,26 +573,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppResumesSetupRouteImport
       parentRoute: typeof AppResumesRoute
     }
-    '/_app/resumes/$id': {
-      id: '/_app/resumes/$id'
-      path: '/$id'
-      fullPath: '/resumes/$id'
-      preLoaderRoute: typeof AppResumesIdRouteImport
+    '/_app/resumes/templates': {
+      id: '/_app/resumes/templates'
+      path: '/templates'
+      fullPath: '/resumes/templates'
+      preLoaderRoute: typeof AppResumesTemplatesRouteImport
       parentRoute: typeof AppResumesRoute
-    }
-    '/_app/optimizer/$resumeId': {
-      id: '/_app/optimizer/$resumeId'
-      path: '/optimizer/$resumeId'
-      fullPath: '/optimizer/$resumeId'
-      preLoaderRoute: typeof AppOptimizerResumeIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/interview-prep/$sessionId': {
-      id: '/_app/interview-prep/$sessionId'
-      path: '/$sessionId'
-      fullPath: '/interview-prep/$sessionId'
-      preLoaderRoute: typeof AppInterviewPrepSessionIdRouteImport
-      parentRoute: typeof AppInterviewPrepRoute
     }
   }
 }
